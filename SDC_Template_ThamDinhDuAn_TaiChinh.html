@@ -1,771 +1,185 @@
-<!doctype html>
-<html lang="vi">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Template Thẩm định Tài chính Dự án (MPP27)</title>
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bản đồ Liên kết Tri thức — Thẩm định Đầu tư công (MPP27)</title>
 <style>
-  :root{
-    --bg:#0f172a; --card:#111c33; --ink:#e5edff; --muted:#93a4c9;
-    --line:#31456f; --accent:#4f8cff;
-    --b1:#4f8cff; --b2:#22c55e; --b3:#f59e0b; --b4:#ec4899; --b5:#a855f7; --b6:#14b8a6;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-       background:var(--bg);color:var(--ink)}
-  .site-shell{max-width:1200px;margin:0 auto;padding:20px 16px 40px}
-  .hero h1{margin:0 0 6px;font-size:26px}
-  .hero .lede{margin:0;color:var(--muted);max-width:760px;font-size:14px;line-height:1.5}
-  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:18px 0 12px}
-  .toolbar button{background:var(--card);color:var(--ink);border:1px solid var(--line);
-       border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
-  .toolbar button:hover{border-color:var(--accent)}
-  .zoom-control{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin-left:auto}
-  .diagram-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-  .diagram-viewport{overflow:auto;height:70vh;cursor:grab}
-  .diagram-viewport.dragging{cursor:grabbing}
-  .diagram-canvas{transform-origin:top center;padding:28px 40px;width:max-content;min-width:100%;position:relative}
-  ul.tree,ul.tree ul{list-style:none;margin:0;padding:0;display:flex;gap:26px;justify-content:center}
-  ul.tree{flex-direction:column;align-items:center}
-  ul.tree li{display:flex;flex-direction:column;align-items:center;position:relative}
-  ul.tree li>ul{margin-top:34px}
-  .node{position:relative;z-index:2;display:flex;flex-direction:column;align-items:stretch;min-width:130px;max-width:200px}
-  .node-main{background:#16233f;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;
-       cursor:pointer;color:var(--ink);text-align:center;font-size:13px;line-height:1.35;font-weight:600;transition:.15s}
-  .node-main:hover{border-color:var(--accent);transform:translateY(-1px)}
-  .node-en{display:block;font-size:9.5px;font-weight:400;font-style:italic;color:var(--muted);margin-top:2px;line-height:1.25}
-  .panel-en{font-size:13px;font-weight:400;font-style:italic;color:var(--muted);margin-top:2px}
-  .node .node-num{font-size:10px;color:var(--muted);margin-bottom:3px;text-align:center}
-  .node.is-expanded .node-main{box-shadow:0 0 0 2px rgba(79,140,255,.25)}
-  .node-expand-bar{margin-top:5px;height:14px;border:none;border-radius:6px;background:#1d2c4d;color:var(--muted);
-       cursor:pointer;font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center}
-  .node-expand-bar:hover{background:var(--accent);color:#fff}
-  .node.branch-1 .node-main{border-color:var(--b1)} .node.branch-2 .node-main{border-color:var(--b2)}
-  .node.branch-3 .node-main{border-color:var(--b3)} .node.branch-4 .node-main{border-color:var(--b4)}
-  .node.branch-5 .node-main{border-color:var(--b5)} .node.branch-6 .node-main{border-color:var(--b6)}
-  svg.links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
-  svg.links path{fill:none;stroke:var(--line);stroke-width:1.6}
-  .scrim{position:fixed;inset:0;background:rgba(5,10,24,.55);z-index:40}
-  .detail-panel{position:fixed;top:0;right:0;height:100vh;width:min(440px,92vw);background:var(--card);
-       border-left:1px solid var(--line);transform:translateX(100%);transition:.25s;z-index:50;
-       display:flex;flex-direction:column;padding:20px}
-  .detail-panel.open{transform:translateX(0)}
-  .panel-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-  .panel-id{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-  .panel-header h2{margin:4px 0 0;font-size:19px}
-  .icon-button{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
-  .panel-group{color:var(--accent);font-size:12px;margin:10px 0 4px;font-weight:600}
-  .markdown-content{font-size:14px;line-height:1.6;color:#cdd8f2;overflow:auto}
-  .markdown-content h3{font-size:15px;margin:14px 0 6px}
-  .markdown-content ul{padding-left:18px;margin:6px 0}
-  .markdown-content code{background:#0c1830;padding:1px 5px;border-radius:4px;font-size:12px}
-  .markdown-content a{color:var(--accent)}
-  .child-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .child-pills button{background:#16233f;border:1px solid var(--line);color:var(--ink);border-radius:20px;
-       padding:5px 10px;font-size:12px;cursor:pointer}
-  .child-pills button:hover{border-color:var(--accent)}
-  h3.section{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:18px 0 6px}
-</style>
-</head>
-<body>
-<div class="site-shell">
-  <header class="hero">
-    <h1>Template Thẩm định Tài chính Dự án (MPP27)</h1>
-    <p class="lede">Bấm thanh dưới mỗi node để mở/thu nhánh; bấm tên node để xem chi tiết công thức và nguồn tham khảo.</p>
-  </header>
-  <nav class="toolbar">
-    <button id="expandAll" type="button">Mở toàn bộ</button>
-    <button id="collapseAll" type="button">Thu gọn</button>
-    <label class="zoom-control">Zoom
-      <input id="zoomRange" type="range" min="0.5" max="1.4" value="0.9" step="0.05" />
-      <span id="zoomValue">0.90×</span>
-    </label>
-  </nav>
-  <main>
-    <section class="diagram-card">
-      <div id="diagramViewport" class="diagram-viewport">
-        <div id="diagramCanvas" class="diagram-canvas"></div>
-      </div>
-    </section>
-  </main>
-</div>
-
-<div id="scrim" class="scrim" hidden></div>
-<aside id="detailPanel" class="detail-panel" aria-hidden="true">
-  <div class="panel-header">
-    <div><div id="panelId" class="panel-id">Node</div><h2 id="panelTitle"></h2></div>
-    <button id="closePanel" class="icon-button" type="button" aria-label="Dong">&times;</button>
-  </div>
-  <div id="panelGroup" class="panel-group"></div>
-  <div id="panelDescription" class="markdown-content"></div>
-  <h3 class="section" id="childrenLabel" hidden>Cac nhanh con</h3>
-  <div id="panelChildren" class="child-pills"></div>
-</aside>
-
+:root{--bg:#0f1419;--panel:#1a2230;--panel2:#222c3d;--line:#2f3b4f;--text:#e7edf5;--muted:#9fb0c3;--accent:#7aa2f7}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:"Segoe UI",system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+#wrap{display:flex;height:100vh;overflow:hidden}
+#stage{flex:1;position:relative}
+svg{width:100%;height:100%;display:block;cursor:grab}svg.grabbing{cursor:grabbing}
+#side{width:390px;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+#side h1{font-size:15px;margin:0;padding:16px 18px 6px}
+#side .sub{color:var(--muted);font-size:12px;padding:0 18px 12px;line-height:1.5;border-bottom:1px solid var(--line)}
+#detail{padding:16px 18px;overflow-y:auto;flex:1}
+.badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;color:#0f1419;font-weight:700;margin-bottom:10px}
+#detail h2{font-size:16px;margin:4px 0 6px;line-height:1.35}
+.chips{margin:6px 0 14px}
+.chip{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:11.5px;margin:0 5px 6px 0;color:#cfe0f5}
+.sec{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
+.doclist{list-style:none;margin:0;padding:0}
+.doclist li{margin:0 0 7px}
+.doclist a{display:block;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;text-decoration:none;color:var(--text);font-size:12.5px;line-height:1.4;transition:.15s;cursor:pointer}
+.doclist a:hover{border-color:var(--accent);background:#26344a}
+.doclist .meta{color:var(--muted);font-size:11px;display:block;margin-top:2px}
+.empty{color:var(--muted);font-size:13px;font-style:italic}
+.open{display:inline-block;margin-top:10px;font-size:12.5px;color:var(--accent);text-decoration:none}
+.open:hover{text-decoration:underline}
+.legend{position:absolute;left:14px;top:14px;background:rgba(26,34,48,.93);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:12px;max-width:320px}
+.legend b{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:7px}
+.legend .row{display:flex;align-items:center;gap:8px;margin:5px 0;cursor:pointer;opacity:.95}
+.legend .row:hover{opacity:1}.legend .dot{width:12px;height:12px;border-radius:50%;flex:none}
+.legend .tg{margin-top:9px;padding-top:9px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer}
+.controls{position:absolute;right:14px;top:14px}
+.controls input{background:rgba(26,34,48,.93);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 11px;font-size:13px;width:210px;outline:none}
+.controls input:focus{border-color:var(--accent)}
+.hint{position:absolute;left:14px;bottom:12px;color:var(--muted);font-size:11px;opacity:.85}
+.node{cursor:pointer}
+.node text{pointer-events:none;fill:var(--muted);font-size:9px}
+.node.center text{font-size:13px;font-weight:700;fill:#0f1419}
+.node.theme text{font-size:12px;font-weight:600;fill:var(--text)}
+.node.doc text{font-size:9px;fill:var(--muted)}
+.link{stroke:var(--line);stroke-opacity:.55}
+.link.theme{stroke:#5b6b82;stroke-opacity:.4;stroke-dasharray:4 4}
+.simlink{stroke-opacity:0}
+.dim{opacity:.08}
+</style></head>
+<body><div id="wrap"><div id="stage">
+<svg id="svg"></svg>
+<div class="legend" id="legend"><b>Cụm chủ đề — nhấn để lọc</b></div>
+<div class="controls"><input id="search" placeholder="Tìm tài liệu / khái niệm…"></div>
+<div class="hint">Kéo nền để di chuyển · lăn chuột để phóng to · kéo node để sắp xếp · nhấn tài liệu để xem liên kết khái niệm</div>
+</div><div id="side">
+<h1>Liên kết Tri thức · Thẩm định Đầu tư công</h1>
+<div class="sub" id="sub"></div>
+<div id="detail"><p class="empty">Nhấn một cụm hoặc một tài liệu để xem chi tiết.</p></div>
+</div></div>
 <script>
-/* ============================================================
-   DU LIEU - chi can thay object diagramData nay cho topic moi.
-   Moi node: { id, title, en(phu de tieng Anh, tuy chon), group, kind, detail(Markdown), children:[] }
-   ============================================================ */
-const diagramData =
-/*__DIAGRAM_DATA__*/
-{
-  "id": 1,
-  "title": "Template Thẩm định Tài chính Dự án",
-  "en": "Project Financial Appraisal Template",
-  "group": "MPP27 — Thẩm định Đầu tư công",
-  "detail": "**Phiên bản tổng hợp từ 5 case:** Tate & Lyle · Kho Sơn Cement · Chợ Lớn–Gò Vấp Bus · BOT Cai Lậy (Tài chính / Kinh tế / Phân phối).\n\n**Chú giải:**\n- Khối **★** áp dụng cho *mọi dự án*.\n- Khối **[V]** là *variant tùy loại dự án* — bật/tắt qua nhánh \"7 cờ điều khiển\".",
-  "children": [
-    {
-      "id": 2,
-      "title": "★ Công thức trọng tâm",
-      "en": "Core Formulas",
-      "detail": "6 công thức nền tảng dùng xuyên suốt template: suất chiết khấu, FCFF, FCFE, NPV, IRR, DSCR.",
-      "children": [
-        {
-          "id": 3,
-          "title": "① Suất chiết khấu",
-          "en": "Discount Rate",
-          "detail": "Chọn **1 trong 3 cách** tùy mục đích phân tích.\n\n**Quan hệ Fisher (danh nghĩa ↔ thực):**\n\n`(1 + r_nom) = (1 + r_real)·(1 + π)`\n\n**Nguồn:** Modigliani–Miller (1958) · Sharpe (1964) — CAPM · Fisher (1930) *The Theory of Interest* · Brealey–Myers–Allen Ch.9, 17–19 · Jenkins–Kuo–Harberger *Cost-Benefit Analysis* Ch.8 · World Bank OP 10.04 (1994) — gốc hurdle 10%",
-          "children": [
-            {
-              "id": 4,
-              "title": "(a) WACC từ CAPM",
-              "en": "WACC from CAPM",
-              "kind": "leaf",
-              "detail": "Dùng cho **định giá doanh nghiệp niêm yết**.\n\n- `WACC = (E/V)·Re + (D/V)·Rd·(1−t)`\n- `Re = Rf + β·(Rm − Rf)` — CAPM\n- `Rd = LIBOR/lãi tham chiếu + spread`"
-            },
-            {
-              "id": 5,
-              "title": "(b) Hurdle rate ngoại sinh",
-              "en": "Exogenous Hurdle Rate",
-              "kind": "leaf",
-              "detail": "Dùng cho **thẩm định dự án** — *cách phổ biến nhất*.\n\n- Lấy từ chuẩn của tổ chức tài trợ: IFC 10% thực · ADB 12% thực · WB 10–12%\n- Hoặc từ chi phí cơ hội của chủ đầu tư"
-            },
-            {
-              "id": 6,
-              "title": "(c) EOCK",
-              "en": "Economic Opportunity Cost of Capital",
-              "kind": "leaf",
-              "detail": "Dùng cho **phân tích kinh tế – xã hội**.\n\n- Ngưỡng suất sinh lợi xã hội (Việt Nam ~8% thực)\n- Dùng để chiết khấu ngân lưu (NCF) kinh tế"
-            }
-          ]
-        },
-        {
-          "id": 7,
-          "title": "② FCFF — Ngân lưu tự do của dự án",
-          "en": "Free Cash Flow to Firm",
-          "kind": "leaf",
-          "detail": "**Top-down (từ EBIT):**\n\n`FCFF = EBIT·(1−t) + D&A − ΔWC − CapEx + Terminal Value`\n\n**Bottom-up (từ NI):**\n\n`FCFF = NI + Interest·(1−t) + D&A − ΔWC − CapEx`\n\n**Giải thích:** cộng lại khấu hao (phi tiền mặt), trừ ΔWC + CapEx (đầu tư tài sản), cộng TV (giá trị thanh lý).\n\n**Nguồn:** Damodaran *Investment Valuation* Ch.10 · Jenkins–Kuo–Harberger Ch.5"
-        },
-        {
-          "id": 8,
-          "title": "③ FCFE — Ngân lưu chủ sở hữu",
-          "en": "Free Cash Flow to Equity",
-          "kind": "leaf",
-          "detail": "**Công thức:**\n\n`FCFE = FCFF − Interest·(1−t) − Principal + Net Borrowing`\n\n`= NI + D&A − ΔWC − CapEx + Net Borrowing`\n\n**Chiết khấu bằng Re** (không phải WACC).\n\n**Nguồn:** Damodaran Ch.14"
-        },
-        {
-          "id": 9,
-          "title": "④ NPV — Giá trị hiện tại ròng",
-          "en": "Net Present Value",
-          "kind": "leaf",
-          "detail": "`NPV = Σ (t=0→T) CF_t / (1 + r)^t`\n\n**Quy tắc:** NPV > 0 → chấp nhận.\n\n**Nguồn:** Fisher (1930) · Hirshleifer (1958) *JPE* · Jenkins–Kuo–Harberger Ch.3"
-        },
-        {
-          "id": 10,
-          "title": "⑤ IRR — Suất sinh lợi nội tại",
-          "en": "Internal Rate of Return",
-          "kind": "leaf",
-          "detail": "IRR là `r*` sao cho `NPV(r*) = 0`.\n\n**Cảnh báo:** nhiều nghiệm khi ngân lưu đổi dấu nhiều lần.\n\n**Nguồn:** Brealey–Myers–Allen Ch.5 §5.3"
-        },
-        {
-          "id": 11,
-          "title": "⑥ DSCR — Hệ số an toàn trả nợ",
-          "en": "Debt Service Coverage Ratio",
-          "kind": "leaf",
-          "detail": "Góc nhìn **ngân hàng**.\n\n- `DSCR_t = CFADS_t / Debt Service_t`\n- `CFADS = FCFF + Interest·(1−t)`\n- `Debt Service = Interest + Principal`\n\n**Ngưỡng:** ≥ 1.2 (ngân hàng thương mại) · ≥ 1.4 (project finance).\n\n**Nguồn:** Yescombe *Principles of Project Finance* Ch.13 · Esty (2004)"
-        }
-      ]
-    },
-    {
-      "id": 12,
-      "title": "⓪ Khung quyết định",
-      "en": "Decision Framework",
-      "detail": "**Setup mô hình** — trả lời 5 câu hỏi trước khi gõ ô đầu tiên.",
-      "children": [
-        {
-          "id": 13,
-          "title": "CH1 — Loại dự án?",
-          "en": "Project Type",
-          "kind": "leaf",
-          "detail": "- **Sản xuất / thương mại** (Tate & Lyle, Cement)\n- **Vận tải dịch vụ** (Bus)\n- **Hạ tầng BOT** (Cai Lậy đường bộ)\n- **Dự án công** (cấp nước, y tế, giáo dục)"
-        },
-        {
-          "id": 14,
-          "title": "CH2 — Quan điểm phân tích?",
-          "en": "Analytical Perspective",
-          "kind": "leaf",
-          "detail": "- **Tổng đầu tư (TIPV)** — chiết khấu @WACC\n- **Chủ sở hữu (Equity)** — chiết khấu @Re\n- **Ngân hàng (Banker)** — DSCR\n- **Kinh tế (Economic)** — chiết khấu @EOCK\n- **Phân phối (Distributive)** — bóc tách thặng dư theo nhóm"
-        },
-        {
-          "id": 15,
-          "title": "CH3 — Mặt bằng giá?",
-          "en": "Price Basis",
-          "kind": "leaf",
-          "detail": "- **Danh nghĩa** (có lạm phát) — BOT, project finance\n- **Thực** (loại lạm phát) — case study Fulbright, so sánh quốc tế\n- *Thông lệ:* tính cả 2 song song để cross-check"
-        },
-        {
-          "id": 16,
-          "title": "CH4 — Đơn vị tiền chính?",
-          "en": "Main Currency",
-          "kind": "leaf",
-          "detail": "VND / USD / song tiền (cần tỷ giá)."
-        },
-        {
-          "id": 17,
-          "title": "CH5 — Số đường lạm phát?",
-          "en": "Number of Inflation Streams",
-          "kind": "leaf",
-          "detail": "- **1** (CPI VND) cho sản xuất\n- **2** (CPI VND + chỉ số giá xây dựng) cho BOT\n- **3** (+ lạm phát USD) cho dự án có vay USD / nhập khẩu"
-        }
-      ]
-    },
-    {
-      "id": 18,
-      "title": "B1–B6 · Cấu trúc mô hình",
-      "en": "Model Structure",
-      "detail": "6 khối bảng tính từ input đến output: Thông số → Chỉ số giá & Ngân lưu đầu tư → Lịch nợ → Doanh thu & Chi phí → Khấu hao & KQHĐKD & VLĐ → FCF & chỉ tiêu thẩm định.",
-      "children": [
-        {
-          "id": 19,
-          "title": "B1 · Bảng thông số",
-          "en": "Input Parameters",
-          "detail": "**Input layer** — mọi giả định tập trung một chỗ, các bảng sau chỉ tham chiếu.",
-          "children": [
-            {
-              "id": 20,
-              "title": "1.1 Vĩ mô [★]",
-              "en": "Macroeconomic Assumptions",
-              "kind": "leaf",
-              "detail": "Lạm phát VND, USD (nếu có), tỷ giá gốc + dự báo, lãi suất tham chiếu (LIBOR/VNIBOR/lãi NHNN).\n\n**Nguồn:** Mankiw *Macroeconomics* Ch.5 · Jenkins–Kuo–Harberger Ch.9"
-            },
-            {
-              "id": 21,
-              "title": "1.2 Chi phí đầu tư [★]",
-              "en": "Capital Expenditure",
-              "kind": "leaf",
-              "detail": "- CapEx theo từng năm (xây dựng nhiều năm)\n- CapEx tách theo **N nhóm tài sản** (mỗi nhóm 1 tuổi khấu hao riêng)\n- Tỷ lệ nội tệ / ngoại tệ\n- Đội giá dự phòng (contingency)\n\n**Nguồn:** Jenkins–Kuo–Harberger Ch.6"
-            },
-            {
-              "id": 22,
-              "title": "1.3 Vay nợ [V]",
-              "en": "Debt Financing",
-              "kind": "leaf",
-              "detail": "*Bỏ qua nếu phân tích kinh tế.*\n\n- M nguồn vay song song (vd: IFC-A, IFC-B, NH thương mại, vốn tự có)\n- Mỗi nguồn: gốc, spread vs lãi tham chiếu, kỳ hạn, ân hạn\n- Cờ: **lãi vay TGXD nhập gốc** *(BOT thường có, sản xuất không)*\n\n**Nguồn:** Brealey–Myers Ch.24 · Yescombe Ch.13"
-            },
-            {
-              "id": 23,
-              "title": "1.4 Vận hành / sản xuất [V]",
-              "en": "Operating Assumptions",
-              "kind": "leaf",
-              "detail": "*Biến thể theo loại dự án:*\n\n- **Sản xuất:** công suất, năng suất, giá đầu vào/đầu ra, tỷ lệ tiêu hao\n- **BOT:** lưu lượng xe (3 kịch bản low/med/high), giá vé theo 8 nhóm xe, chu kỳ điều chỉnh\n- **Bus:** số chuyến/ngày, giá vé, trợ giá Nhà nước\n- **Cấp nước:** sản lượng, giá nước, tỷ lệ thất thoát"
-            },
-            {
-              "id": 24,
-              "title": "1.5 Thuế [★]",
-              "en": "Taxes",
-              "kind": "leaf",
-              "detail": "- Thuế suất TNDN, ưu đãi miễn thuế, lộ trình giảm\n- VAT đầu ra / đầu vào\n- Thuế nhập khẩu (nếu có nguyên liệu nhập)\n\n**Nguồn:** Harberger (1962) *JPE* · Jenkins–Kuo–Harberger Ch.11"
-            },
-            {
-              "id": 25,
-              "title": "1.6 Chi phí vốn [★]",
-              "en": "Cost of Capital",
-              "kind": "leaf",
-              "detail": "WACC / hurdle rate / Re / Rd / EOCK — chọn theo Câu hỏi 2 ở khung quyết định ⓪.\n\n*Lưu ý:* trong thẩm định dự án thường **hardcode** từ chuẩn tổ chức tài trợ.\n\n**Nguồn:** xem khối ★ Công thức trọng tâm ①"
-            }
-          ]
-        },
-        {
-          "id": 26,
-          "title": "B2 · Chỉ số giá + Ngân lưu đầu tư [★]",
-          "en": "Price Indices & Investment Cash Flow",
-          "detail": "Dựng chỉ số giá **trước mọi quy đổi**, sau đó tính ngân lưu chi phí đầu tư danh nghĩa.",
-          "children": [
-            {
-              "id": 27,
-              "title": "Chỉ số giá & tỷ giá PPP",
-              "en": "Price Indices & PPP Exchange Rate",
-              "kind": "leaf",
-              "detail": "- `P_t = P_(t−1) · (1 + π)`\n- `E_t = E_0 · (P_dom,t / P_for,t)` — *Purchasing Power Parity*\n\n**Nguồn:** Cassel (1918) · Krugman–Obstfeld Ch.16 · Jenkins–Kuo–Harberger Ch.9"
-            },
-            {
-              "id": 28,
-              "title": "Ngân lưu CP đầu tư danh nghĩa",
-              "en": "Nominal Investment Cash Flow",
-              "kind": "leaf",
-              "detail": "`I_nom,t = I_real,t · P_t`\n\n[V] **2 đường lạm phát** cho BOT: tách CPI vs chỉ số giá xây dựng."
-            },
-            {
-              "id": 29,
-              "title": "IDC nhập gốc [V]",
-              "en": "Capitalized Interest During Construction",
-              "kind": "leaf",
-              "detail": "- Áp dụng cho dự án xây dựng dài (BOT, nhà máy điện)\n- Lãi vay trong thời gian xây dựng **cộng vào nguyên giá khấu hao** thay vì trừ vào lợi nhuận\n\n**Nguồn:** Yescombe Ch.13 §13.5"
-            }
-          ]
-        },
-        {
-          "id": 30,
-          "title": "B3 · Lịch nợ vay [V]",
-          "en": "Debt Schedule",
-          "detail": "Khung **5 dòng × M nguồn vay**. Bỏ qua nếu chỉ phân tích kinh tế.",
-          "children": [
-            {
-              "id": 31,
-              "title": "Khung chuẩn 5 dòng",
-              "en": "Five-Line Framework",
-              "kind": "leaf",
-              "detail": "1. Dư nợ đầu kỳ = (5) Dư nợ cuối kỳ trước\n2. Giải ngân theo lịch\n3. Trả lãi: `I_t = ((D_begin + D_end)/2) · (lãi gốc + spread)`\n4. Trả gốc — *chọn phương pháp:*\n   - Chia đều: `A = P / n`\n   - Niên kim cố định: `A = P · i / (1 − (1+i)^−n)`\n   - Sculpted: theo DSCR mục tiêu mỗi năm\n5. Dư nợ cuối kỳ = (1) + (2) − (4)"
-            },
-            {
-              "id": 32,
-              "title": "Hợp nhất M nguồn",
-              "en": "Consolidating M Debt Tranches",
-              "kind": "leaf",
-              "detail": "- Cộng dọc M nhóm để có ngân lưu nợ vay tổng\n- `CFD_t = Disbursement − Interest − Principal`\n\n**Nguồn:** Yescombe Ch.13 · Jenkins–Kuo–Harberger Ch.7"
-            }
-          ]
-        },
-        {
-          "id": 33,
-          "title": "B4 · Doanh thu + Chi phí hoạt động",
-          "en": "Revenue & Operating Costs",
-          "detail": "Doanh thu là khối **variant theo loại dự án**; chi phí chia biến đổi / cố định; xử lý VAT nếu có.",
-          "children": [
-            {
-              "id": 34,
-              "title": "Doanh thu [V]",
-              "en": "Revenue",
-              "kind": "leaf",
-              "detail": "*Công thức tùy loại dự án:*\n\n- **Sản xuất:** `Rev = Q · P_dom`; với `P_dom = P_world · (1 + tariff)` nếu có bảo hộ\n- **BOT:** `Rev = Σ_i (giá vé_i × số xe_i × 365 × hệ số tăng trưởng)`\n- **Bus:** `Rev = (giá vé × số khách) + trợ giá NN`\n- **Cấp nước:** `Rev = giá nước · (sản lượng · (1 − thất thoát))`"
-            },
-            {
-              "id": 35,
-              "title": "Chi phí biến đổi [★]",
-              "en": "Variable Costs",
-              "kind": "leaf",
-              "detail": "- Nguyên liệu: `Cost = P_input · Q · (chỉ số giá NN/nội địa)`\n- Lao động sản xuất: `L_t = L_(t−1)·(1+π)·(Q_t/Q_(t−1))`"
-            },
-            {
-              "id": 36,
-              "title": "Chi phí cố định [★]",
-              "en": "Fixed Costs",
-              "kind": "leaf",
-              "detail": "- `QLBH = QLBH_(t−1) · (1 + π)`\n- Bảo trì = `% CapEx · (1 + π)` — đặc biệt quan trọng với BOT"
-            },
-            {
-              "id": 37,
-              "title": "VAT đầu vào được hoàn [V]",
-              "en": "Input VAT Refund",
-              "kind": "leaf",
-              "detail": "*Bỏ qua khi không có VAT.*\n\n`VAT_in = Cost · (rate / (1 + rate))` — *gross-up*\n\n**Nguồn:** Schenk–Thuronyi–Cui (2015) *Value Added Tax: A Comparative Approach*"
-            }
-          ]
-        },
-        {
-          "id": 38,
-          "title": "B5 · Khấu hao + KQHĐKD + VLĐ [V]",
-          "en": "Depreciation, Income Statement & Working Capital",
-          "detail": "*Bỏ qua khi phân tích kinh tế* (không có thuế, nợ, khấu hao).",
-          "children": [
-            {
-              "id": 39,
-              "title": "Khấu hao theo nhóm tài sản",
-              "en": "Depreciation by Asset Class",
-              "kind": "leaf",
-              "detail": "- `D_asset,t = CapEx_asset / N_asset` (đường thẳng — phổ biến nhất)\n- Có thể đổi sang số dư giảm dần / SOYD theo TT 45/2013/TT-BTC\n- *Ma trận N nhóm × T năm; cộng theo cột để có khấu hao tổng*\n\n**Nguồn:** IAS 16 · TT 45/2013/TT-BTC (Việt Nam)"
-            },
-            {
-              "id": 40,
-              "title": "Báo cáo KQHĐKD",
-              "en": "Income Statement",
-              "kind": "leaf",
-              "detail": "Chuỗi: `Rev_net → EBITDA → EBIT → EBT → NI`\n\n- `EBITDA = Rev − Operating Costs`\n- `EBIT = EBITDA − D&A`\n- `EBT = EBIT − Interest`\n\n**R178 thuế suất hiệu dụng (điểm dễ sai nhất):**\n\n`t_eff = t · 1{Σ EBT_s > 0 ∧ EBT_t > 0 ∧ qua năm miễn thuế}`\n\nXử lý đồng thời *loss carry-forward* và *tax holiday*.\n\n`NI = EBT · (1 − t_eff)`"
-            },
-            {
-              "id": 41,
-              "title": "Vốn lưu động [V]",
-              "en": "Working Capital",
-              "kind": "leaf",
-              "detail": "*BOT không có vì thu tiền mặt.*\n\n- `WC_t = ω · Revenue_t`\n- `ΔWC_t = WC_t − WC_(t−1)`\n\n**Nguồn:** Brealey–Myers Ch.30"
-            }
-          ]
-        },
-        {
-          "id": 42,
-          "title": "B6 · FCF + NPV/IRR/DSCR + Độ nhạy",
-          "en": "Free Cash Flow, Appraisal Metrics & Sensitivity",
-          "detail": "Khối output: 5 quan điểm phân tích + phân tích độ nhạy.",
-          "children": [
-            {
-              "id": 43,
-              "title": "QĐ1 — Tổng đầu tư (TIPV) [★]",
-              "en": "Total Investment Point of View",
-              "kind": "leaf",
-              "detail": "*Luôn có.*\n\n- FCFF danh nghĩa = `EBIAT + D − ΔWC − CapEx + TV`\n- FCFF thực = `FCFF danh nghĩa / (1 + π)^t` — *Fisher*\n- `DCF = FCFF / (1 + WACC)^t`\n- NPV @ WACC · IRR · PB · DPB\n- *Hai mặt bằng giá tính song song → cross-check Fisher*"
-            },
-            {
-              "id": 44,
-              "title": "QĐ2 — Chủ sở hữu (Equity) [V]",
-              "en": "Owner's Perspective",
-              "kind": "leaf",
-              "detail": "- `FCFE = FCFF − Interest·(1−t) − Principal + Net Borrowing`\n- NPV @ Re · IRR Equity\n- *Cho thấy lợi ích của chủ đầu tư sau khi trả nợ*"
-            },
-            {
-              "id": 45,
-              "title": "QĐ3 — Ngân hàng (Banker) [V]",
-              "en": "Banker's Perspective",
-              "kind": "leaf",
-              "detail": "- `DSCR_t = (FCFF + Interest·(1−t)) / (Interest + Principal)`\n- Báo cáo DSCR min, DSCR trung bình\n- *Ngưỡng phê duyệt: 1.2 – 1.4*"
-            },
-            {
-              "id": 46,
-              "title": "QĐ4 — Kinh tế (Economic) [V]",
-              "en": "Economic Analysis",
-              "kind": "leaf",
-              "detail": "Chuyển ngân lưu tài chính → kinh tế qua các hệ số:\n\n- **SERF** (Shadow Exchange Rate Factor) — tỷ giá hối đoái mờ\n- **SWRF** (Shadow Wage Rate Factor) — tỷ lệ lương mờ\n- Hệ số GPMB, hệ số ngoại tác môi trường\n\nLợi ích kinh tế đặc thù (BOT): **VOT** (giá trị thời gian) + **VOC** (chi phí vận hành xe). Phân biệt **thay thế** vs **tăng thêm**.\n\nNPV @ EOCK. *Không có thuế, không có nợ, không có khấu hao.*\n\n**Nguồn:** Jenkins–Kuo–Harberger Ch.6–9 · Harberger (1972) *Project Evaluation*"
-            },
-            {
-              "id": 47,
-              "title": "QĐ5 — Phân phối (Distributive) [V]",
-              "en": "Distributive Analysis",
-              "kind": "leaf",
-              "detail": "- 3 NPV song song: FA @ WACC · FA @ EOCK · EA @ EOCK\n- Chênh lệch (kinh tế − tài chính) = **thặng dư xã hội**\n- Phân bổ thặng dư cho: Nhà nước (thuế), người tiêu dùng (giá thấp hơn), lao động (lương cao hơn), người bị GPMB (đền bù), chủ đầu tư\n\n**Nguồn:** Jenkins–Kuo–Harberger Ch.12 *Externalities and Distributive Effects*"
-            },
-            {
-              "id": 48,
-              "title": "Phân tích độ nhạy [★]",
-              "en": "Sensitivity Analysis",
-              "kind": "leaf",
-              "detail": "- **1 chiều:** thay đổi 1 biến → quan sát NPV/IRR/DSCR min\n- **2 chiều:** thay đổi 2 biến đồng thời → bảng 2D\n- **Monte Carlo** (nếu cần): biến ngẫu nhiên theo phân phối xác suất\n\n**Nguồn:** Savvides (1994) *Project Appraisal* 9(1) · Jenkins–Kuo–Harberger Ch.10"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": 49,
-      "title": "⚙ 7 cờ điều khiển",
-      "en": "7 Control Flags",
-      "detail": "Các switch bật/tắt variant của template — cài ở đầu mô hình, các bảng tham chiếu qua INDEX/CHOOSE.",
-      "children": [
-        {
-          "id": 50,
-          "title": "Cờ 1 — Scenario_ID",
-          "en": "Scenario Switch",
-          "kind": "leaf",
-          "detail": "Switch kịch bản (giá, lưu lượng, công suất) qua `INDEX`/`CHOOSE`."
-        },
-        {
-          "id": 51,
-          "title": "Cờ 2 — VAT_INCL (Y/N)",
-          "en": "VAT Inclusion",
-          "kind": "leaf",
-          "detail": "Bật/tắt cộng VAT vào doanh thu + tính hoàn VAT đầu vào."
-        },
-        {
-          "id": 52,
-          "title": "Cờ 3 — IDC_capitalize (Y/N)",
-          "en": "Capitalize IDC",
-          "kind": "leaf",
-          "detail": "Lãi vay TGXD nhập gốc (BOT, nhà máy điện) hay tính vào chi phí lãi vay ngay."
-        },
-        {
-          "id": 53,
-          "title": "Cờ 4 — Price_basis (Real/Nominal)",
-          "en": "Price Basis",
-          "kind": "leaf",
-          "detail": "Chọn mặt bằng giá để báo cáo (tốt nhất tính cả 2)."
-        },
-        {
-          "id": 54,
-          "title": "Cờ 5 — Currency_main (VND/USD)",
-          "en": "Main Currency",
-          "kind": "leaf",
-          "detail": "Đơn vị tiền chính để chiết khấu."
-        },
-        {
-          "id": 55,
-          "title": "Cờ 6 — N_inflation_streams (1/2/3)",
-          "en": "Inflation Streams",
-          "kind": "leaf",
-          "detail": "Số đường lạm phát: 1 = CPI · 2 = CPI + xây dựng · 3 = + USD."
-        },
-        {
-          "id": 56,
-          "title": "Cờ 7 — Perspective_active",
-          "en": "Active Perspectives",
-          "kind": "leaf",
-          "detail": "TIPV / Equity / Banker / Economic / Distributive (chọn nhiều)."
-        }
-      ]
-    },
-    {
-      "id": 57,
-      "title": "✅ Quy trình xây dựng",
-      "en": "Build Sequence (14 Steps)",
-      "kind": "leaf",
-      "detail": "1. Trả lời **5 câu hỏi** ở ⓪ (Khung quyết định)\n2. Khung năm + cài **7 cờ điều khiển**\n3. Nhập Bảng thông số **B1** (vĩ mô + đầu tư + thuế)\n4. Dựng Bảng chỉ số giá **B2.1** (xong trước mọi quy đổi)\n5. Ngân lưu CP đầu tư **B2.2** (+ IDC nếu áp dụng)\n6. Lịch nợ vay **B3** (nếu áp dụng TIPV/Equity/Banker)\n7. Doanh thu **B4.1** (công thức theo loại dự án)\n8. Chi phí **B4.2** (biến đổi + cố định + VAT)\n9. Khấu hao **B5.1** (ma trận N nhóm × T năm)\n10. KQHĐKD **B5.2** (chú ý R178 thuế hiệu dụng)\n11. Vốn lưu động **B5.3** (bỏ qua nếu thu tiền mặt)\n12. FCFF + NPV/IRR (**TIPV** — danh nghĩa + thực)\n13. Mở rộng các quan điểm: Equity, Banker, Economic, Distributive\n14. Phân tích độ nhạy (1D + 2D)"
-    },
-    {
-      "id": 58,
-      "title": "📌 Mapping 5 case trong môn học",
-      "en": "Course Case Mapping",
-      "detail": "Đối chiếu template với 5 case đã học — mỗi case minh họa một cấu hình cờ khác nhau.",
-      "children": [
-        {
-          "id": 59,
-          "title": "Tate & Lyle Sugar",
-          "en": "Bài 8, 13–14",
-          "kind": "leaf",
-          "detail": "- **Loại:** sản xuất xuất khẩu\n- **Đặc thù:** đa kịch bản giá đường, giá mía; 3 nguồn vay USD; ưu đãi miễn thuế\n- **Suất chiết khấu:** hurdle IFC 10% thực (B75 hardcode)\n- Có đủ B1–B6, quan điểm TIPV"
-        },
-        {
-          "id": 60,
-          "title": "Kho Sơn Cement",
-          "en": "Bài 11",
-          "kind": "leaf",
-          "detail": "- **Loại:** sản xuất (rút gọn)\n- **Đặc thù:** KHÔNG có B2 (chỉ số giá), KHÔNG có B4 (chi phí chi tiết) — EBIT cho trước\n- **Quan điểm:** 3 quan điểm song song (FCFP/TIPV/Equity)\n- **Mục đích:** minh họa tương đương DCF"
-        },
-        {
-          "id": 61,
-          "title": "Chợ Lớn–Gò Vấp Bus",
-          "en": "Bài 6–7",
-          "kind": "leaf",
-          "detail": "- **Loại:** vận tải dịch vụ\n- **Đặc thù:** doanh thu có TRỢ GIÁ; chi phí nhiên liệu nhập (cần tỷ giá)\n- Có đủ B1–B6, 2 mặt bằng giá song song (danh nghĩa + thực)"
-        },
-        {
-          "id": 62,
-          "title": "BOT Cai Lậy — Finance",
-          "en": "Bài 9–10",
-          "kind": "leaf",
-          "detail": "- **Loại:** hạ tầng BOT đường bộ\n- **Đặc thù:** 8 nhóm xe, 3 kịch bản lưu lượng, chu kỳ điều chỉnh giá vé, giảm tải khi cao tốc khai thác, IDC nhập gốc, 2 đường lạm phát (CPI + xây dựng), không VLĐ\n- **Quan điểm:** TIPV + DSCR + IRR nợ vay"
-        },
-        {
-          "id": 63,
-          "title": "BOT Cai Lậy — Economic",
-          "en": "Bài 15-II",
-          "kind": "leaf",
-          "detail": "- **Quan điểm kinh tế**\n- Doanh thu = tiết kiệm **VOT** + tiết kiệm **VOC**\n- Phân tách thay thế / tăng thêm\n- KHÔNG có thuế / nợ / khấu hao\n- Chiết khấu @ EOCK"
-        },
-        {
-          "id": 64,
-          "title": "BOT Cai Lậy — Distributive",
-          "en": "Bài 15-III",
-          "kind": "leaf",
-          "detail": "- **Quan điểm phân phối**\n- 3 NPV song song (FA@WACC, FA@EOCK, EA@EOCK)\n- Bóc tách thặng dư cho 5 nhóm: Nhà nước, người sử dụng, chủ đầu tư, lao động, người được đền bù"
-        }
-      ]
-    },
-    {
-      "id": 65,
-      "title": "🎯 Gợi ý áp dụng cho dự án mới",
-      "en": "Application Tips",
-      "detail": "Checklist trước khi bắt đầu, cách xử lý dự án dạng mới, và các sai lầm thường gặp.",
-      "children": [
-        {
-          "id": 66,
-          "title": "Trước khi gõ ô đầu tiên",
-          "en": "Before You Start",
-          "kind": "leaf",
-          "detail": "- Trả lời 5 câu hỏi ở ⓪ — đặc biệt **Quan điểm phân tích**\n- Liệt kê các kịch bản cần test → quyết định số switch `CHOOSE`/`INDEX`\n- Vẽ tay sơ đồ phụ thuộc giữa các sheet (nếu tách Finance/Economic/Distributive)"
-        },
-        {
-          "id": 67,
-          "title": "Dự án dạng mới",
-          "en": "New Project Types",
-          "kind": "leaf",
-          "detail": "- **Năng lượng (NMĐ):** giống BOT + giá bán điện theo PPA + hệ số availability\n- **Cấp nước / Xử lý nước thải:** giống BOT + thất thoát nước + giá khối nước nhiều bậc\n- **Y tế / Giáo dục:** nhiều khi không có doanh thu tiền mặt → tập trung Economic/Distributive\n- **Bất động sản:** dòng tiền tập trung 1–2 năm cuối → đặc biệt nhạy với IRR"
-        },
-        {
-          "id": 68,
-          "title": "Sai lầm thường gặp",
-          "en": "Common Pitfalls",
-          "kind": "leaf",
-          "detail": "- Trộn FCFF với WACC thực (NPV phồng giả)\n- Quên cộng ngược lãi sau thuế khi tính DSCR\n- Tính thuế TNDN không có loss carry-forward → over-tax năm 1–2\n- Quên IDC nhập gốc cho BOT → underestimate khấu hao\n- Dùng tỷ giá danh nghĩa cho phân tích thực"
-        }
-      ]
-    }
-  ]
-};
+const DATA={"themes": [{"id": "T0", "name": "ngân lưu · chi phí vốn · giá trị hiện tại", "color": "#7aa2f7", "docs": ["Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "Bài_4_Lecture04-Cashflow_Discounting", "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "Bài_5_Lecture05-Project_Financial_Appraisal", "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "Bài_9-10_09_1_V_NCTH_BOT_Cai_Lay_I", "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1_Final", "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet"]}, {"id": "T1", "name": "giá kinh tế · thẩm định dự án · phân tích kinh tế", "color": "#7dcfb6", "docs": ["Bài_1_01_2_V_SHD-Chương_1-2--HIID", "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "Bài_4_04_2_V_SHD-Chương_3--HIID", "Bài_4_04_3_V_SHD-Chương_4--HIID", "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "Bài_6_-_7_Lecture06-Financial_Modeling-V", "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final"]}, {"id": "T2", "name": "phân tích kinh tế · lạm phát · lãi suất", "color": "#86d35a", "docs": ["Bài_1_01_1_V_WBI_V_-Chương_1", "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_luc_tr_299-304", "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam"]}, {"id": "T3", "name": "Tài liệu công cụ / khác", "color": "#f5a623", "docs": ["ProblemSet_ProblemSet1_Manh_Appraisal_PS1"]}, {"id": "T4", "name": "ngân lưu · thẩm định dự án", "color": "#ef6f6c", "docs": ["Tài_liệu_khác_Huong_dan_them_ham_tinh_thue_vao_Excel_Tham_dinh_du_an"]}], "docs": [{"id": "Bài_1_01_1_V_WBI_V_-Chương_1", "label": "01.1.V. WBI (V)-Chương 1", "rel": "Bài 1/01.1.V. WBI (V)-Chương 1.pdf", "bai": "Bài 1", "theme": "T2", "concepts": ["giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "phân tích kinh tế", "phân tích rủi ro", "tỷ suất hoàn vốn nội bộ", "đầu tư công"], "deg": 10}, {"id": "Bài_1_01_2_V_SHD-Chương_1-2--HIID", "label": "01.2.V. SHD-Chương 1-2--HIID", "rel": "Bài 1/01.2.V. SHD-Chương 1-2--HIID.pdf", "bai": "Bài 1", "theme": "T1", "concepts": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích phân phối", "phân tích tài chính", "phân tích độ nhạy", "suất chiết khấu", "thẩm định dự án", "trợ giá", "vốn chủ sở hữu", "đầu tư công"], "deg": 10}, {"id": "Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "label": "11.1.V. Tham dinh du an xi-mang Kho Son-Nguyen Xuan Thanh_CV13-32-78.0", "rel": "Bài 11/11.1.V. Tham dinh du an xi-mang Kho Son-Nguyen Xuan Thanh_CV13-32-78.0.pdf", "bai": "Bài 11", "theme": "T0", "concepts": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "giá trị hiện tại", "giá trị hiện tại ròng", "giá trị thanh lý", "hợp đồng BOT", "khấu hao", "lãi suất", "ngân lưu", "ngân lưu ròng", "nợ vay", "quan điểm tổng đầu tư", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "vốn chủ sở hữu", "vốn lưu động"], "deg": 10}, {"id": "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "label": "13.1.V SHD-Chương 10--HIID", "rel": "Bài 13 - 14/13.1.V SHD-Chương 10--HIID.pdf", "bai": "Bài 13 - 14", "theme": "T1", "concepts": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hệ số chuyển đổi", "hợp đồng BOT", "lạm phát", "ngân sách", "phân tích kinh tế", "phân tích tài chính", "sẵn lòng chi trả", "thẩm định dự án", "trợ giá", "tỷ giá hối đoái", "đầu tư công"], "deg": 10}, {"id": "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "label": "13.1.V SHD-Chương 13--HIID", "rel": "Bài 13 - 14/13.1.V SHD-Chương 13--HIID.pdf", "bai": "Bài 13 - 14", "theme": "T1", "concepts": ["biến dạng giá", "chi phí cơ hội", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "ngoại tác", "ngân lưu", "ngân sách", "phân tích kinh tế", "phân tích phân phối", "thẩm định dự án", "thặng dư tiêu dùng", "trợ giá", "tỷ giá hối đoái", "đầu tư công"], "deg": 10}, {"id": "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "label": "13.1.V. SHD-Chương 11--HIID", "rel": "Bài 13 - 14/13.1.V. SHD-Chương 11--HIID.pdf", "bai": "Bài 13 - 14", "theme": "T2", "concepts": ["biến dạng giá", "chi phí cơ hội", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hệ số chuyển đổi", "lạm phát", "ngoại tác", "ngân lưu", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phí thưởng ngoại hối", "quan điểm tổng đầu tư", "sẵn lòng chi trả", "thẩm định dự án", "thặng dư tiêu dùng", "trợ giá", "tỷ giá hối đoái"], "deg": 10}, {"id": "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "label": "13.1.V. SHD-Chương 12--HIID", "rel": "Bài 13 - 14/13.1.V. SHD-Chương 12--HIID.pdf", "bai": "Bài 13 - 14", "theme": "T1", "concepts": ["biến dạng giá", "chi phí cơ hội", "chi phí vốn", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hợp đồng BOT", "lãi suất", "lạm phát", "ngân lưu", "ngân sách", "nợ vay", "phân tích chi phí - lợi ích", "phân tích kinh tế", "quan điểm tổng đầu tư", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "trợ giá", "đầu tư công"], "deg": 10}, {"id": "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "label": "13.1.V. SHD-Chương 7 & 8--HIID", "rel": "Bài 13 - 14/13.1.V. SHD-Chương 7 & 8--HIID.pdf", "bai": "Bài 13 - 14", "theme": "T1", "concepts": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá tài chính", "hợp đồng BOT", "lạm phát", "ngoại tác", "ngân lưu", "ngân sách", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích tài chính", "sẵn lòng chi trả", "thẩm định dự án", "trợ giá", "đầu tư công"], "deg": 10}, {"id": "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "label": "13.1.V. SHD-Chương 9--HIID", "rel": "Bài 13 - 14/13.1.V. SHD-Chương 9--HIID.pdf", "bai": "Bài 13 - 14", "theme": "T1", "concepts": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "phân tích kinh tế", "phân tích phân phối", "sẵn lòng chi trả", "thẩm định dự án", "trợ giá", "đầu tư công"], "deg": 10}, {"id": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_luc_tr_299-304", "label": "13.2.V. Economic Analysis (V)-Phu luc tr. 299-304", "rel": "Bài 13 - 14/13.2.V. Economic Analysis (V)-Phu luc tr. 299-304.pdf", "bai": "Bài 13 - 14", "theme": "T2", "concepts": ["doanh thu", "hàng ngoại thương", "lãi suất", "phân tích kinh tế", "thặng dư sản xuất", "thặng dư tiêu dùng"], "deg": 5}, {"id": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "label": "13.2.V. Economic Analysis (V)-Phụ lục trang 305-324", "rel": "Bài 13 - 14/13.2.V. Economic Analysis (V)-Phụ lục trang 305-324.pdf", "bai": "Bài 13 - 14", "theme": "T2", "concepts": ["chi phí cơ hội", "doanh thu", "giá trị hiện tại", "giá trị hiện tại ròng", "hàng ngoại thương", "lãi suất", "lạm phát", "phân tích kinh tế", "quan điểm tổng đầu tư", "trợ giá", "đầu tư công"], "deg": 10}, {"id": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "label": "13.2.V. Economic Analysis (V)-Phụ lục trang 325-328", "rel": "Bài 13 - 14/13.2.V. Economic Analysis (V)-Phụ lục trang 325-328.pdf", "bai": "Bài 13 - 14", "theme": "T2", "concepts": ["chi phí vốn", "giá trị hiện tại", "giá trị hiện tại ròng", "hàng ngoại thương", "lãi suất", "lạm phát", "nợ vay", "phân tích kinh tế"], "deg": 10}, {"id": "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "label": "13.3.V. WBI Chương 5-trang 70-73", "rel": "Bài 13 - 14/13.3.V. WBI Chương 5-trang 70-73.pdf", "bai": "Bài 13 - 14", "theme": "T2", "concepts": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại ròng", "giá trị thanh lý", "giá tài chính", "hàng ngoại thương", "lãi suất", "lạm phát", "ngân sách", "nợ vay", "phân tích kinh tế", "phân tích tài chính", "phân tích độ nhạy", "trợ giá", "tỷ suất hoàn vốn nội bộ"], "deg": 10}, {"id": "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "label": "15.1.V. NCTH BOT Cai Lay-II-Economic-Edited", "rel": "Bài 15/15.1.V. NCTH BOT Cai Lay-II-Economic-Edited.pdf", "bai": "Bài 15", "theme": "T0", "concepts": ["biến dạng giá", "chi phí cơ hội", "chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hệ số chuyển đổi", "hợp đồng BOT", "lạm phát", "mô hình tài chính", "ngân lưu", "ngân lưu ròng", "ngân sách", "phân tích kinh tế", "phân tích kịch bản", "phân tích tài chính", "suất chiết khấu", "tỷ giá hối đoái", "tỷ suất hoàn vốn nội bộ", "vốn lưu động"], "deg": 10}, {"id": "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "label": "15.2.V. NCTH BOT Cai Lay-III-Economic-Edited", "rel": "Bài 15/15.2.V. NCTH BOT Cai Lay-III-Economic-Edited.pdf", "bai": "Bài 15", "theme": "T0", "concepts": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "lạm phát", "mô hình tài chính", "ngân lưu", "ngân lưu ròng", "ngân sách", "phân tích kinh tế", "phân tích phân phối", "phân tích tài chính", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "tỷ giá hối đoái"], "deg": 10}, {"id": "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "label": "02.1.V. SHD-Chương 1-2--HIID", "rel": "Bài 2/02.1.V. SHD-Chương 1-2--HIID.pdf", "bai": "Bài 2", "theme": "T1", "concepts": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích phân phối", "phân tích tài chính", "phân tích độ nhạy", "suất chiết khấu", "thẩm định dự án", "trợ giá", "vốn chủ sở hữu", "đầu tư công"], "deg": 10}, {"id": "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "label": "03.1.E. Brealey, Myers, Allen-Ch2_16th ed.", "rel": "Bài 3/03.1.E. Brealey, Myers, Allen-Ch2_16th ed..pdf", "bai": "Bài 3", "theme": "T0", "concepts": ["chi phí cơ hội", "chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lãi suất", "lạm phát", "ngân lưu", "nợ vay", "suất chiết khấu"], "deg": 10}, {"id": "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "label": "03.2.E. Brealey, Myers, Allen-Ch5_16th ed.", "rel": "Bài 3/03.2.E. Brealey, Myers, Allen-Ch5_16th ed..pdf", "bai": "Bài 3", "theme": "T0", "concepts": ["chi phí cơ hội", "chi phí vốn", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "khấu hao", "lãi suất", "ngân lưu", "ngân sách", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"], "deg": 10}, {"id": "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "label": "03.3.E. Brealey, Myers, Allen-Ch6_16th ed.", "rel": "Bài 3/03.3.E. Brealey, Myers, Allen-Ch6_16th ed..pdf", "bai": "Bài 3", "theme": "T0", "concepts": ["chi phí cơ hội", "chi phí vốn", "doanh thu", "giá trị hiện tại", "giá trị hiện tại ròng", "giá trị thanh lý", "giá tài chính", "khấu hao", "lãi suất", "lạm phát", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích độ nhạy", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "tỷ suất hoàn vốn nội bộ", "vốn chủ sở hữu", "vốn lưu động"], "deg": 10}, {"id": "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "label": "04.1.V. WBI (V)-Phu luc Tr. 289-298--World Bank", "rel": "Bài 4/04.1.V. WBI (V)-Phu luc Tr. 289-298--World Bank.pdf", "bai": "Bài 4", "theme": "T2", "concepts": ["chi phí đầu tư", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "lạm phát", "phân tích kinh tế", "phân tích tài chính", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"], "deg": 10}, {"id": "Bài_4_04_2_V_SHD-Chương_3--HIID", "label": "04.2.V. SHD-Chương 3--HIID", "rel": "Bài 4/04.2.V. SHD-Chương 3--HIID.pdf", "bai": "Bài 4", "theme": "T1", "concepts": ["biến dạng giá", "chi phí cơ hội", "chi phí vốn", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị thanh lý", "giá tài chính", "hàng ngoại thương", "khấu hao", "lãi suất", "lạm phát", "ngoại tác", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích kinh tế", "phân tích phân phối", "phân tích tài chính", "quan điểm chủ sở hữu", "quan điểm nền kinh tế", "quan điểm tổng đầu tư", "sẵn lòng chi trả", "thẩm định dự án", "trợ giá", "vốn chủ sở hữu", "vốn lưu động", "đầu tư công"], "deg": 10}, {"id": "Bài_4_04_3_V_SHD-Chương_4--HIID", "label": "04.3.V. SHD-Chương 4--HIID", "rel": "Bài 4/04.3.V. SHD-Chương 4--HIID.pdf", "bai": "Bài 4", "theme": "T1", "concepts": ["biến dạng giá", "chi phí cơ hội", "chi phí vốn", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "khấu hao", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích kinh tế", "suất chiết khấu", "thẩm định dự án", "tỷ suất hoàn vốn nội bộ", "đầu tư công"], "deg": 10}, {"id": "Bài_4_Lecture04-Cashflow_Discounting", "label": "Lecture04-Cashflow Discounting", "rel": "Bài 4/Lecture04-Cashflow Discounting.pdf", "bai": "Bài 4", "theme": "T0", "concepts": ["biến dạng giá", "chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lãi suất", "ngoại tác", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích kinh tế", "phân tích tài chính", "quan điểm tổng đầu tư", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "trợ giá", "tỷ suất hoàn vốn nội bộ", "vốn chủ sở hữu", "vốn lưu động", "đầu tư công"], "deg": 10}, {"id": "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "label": "05.1.E. NPV and Capital Budgeting (E)--Timothy A. Luehrman", "rel": "Bài 5/05.1.E. NPV and Capital Budgeting (E)--Timothy A. Luehrman.pdf", "bai": "Bài 5", "theme": "T0", "concepts": ["chi phí cơ hội", "chi phí vốn", "chiết khấu dòng tiền", "giá trị hiện tại", "giá trị hiện tại ròng", "giá trị thanh lý", "giá tài chính", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "phân tích kịch bản", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"], "deg": 10}, {"id": "Bài_5_Lecture05-Project_Financial_Appraisal", "label": "Lecture05-Project Financial Appraisal", "rel": "Bài 5/Lecture05-Project Financial Appraisal.pdf", "bai": "Bài 5", "theme": "T0", "concepts": ["chi phí vốn", "chi phí đầu tư", "giá trị hiện tại", "giá trị hiện tại ròng", "ngân lưu", "ngân lưu ròng", "ngân sách", "phân tích tài chính", "suất chiết khấu", "thẩm định dự án", "tỷ suất hoàn vốn nội bộ", "đầu tư công"], "deg": 10}, {"id": "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "label": "Lap mo hinh TC du an xe buyt Cho Lon-Go Vap-Nguyen Xuan Thanh, Nguyen Tan Binh CV13-32-81.0 (NCTH)", "rel": "Bài 6 - 7/06.1_Thong tin_NCTH_Lap mo hinh TC du an xe buyt Cho Lon-Go Vap-Nguyen Xuan Thanh, Nguyen Tan Binh_CV13-32-81.0.pdf", "bai": "Bài 6 - 7", "theme": "T2", "concepts": ["chi phí đầu tư", "doanh thu", "giá trị thanh lý", "khấu hao", "lãi suất", "lạm phát", "mô hình tài chính", "ngân lưu", "nợ vay", "quan điểm chủ sở hữu", "quan điểm tổng đầu tư", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "trợ giá", "tỷ giá hối đoái", "vốn chủ sở hữu", "vốn lưu động"], "deg": 10}, {"id": "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "label": "06.2. NCTH_Lap mo hinh TC du an xe buyt Cho Lon-Go Vap-Nguyen Xuan Thanh_CV13-32-82.0", "rel": "Bài 6 - 7/06.2. NCTH_Lap mo hinh TC du an xe buyt Cho Lon-Go Vap-Nguyen Xuan Thanh_CV13-32-82.0.pdf", "bai": "Bài 6 - 7", "theme": "T0", "concepts": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá trị thanh lý", "khấu hao", "lãi suất", "lạm phát", "mô hình tài chính", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích rủi ro", "phân tích độ nhạy", "quan điểm chủ sở hữu", "quan điểm tổng đầu tư", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "trợ giá", "tỷ giá hối đoái", "tỷ suất hoàn vốn nội bộ", "vốn chủ sở hữu", "vốn lưu động"], "deg": 10}, {"id": "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "label": "06.3.V. WBI chương 5", "rel": "Bài 6 - 7/06.3.V. WBI chương 5.pdf", "bai": "Bài 6 - 7", "theme": "T2", "concepts": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại ròng", "giá trị thanh lý", "giá tài chính", "hàng ngoại thương", "lãi suất", "lạm phát", "ngân sách", "nợ vay", "phân tích kinh tế", "phân tích tài chính", "phân tích độ nhạy", "trợ giá", "tỷ suất hoàn vốn nội bộ"], "deg": 10}, {"id": "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "label": "06.4.V. SHD-Chương 6--HIID", "rel": "Bài 6 - 7/06.4.V. SHD-Chương 6--HIID.pdf", "bai": "Bài 6 - 7", "theme": "T1", "concepts": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "khấu hao", "lãi suất", "lạm phát", "ngân lưu", "ngân lưu ròng", "nợ vay", "phân tích kinh tế", "phân tích tài chính", "phân tích độ nhạy", "quan điểm chủ sở hữu", "quan điểm tổng đầu tư", "suất chiết khấu", "thẩm định dự án", "tỷ giá hối đoái", "vốn chủ sở hữu"], "deg": 10}, {"id": "Bài_6_-_7_Lecture06-Financial_Modeling-V", "label": "Lecture06-Financial Modeling-V", "rel": "Bài 6 - 7/Lecture06-Financial Modeling-V.pdf", "bai": "Bài 6 - 7", "theme": "T1", "concepts": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại ròng", "giá trị thanh lý", "khấu hao", "lãi suất", "lạm phát", "mô hình tài chính", "ngân lưu", "ngân lưu ròng", "nợ vay", "phân tích tài chính", "phân tích độ nhạy", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "trợ giá", "tỷ giá hối đoái", "tỷ suất hoàn vốn nội bộ", "vốn lưu động", "đầu tư công"], "deg": 10}, {"id": "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "label": "Lecture07-Principles of Project Financial Modeling-V", "rel": "Bài 6 - 7/Lecture07-Principles of Project Financial Modeling-V.pdf", "bai": "Bài 6 - 7", "theme": "T0", "concepts": ["chi phí cơ hội", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá trị thanh lý", "khấu hao", "lạm phát", "ngân lưu", "ngân lưu ròng", "phân tích kinh tế", "phân tích tài chính", "quan điểm chủ sở hữu", "quan điểm tổng đầu tư", "thẩm định dự án", "trợ giá", "vốn lưu động", "đầu tư công"], "deg": 10}, {"id": "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam", "label": "08.1.V. Cong ty duong Tate & Lyle Nghe An Viet Nam", "rel": "Bài 8/08.1.V. Cong ty duong Tate & Lyle Nghe An Viet Nam.pdf", "bai": "Bài 8", "theme": "T2", "concepts": ["chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị thanh lý", "khấu hao", "lãi suất", "lạm phát", "ngân lưu", "nợ vay", "phân tích kinh tế", "quan điểm tổng đầu tư", "suất chiết khấu", "trợ giá", "tỷ giá hối đoái", "vốn chủ sở hữu", "vốn lưu động"], "deg": 10}, {"id": "Bài_9-10_09_1_V_NCTH_BOT_Cai_Lay_I", "label": "09.1.V. NCTH BOT Cai Lay (I)", "rel": "Bài 9-10/09.1.V. NCTH BOT Cai Lay (I).pdf", "bai": "Bài 9-10", "theme": "T0", "concepts": ["chi phí đầu tư", "doanh thu", "giá trị hiện tại ròng", "hợp đồng BOT", "lãi suất", "mô hình tài chính", "ngân sách", "nợ vay", "phân tích kịch bản", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "tỷ suất hoàn vốn nội bộ", "vốn chủ sở hữu"], "deg": 7}, {"id": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "label": "Appraisal 2026-Problem Set 1-Q3_Input Data 1", "rel": "ProblemSet/ProblemSet1/Appraisal 2026-Problem Set 1-Q3_Input Data 1.xlsx", "bai": "ProblemSet", "theme": "T0", "concepts": ["chi phí vốn", "chi phí đầu tư", "doanh thu", "ngân lưu", "ngân lưu ròng", "thuế thu nhập doanh nghiệp"], "deg": 10}, {"id": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1_Final", "label": "Appraisal 2026-Problem Set 1_Final", "rel": "ProblemSet/ProblemSet1/Appraisal 2026-Problem Set 1_Final.pdf", "bai": "ProblemSet", "theme": "T0", "concepts": ["chi phí vốn", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "lạm phát", "ngân lưu", "ngân lưu ròng", "thẩm định dự án", "đầu tư công"], "deg": 8}, {"id": "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet", "label": "BaiLam_ProblemSet1_GiaiChiTiet", "rel": "ProblemSet/ProblemSet1/BaiLam_ProblemSet1_GiaiChiTiet.xlsx", "bai": "ProblemSet", "theme": "T0", "concepts": ["chi phí vốn", "chi phí đầu tư", "giá trị hiện tại", "hợp đồng BOT", "khấu hao", "lãi suất", "lạm phát", "ngoại tác", "ngân lưu", "ngân lưu ròng", "phân tích kinh tế", "phân tích tài chính", "thuế thu nhập doanh nghiệp"], "deg": 10}, {"id": "ProblemSet_ProblemSet1_Manh_Appraisal_PS1", "label": "Manh_Appraisal_PS1", "rel": "ProblemSet/ProblemSet1/Manh_Appraisal_PS1.xlsx", "bai": "ProblemSet", "theme": "T3", "concepts": [], "deg": 0}, {"id": "Tài_liệu_khác_Huong_dan_them_ham_tinh_thue_vao_Excel_Tham_dinh_du_an", "label": "Huong dan them ham tinh thue vao Excel_Tham dinh du an", "rel": "Tài liệu khác/Huong dan them ham tinh thue vao Excel_Tham dinh du an.docx", "bai": "Tài liệu khác", "theme": "T4", "concepts": ["ngân lưu", "thẩm định dự án"], "deg": 0}, {"id": "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "label": "Appraisal Syllabus-2026.06.15-V-Updated", "rel": "Đề cương môn học/Appraisal Syllabus-2026.06.15-V-Updated.pdf", "bai": "Đề cương môn học", "theme": "T1", "concepts": ["chi phí vốn", "chiết khấu dòng tiền", "giá kinh tế", "giá trị hiện tại ròng", "hợp đồng BOT", "lạm phát", "mô hình tài chính", "ngân lưu", "ngân sách", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"], "deg": 10}, {"id": "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final", "label": "Appraisal Syllabus-MPP27-V-Final", "rel": "Đề cương môn học/Appraisal Syllabus-MPP27-V-Final.pdf", "bai": "Đề cương môn học", "theme": "T1", "concepts": ["chi phí vốn", "chiết khấu dòng tiền", "giá kinh tế", "giá trị hiện tại ròng", "hợp đồng BOT", "lạm phát", "mô hình tài chính", "ngân lưu", "ngân sách", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"], "deg": 10}], "edges": [{"s": "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "t": "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "v": 1.9, "shared": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại ròng", "giá trị thanh lý", "giá tài chính", "hàng ngoại thương", "lãi suất", "lạm phát", "ngân sách", "nợ vay", "phân tích kinh tế", "phân tích tài chính", "phân tích độ nhạy", "trợ giá", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_1_01_2_V_SHD-Chương_1-2--HIID", "t": "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "v": 1.6, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích phân phối", "phân tích tài chính", "phân tích độ nhạy", "suất chiết khấu", "thẩm định dự án", "trợ giá", "vốn chủ sở hữu", "đầu tư công"]}, {"s": "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "t": "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final", "v": 1.5, "shared": ["chi phí vốn", "chiết khấu dòng tiền", "giá kinh tế", "giá trị hiện tại ròng", "hợp đồng BOT", "lạm phát", "mô hình tài chính", "ngân lưu", "ngân sách", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "v": 1.44, "shared": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá tài chính", "hợp đồng BOT", "phân tích kinh tế", "sẵn lòng chi trả", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "t": "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "v": 1.317, "shared": ["doanh thu", "giá trị hiện tại ròng", "hàng ngoại thương", "lãi suất", "lạm phát", "phân tích kinh tế", "trợ giá"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "t": "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "v": 1.317, "shared": ["doanh thu", "giá trị hiện tại ròng", "hàng ngoại thương", "lãi suất", "lạm phát", "phân tích kinh tế", "trợ giá"]}, {"s": "Bài_1_01_2_V_SHD-Chương_1-2--HIID", "t": "Bài_4_04_2_V_SHD-Chương_3--HIID", "v": 1.314, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích kinh tế", "phân tích phân phối", "phân tích tài chính", "thẩm định dự án", "trợ giá", "vốn chủ sở hữu", "đầu tư công"]}, {"s": "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "t": "Bài_4_04_2_V_SHD-Chương_3--HIID", "v": 1.314, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích kinh tế", "phân tích phân phối", "phân tích tài chính", "thẩm định dự án", "trợ giá", "vốn chủ sở hữu", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "v": 1.262, "shared": ["biến dạng giá", "chi phí cơ hội", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hợp đồng BOT", "ngân lưu", "ngân sách", "phân tích kinh tế", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_1_01_2_V_SHD-Chương_1-2--HIID", "t": "Bài_4_04_3_V_SHD-Chương_4--HIID", "v": 1.217, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích kinh tế", "suất chiết khấu", "thẩm định dự án", "đầu tư công"]}, {"s": "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "t": "Bài_4_04_3_V_SHD-Chương_4--HIID", "v": 1.217, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích kinh tế", "suất chiết khấu", "thẩm định dự án", "đầu tư công"]}, {"s": "Bài_4_04_2_V_SHD-Chương_3--HIID", "t": "Bài_4_04_3_V_SHD-Chương_4--HIID", "v": 1.213, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí vốn", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "khấu hao", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích kinh tế", "thẩm định dự án", "đầu tư công"]}, {"s": "Bài_1_01_2_V_SHD-Chương_1-2--HIID", "t": "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "v": 1.187, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "lãi suất", "ngân lưu", "ngân lưu ròng", "nợ vay", "phân tích kinh tế", "phân tích tài chính", "phân tích độ nhạy", "suất chiết khấu", "thẩm định dự án", "vốn chủ sở hữu"]}, {"s": "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "t": "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "v": 1.187, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "lãi suất", "ngân lưu", "ngân lưu ròng", "nợ vay", "phân tích kinh tế", "phân tích tài chính", "phân tích độ nhạy", "suất chiết khấu", "thẩm định dự án", "vốn chủ sở hữu"]}, {"s": "Bài_1_01_1_V_WBI_V_-Chương_1", "t": "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "v": 1.129, "shared": ["giá trị hiện tại ròng", "giá tài chính", "phân tích kinh tế", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_1_01_1_V_WBI_V_-Chương_1", "t": "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "v": 1.129, "shared": ["giá trị hiện tại ròng", "giá tài chính", "phân tích kinh tế", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "t": "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "v": 1.091, "shared": ["chi phí cơ hội", "chi phí vốn", "chiết khấu dòng tiền", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lãi suất", "ngân lưu", "ngân sách", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "t": "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "v": 1.09, "shared": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "lạm phát", "mô hình tài chính", "ngân lưu", "ngân lưu ròng", "ngân sách", "phân tích kinh tế", "phân tích tài chính", "suất chiết khấu", "tỷ giá hối đoái"]}, {"s": "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "v": 1.089, "shared": ["chi phí vốn", "chi phí đầu tư", "doanh thu", "ngân lưu", "ngân lưu ròng", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "t": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "v": 1.087, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "hàng ngoại thương", "lãi suất", "lạm phát", "phân tích kinh tế"]}, {"s": "Bài_4_Lecture04-Cashflow_Discounting", "t": "Bài_5_Lecture05-Project_Financial_Appraisal", "v": 1.086, "shared": ["chi phí vốn", "chi phí đầu tư", "giá trị hiện tại", "giá trị hiện tại ròng", "ngân lưu", "ngân lưu ròng", "ngân sách", "phân tích tài chính", "suất chiết khấu", "thẩm định dự án", "tỷ suất hoàn vốn nội bộ", "đầu tư công"]}, {"s": "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "t": "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "v": 1.076, "shared": ["chi phí đầu tư", "doanh thu", "giá trị thanh lý", "khấu hao", "lãi suất", "lạm phát", "mô hình tài chính", "ngân lưu", "nợ vay", "quan điểm chủ sở hữu", "quan điểm tổng đầu tư", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "trợ giá", "tỷ giá hối đoái", "vốn chủ sở hữu", "vốn lưu động"]}, {"s": "Bài_1_01_1_V_WBI_V_-Chương_1", "t": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "v": 1.074, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "phân tích kinh tế", "đầu tư công"]}, {"s": "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "t": "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "v": 1.071, "shared": ["chi phí cơ hội", "chi phí vốn", "doanh thu", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "khấu hao", "lãi suất", "ngân lưu", "ngân sách", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "t": "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "v": 1.07, "shared": ["chi phí cơ hội", "chi phí vốn", "doanh thu", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lãi suất", "lạm phát", "ngân lưu", "nợ vay", "suất chiết khấu"]}, {"s": "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "t": "Bài_5_Lecture05-Project_Financial_Appraisal", "v": 1.07, "shared": ["chi phí vốn", "giá trị hiện tại", "giá trị hiện tại ròng", "ngân lưu", "ngân lưu ròng", "ngân sách", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_4_04_2_V_SHD-Chương_3--HIID", "t": "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "v": 1.065, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "khấu hao", "lãi suất", "lạm phát", "ngân lưu", "ngân lưu ròng", "nợ vay", "phân tích kinh tế", "phân tích tài chính", "quan điểm chủ sở hữu", "quan điểm tổng đầu tư", "thẩm định dự án", "vốn chủ sở hữu"]}, {"s": "Bài_4_04_3_V_SHD-Chương_4--HIID", "t": "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "v": 1.064, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "khấu hao", "lãi suất", "ngân lưu", "ngân lưu ròng", "nợ vay", "phân tích kinh tế", "suất chiết khấu", "thẩm định dự án"]}, {"s": "Bài_1_01_1_V_WBI_V_-Chương_1", "t": "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "v": 1.059, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "phân tích kinh tế", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "t": "Bài_4_Lecture04-Cashflow_Discounting", "v": 1.051, "shared": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "ngân lưu", "ngân lưu ròng", "nợ vay", "quan điểm tổng đầu tư", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "vốn chủ sở hữu", "vốn lưu động"]}, {"s": "Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "t": "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "v": 1.025, "shared": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "giá trị hiện tại", "giá trị hiện tại ròng", "giá trị thanh lý", "khấu hao", "lãi suất", "ngân lưu", "ngân lưu ròng", "nợ vay", "quan điểm tổng đầu tư", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "vốn chủ sở hữu", "vốn lưu động"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_luc_tr_299-304", "t": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "v": 1.015, "shared": ["doanh thu", "hàng ngoại thương", "lãi suất", "phân tích kinh tế"]}, {"s": "Bài_4_04_3_V_SHD-Chương_4--HIID", "t": "Bài_4_Lecture04-Cashflow_Discounting", "v": 0.987, "shared": ["biến dạng giá", "chi phí vốn", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích kinh tế", "suất chiết khấu", "thẩm định dự án", "tỷ suất hoàn vốn nội bộ", "đầu tư công"]}, {"s": "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "t": "Bài_6_-_7_Lecture06-Financial_Modeling-V", "v": 0.978, "shared": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại ròng", "giá trị thanh lý", "khấu hao", "lãi suất", "lạm phát", "mô hình tài chính", "ngân lưu", "ngân lưu ròng", "nợ vay", "phân tích độ nhạy", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "trợ giá", "tỷ giá hối đoái", "tỷ suất hoàn vốn nội bộ", "vốn lưu động"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "t": "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "v": 0.975, "shared": ["giá trị hiện tại ròng", "hàng ngoại thương", "lãi suất", "lạm phát", "nợ vay", "phân tích kinh tế"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "t": "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "v": 0.975, "shared": ["giá trị hiện tại ròng", "hàng ngoại thương", "lãi suất", "lạm phát", "nợ vay", "phân tích kinh tế"]}, {"s": "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "t": "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "v": 0.971, "shared": ["chi phí cơ hội", "chi phí vốn", "chiết khấu dòng tiền", "doanh thu", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lãi suất", "ngân lưu", "suất chiết khấu"]}, {"s": "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "t": "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "v": 0.971, "shared": ["chi phí cơ hội", "chi phí vốn", "giá trị hiện tại", "giá trị hiện tại ròng", "giá trị thanh lý", "giá tài chính", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "t": "Bài_6_-_7_Lecture06-Financial_Modeling-V", "v": 0.966, "shared": ["chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại ròng", "khấu hao", "lãi suất", "lạm phát", "ngân lưu", "ngân lưu ròng", "nợ vay", "phân tích tài chính", "phân tích độ nhạy", "suất chiết khấu", "thẩm định dự án", "tỷ giá hối đoái"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "v": 0.931, "shared": ["biến dạng giá", "chi phí cơ hội", "giá kinh tế", "giá tài chính", "hợp đồng BOT", "ngoại tác", "ngân lưu", "ngân sách", "phân tích kinh tế", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "v": 0.931, "shared": ["biến dạng giá", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "phân tích kinh tế", "phân tích phân phối", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1_Final", "v": 0.912, "shared": ["chi phí vốn", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "ngân lưu", "ngân lưu ròng", "thẩm định dự án"]}, {"s": "Bài_4_Lecture04-Cashflow_Discounting", "t": "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "v": 0.908, "shared": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "quan điểm tổng đầu tư", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "trợ giá", "tỷ suất hoàn vốn nội bộ", "vốn chủ sở hữu", "vốn lưu động"]}, {"s": "Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "v": 0.904, "shared": ["chi phí vốn", "chi phí đầu tư", "ngân lưu", "ngân lưu ròng", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_4_Lecture04-Cashflow_Discounting", "t": "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet", "v": 0.9, "shared": ["chi phí vốn", "chi phí đầu tư", "giá trị hiện tại", "lãi suất", "ngoại tác", "ngân lưu", "ngân lưu ròng", "phân tích kinh tế", "phân tích tài chính", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "t": "Bài_4_04_3_V_SHD-Chương_4--HIID", "v": 0.899, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí vốn", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "ngân lưu", "ngân sách", "nợ vay", "phân tích kinh tế", "suất chiết khấu", "thẩm định dự án", "đầu tư công"]}, {"s": "Bài_4_04_3_V_SHD-Chương_4--HIID", "t": "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "v": 0.896, "shared": ["chi phí cơ hội", "chi phí vốn", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_1_01_2_V_SHD-Chương_1-2--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "v": 0.883, "shared": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá tài chính", "hợp đồng BOT", "ngân lưu", "ngân sách", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_1_01_2_V_SHD-Chương_1-2--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "v": 0.883, "shared": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "phân tích kinh tế", "phân tích phân phối", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "t": "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "v": 0.883, "shared": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá tài chính", "hợp đồng BOT", "ngân lưu", "ngân sách", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "t": "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "v": 0.883, "shared": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "phân tích kinh tế", "phân tích phân phối", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "t": "Bài_4_04_2_V_SHD-Chương_3--HIID", "v": 0.882, "shared": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá tài chính", "lạm phát", "ngoại tác", "ngân lưu", "ngân sách", "phân tích kinh tế", "phân tích tài chính", "sẵn lòng chi trả", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "t": "Bài_4_04_2_V_SHD-Chương_3--HIID", "v": 0.882, "shared": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "phân tích kinh tế", "phân tích phân phối", "sẵn lòng chi trả", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "t": "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet", "v": 0.871, "shared": ["chi phí vốn", "chi phí đầu tư", "giá trị hiện tại", "hợp đồng BOT", "khấu hao", "lãi suất", "ngân lưu", "ngân lưu ròng", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_luc_tr_299-304", "t": "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "v": 0.868, "shared": ["doanh thu", "hàng ngoại thương", "lãi suất", "phân tích kinh tế"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_luc_tr_299-304", "t": "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "v": 0.868, "shared": ["doanh thu", "hàng ngoại thương", "lãi suất", "phân tích kinh tế"]}, {"s": "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "t": "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "v": 0.861, "shared": ["chi phí cơ hội", "chi phí vốn", "chiết khấu dòng tiền", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lãi suất", "ngân lưu", "suất chiết khấu"]}, {"s": "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "t": "Bài_9-10_09_1_V_NCTH_BOT_Cai_Lay_I", "v": 0.858, "shared": ["chi phí đầu tư", "doanh thu", "giá trị hiện tại ròng", "hợp đồng BOT", "mô hình tài chính", "ngân sách", "phân tích kịch bản", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "t": "Bài_4_Lecture04-Cashflow_Discounting", "v": 0.848, "shared": ["chi phí vốn", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lãi suất", "ngân lưu", "ngân sách", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "v": 0.843, "shared": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "phân tích kinh tế", "sẵn lòng chi trả", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "t": "Bài_5_Lecture05-Project_Financial_Appraisal", "v": 0.836, "shared": ["chi phí vốn", "giá trị hiện tại", "giá trị hiện tại ròng", "ngân lưu", "ngân sách", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_4_Lecture04-Cashflow_Discounting", "t": "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "v": 0.832, "shared": ["chi phí vốn", "chiết khấu dòng tiền", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lãi suất", "ngân lưu", "ngân lưu ròng", "ngân sách", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "t": "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "v": 0.832, "shared": ["chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "khấu hao", "lãi suất", "lạm phát", "ngân lưu", "ngân lưu ròng", "nợ vay", "phân tích độ nhạy", "quan điểm chủ sở hữu", "quan điểm tổng đầu tư", "suất chiết khấu", "thẩm định dự án", "tỷ giá hối đoái", "vốn chủ sở hữu"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "t": "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "v": 0.826, "shared": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hệ số chuyển đổi", "hợp đồng BOT", "lạm phát", "ngân sách", "phân tích kinh tế", "phân tích tài chính", "tỷ giá hối đoái"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "v": 0.815, "shared": ["biến dạng giá", "chi phí cơ hội", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "ngân sách", "phân tích kinh tế", "thẩm định dự án", "trợ giá", "tỷ giá hối đoái", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "v": 0.815, "shared": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hợp đồng BOT", "lạm phát", "ngân sách", "phân tích kinh tế", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "t": "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "v": 0.799, "shared": ["chi phí vốn", "doanh thu", "giá trị hiện tại", "giá trị hiện tại ròng", "giá trị thanh lý", "khấu hao", "lãi suất", "lạm phát", "ngân lưu", "ngân lưu ròng", "ngân sách", "nợ vay", "phân tích độ nhạy", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "tỷ suất hoàn vốn nội bộ", "vốn chủ sở hữu", "vốn lưu động"]}, {"s": "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "t": "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "v": 0.798, "shared": ["chi phí cơ hội", "doanh thu", "giá trị thanh lý", "khấu hao", "lạm phát", "ngân lưu", "ngân lưu ròng", "vốn lưu động"]}, {"s": "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "t": "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet", "v": 0.797, "shared": ["chi phí đầu tư", "khấu hao", "lạm phát", "ngân lưu", "ngân lưu ròng", "phân tích kinh tế", "phân tích tài chính"]}, {"s": "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "t": "Bài_4_04_3_V_SHD-Chương_4--HIID", "v": 0.793, "shared": ["chi phí cơ hội", "chi phí vốn", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "khấu hao", "lãi suất", "ngân lưu", "ngân sách", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "t": "Bài_4_04_3_V_SHD-Chương_4--HIID", "v": 0.791, "shared": ["chi phí đầu tư", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "phân tích kinh tế", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "t": "Bài_4_Lecture04-Cashflow_Discounting", "v": 0.791, "shared": ["chi phí đầu tư", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "phân tích kinh tế", "phân tích tài chính", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "t": "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "v": 0.786, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "t": "Bài_4_04_3_V_SHD-Chương_4--HIID", "v": 0.785, "shared": ["chi phí vốn", "chi phí đầu tư", "giá trị hiện tại", "giá trị hiện tại ròng", "khấu hao", "lãi suất", "ngân lưu", "ngân lưu ròng", "nợ vay", "suất chiết khấu", "thẩm định dự án"]}, {"s": "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "t": "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "v": 0.784, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "t": "Bài_4_04_2_V_SHD-Chương_3--HIID", "v": 0.783, "shared": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "lạm phát", "ngân sách", "phân tích kinh tế", "phân tích tài chính", "sẵn lòng chi trả", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "t": "Bài_4_Lecture04-Cashflow_Discounting", "v": 0.783, "shared": ["biến dạng giá", "chi phí vốn", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lãi suất", "ngân lưu", "ngân sách", "nợ vay", "phân tích kinh tế", "quan điểm tổng đầu tư", "suất chiết khấu", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "t": "Bài_5_Lecture05-Project_Financial_Appraisal", "v": 0.782, "shared": ["chi phí đầu tư", "giá trị hiện tại", "giá trị hiện tại ròng", "phân tích tài chính", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "t": "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet", "v": 0.779, "shared": ["chi phí vốn", "chi phí đầu tư", "ngân lưu", "ngân lưu ròng", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "t": "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "v": 0.773, "shared": ["giá trị hiện tại ròng", "lãi suất", "lạm phát", "phân tích kinh tế", "phân tích tài chính", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "t": "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "v": 0.773, "shared": ["giá trị hiện tại ròng", "lãi suất", "lạm phát", "phân tích kinh tế", "phân tích tài chính", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "t": "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "v": 0.772, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "lạm phát", "phân tích kinh tế"]}, {"s": "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "t": "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "v": 0.772, "shared": ["chi phí vốn", "chiết khấu dòng tiền", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "ngân lưu", "ngân lưu ròng", "ngân sách", "suất chiết khấu"]}, {"s": "Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "t": "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "v": 0.77, "shared": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "giá trị hiện tại", "giá trị hiện tại ròng", "hợp đồng BOT", "ngân lưu", "ngân lưu ròng", "suất chiết khấu", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "t": "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "v": 0.77, "shared": ["chi phí đầu tư", "chiết khấu dòng tiền", "giá trị thanh lý", "khấu hao", "ngân lưu", "ngân lưu ròng", "quan điểm tổng đầu tư", "thẩm định dự án", "vốn lưu động"]}, {"s": "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "t": "Bài_4_Lecture04-Cashflow_Discounting", "v": 0.77, "shared": ["biến dạng giá", "chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "ngân lưu", "ngân lưu ròng", "ngân sách", "phân tích kinh tế", "phân tích tài chính", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ", "vốn lưu động"]}, {"s": "Bài_6_-_7_Lecture06-Financial_Modeling-V", "t": "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "v": 0.769, "shared": ["chi phí vốn", "chiết khấu dòng tiền", "giá kinh tế", "giá trị hiện tại ròng", "lạm phát", "mô hình tài chính", "ngân lưu", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_6_-_7_Lecture06-Financial_Modeling-V", "t": "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final", "v": 0.769, "shared": ["chi phí vốn", "chiết khấu dòng tiền", "giá kinh tế", "giá trị hiện tại ròng", "lạm phát", "mô hình tài chính", "ngân lưu", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1_Final", "v": 0.768, "shared": ["chi phí vốn", "giá trị hiện tại", "giá trị hiện tại ròng", "lạm phát", "ngân lưu", "ngân lưu ròng"]}, {"s": "Bài_1_01_2_V_SHD-Chương_1-2--HIID", "t": "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "v": 0.764, "shared": ["giá kinh tế", "giá trị hiện tại ròng", "hợp đồng BOT", "ngân lưu", "ngân sách", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_1_01_2_V_SHD-Chương_1-2--HIID", "t": "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final", "v": 0.764, "shared": ["giá kinh tế", "giá trị hiện tại ròng", "hợp đồng BOT", "ngân lưu", "ngân sách", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "t": "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "v": 0.764, "shared": ["giá kinh tế", "giá trị hiện tại ròng", "hợp đồng BOT", "ngân lưu", "ngân sách", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "t": "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final", "v": 0.764, "shared": ["giá kinh tế", "giá trị hiện tại ròng", "hợp đồng BOT", "ngân lưu", "ngân sách", "phân tích chi phí - lợi ích", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "v": 0.744, "shared": ["biến dạng giá", "chi phí cơ hội", "giá kinh tế", "giá tài chính", "lạm phát", "ngoại tác", "ngân lưu", "phân tích chi phí - lợi ích", "phân tích kinh tế", "sẵn lòng chi trả", "thẩm định dự án", "trợ giá"]}, {"s": "Bài_4_04_2_V_SHD-Chương_3--HIID", "t": "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam", "v": 0.744, "shared": ["chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị thanh lý", "khấu hao", "lãi suất", "lạm phát", "ngân lưu", "nợ vay", "phân tích kinh tế", "quan điểm tổng đầu tư", "trợ giá", "vốn chủ sở hữu", "vốn lưu động"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "t": "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam", "v": 0.743, "shared": ["chi phí cơ hội", "doanh thu", "giá kinh tế", "giá trị hiện tại", "lạm phát", "phân tích kinh tế", "trợ giá", "tỷ giá hối đoái"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "t": "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "v": 0.743, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí vốn", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hợp đồng BOT", "lạm phát", "ngân lưu", "ngân sách", "phân tích kinh tế", "suất chiết khấu"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "t": "Bài_6_-_7_Lecture06-Financial_Modeling-V", "v": 0.742, "shared": ["doanh thu", "giá kinh tế", "giá trị hiện tại ròng", "lạm phát", "phân tích tài chính", "thẩm định dự án", "trợ giá", "tỷ giá hối đoái", "đầu tư công"]}, {"s": "Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "t": "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "v": 0.74, "shared": ["chi phí vốn", "chiết khấu dòng tiền", "giá trị hiện tại", "giá trị hiện tại ròng", "giá trị thanh lý", "lãi suất", "ngân lưu", "ngân lưu ròng", "suất chiết khấu"]}, {"s": "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "t": "Bài_4_04_2_V_SHD-Chương_3--HIID", "v": 0.738, "shared": ["biến dạng giá", "chi phí cơ hội", "chi phí vốn", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "lạm phát", "ngân lưu", "ngân lưu ròng", "ngân sách", "phân tích kinh tế", "phân tích tài chính", "vốn lưu động"]}, {"s": "Bài_11_11_1_V_Tham_dinh_du_an_xi-mang_Kho_Son-Nguyen_Xuan_Thanh_CV13-32-78_0", "t": "Bài_5_Lecture05-Project_Financial_Appraisal", "v": 0.737, "shared": ["chi phí vốn", "chi phí đầu tư", "giá trị hiện tại", "giá trị hiện tại ròng", "ngân lưu", "ngân lưu ròng", "suất chiết khấu", "thẩm định dự án"]}, {"s": "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "t": "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam", "v": 0.735, "shared": ["chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "lạm phát", "ngân lưu", "phân tích kinh tế", "suất chiết khấu", "tỷ giá hối đoái", "vốn lưu động"]}, {"s": "Bài_4_04_2_V_SHD-Chương_3--HIID", "t": "Bài_6_-_7_Lecture06-Financial_Modeling-V", "v": 0.733, "shared": ["chi phí vốn", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị thanh lý", "khấu hao", "lãi suất", "lạm phát", "ngân lưu", "ngân lưu ròng", "nợ vay", "phân tích tài chính", "thẩm định dự án", "trợ giá", "vốn lưu động", "đầu tư công"]}, {"s": "Bài_6_-_7_Lecture06-Financial_Modeling-V", "t": "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "v": 0.731, "shared": ["chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá trị thanh lý", "khấu hao", "lạm phát", "ngân lưu", "ngân lưu ròng", "phân tích tài chính", "thẩm định dự án", "trợ giá", "vốn lưu động", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "t": "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "v": 0.716, "shared": ["chi phí cơ hội", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "ngân lưu", "ngân sách"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "t": "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "v": 0.716, "shared": ["chi phí cơ hội", "chi phí vốn", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lãi suất", "ngân lưu", "ngân sách", "suất chiết khấu"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "t": "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "v": 0.715, "shared": ["biến dạng giá", "chi phí cơ hội", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "ngân lưu", "ngân sách", "phân tích kinh tế", "tỷ giá hối đoái"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "t": "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "v": 0.715, "shared": ["giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "ngân lưu", "ngân sách", "phân tích kinh tế", "phân tích phân phối", "tỷ giá hối đoái"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "t": "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam", "v": 0.715, "shared": ["chi phí cơ hội", "chi phí đầu tư", "doanh thu", "giá kinh tế", "giá trị hiện tại", "lãi suất", "lạm phát", "ngân lưu", "nợ vay", "phân tích kinh tế", "quan điểm tổng đầu tư", "suất chiết khấu", "trợ giá"]}, {"s": "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "t": "Bài_9-10_09_1_V_NCTH_BOT_Cai_Lay_I", "v": 0.715, "shared": ["chi phí đầu tư", "doanh thu", "giá trị hiện tại ròng", "hợp đồng BOT", "mô hình tài chính", "ngân sách", "suất chiết khấu", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "t": "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "v": 0.714, "shared": ["chi phí đầu tư", "doanh thu", "giá trị thanh lý", "khấu hao", "lạm phát", "ngân lưu", "quan điểm chủ sở hữu", "quan điểm tổng đầu tư", "thẩm định dự án", "trợ giá", "vốn lưu động"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "t": "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "v": 0.709, "shared": ["chi phí cơ hội", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lạm phát", "ngân lưu"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "t": "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "v": 0.709, "shared": ["chi phí cơ hội", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lạm phát", "ngân lưu"]}, {"s": "Bài_1_01_1_V_WBI_V_-Chương_1", "t": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "v": 0.704, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "phân tích kinh tế"]}, {"s": "Bài_1_01_1_V_WBI_V_-Chương_1", "t": "Bài_1_01_2_V_SHD-Chương_1-2--HIID", "v": 0.7, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "phân tích kinh tế", "đầu tư công"]}, {"s": "Bài_1_01_1_V_WBI_V_-Chương_1", "t": "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "v": 0.7, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "phân tích kinh tế", "đầu tư công"]}, {"s": "Bài_1_01_1_V_WBI_V_-Chương_1", "t": "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "v": 0.7, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "phân tích kinh tế", "đầu tư công"]}, {"s": "Bài_1_01_1_V_WBI_V_-Chương_1", "t": "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "v": 0.7, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "phân tích kinh tế", "đầu tư công"]}, {"s": "Bài_1_01_1_V_WBI_V_-Chương_1", "t": "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "v": 0.7, "shared": ["giá trị hiện tại", "giá tài chính", "phân tích kinh tế", "đầu tư công"]}, {"s": "Bài_1_01_2_V_SHD-Chương_1-2--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "v": 0.7, "shared": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "ngân sách", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_10--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "v": 0.7, "shared": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá tài chính", "hợp đồng BOT", "lạm phát", "ngân sách", "phân tích kinh tế", "phân tích tài chính", "sẵn lòng chi trả", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "t": "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "v": 0.7, "shared": ["biến dạng giá", "chi phí cơ hội", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "hợp đồng BOT", "ngân lưu", "ngân sách", "phân tích kinh tế", "phân tích phân phối", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_13--HIID", "t": "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "v": 0.7, "shared": ["biến dạng giá", "chi phí cơ hội", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "ngân lưu", "phân tích kinh tế", "thẩm định dự án", "tỷ giá hối đoái"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "v": 0.7, "shared": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá tài chính", "hợp đồng BOT", "lạm phát", "ngân lưu", "ngân sách", "phân tích chi phí - lợi ích", "phân tích kinh tế", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_12--HIID", "t": "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "v": 0.7, "shared": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hợp đồng BOT", "phân tích kinh tế", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "t": "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "v": 0.7, "shared": ["biến dạng giá", "chi phí cơ hội", "doanh thu", "giá kinh tế", "giá tài chính", "lạm phát", "ngân lưu", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "t": "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "v": 0.7, "shared": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá tài chính", "hàng ngoại thương", "phân tích kinh tế", "thẩm định dự án"]}, {"s": "Bài_2_02_1_V_SHD-Chương_1-2--HIID", "t": "Bài_4_04_1_V_WBI_V_-Phu_luc_Tr_289-298--World_Bank", "v": 0.7, "shared": ["chi phí đầu tư", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "phân tích kinh tế", "phân tích tài chính", "suất chiết khấu"]}, {"s": "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "t": "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "v": 0.691, "shared": ["chi phí vốn", "chiết khấu dòng tiền", "giá kinh tế", "giá trị hiện tại ròng", "lạm phát", "mô hình tài chính", "ngân lưu", "ngân sách", "thẩm định dự án", "trợ giá"]}, {"s": "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "t": "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final", "v": 0.691, "shared": ["chi phí vốn", "chiết khấu dòng tiền", "giá kinh tế", "giá trị hiện tại ròng", "lạm phát", "mô hình tài chính", "ngân lưu", "ngân sách", "thẩm định dự án", "trợ giá"]}, {"s": "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "t": "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "v": 0.69, "shared": ["lạm phát", "mô hình tài chính", "ngân lưu", "thẩm định dự án", "trợ giá"]}, {"s": "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "t": "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final", "v": 0.69, "shared": ["lạm phát", "mô hình tài chính", "ngân lưu", "thẩm định dự án", "trợ giá"]}, {"s": "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "t": "Bài_6_-_7_Lecture06-Financial_Modeling-V", "v": 0.689, "shared": ["chi phí đầu tư", "doanh thu", "giá trị thanh lý", "khấu hao", "lãi suất", "lạm phát", "mô hình tài chính", "ngân lưu", "nợ vay", "thuế thu nhập doanh nghiệp", "thẩm định dự án", "trợ giá", "tỷ giá hối đoái", "vốn lưu động"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "t": "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "v": 0.686, "shared": ["biến dạng giá", "giá kinh tế", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "lạm phát", "phân tích kinh tế", "trợ giá"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "t": "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "v": 0.686, "shared": ["biến dạng giá", "giá kinh tế", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "lạm phát", "phân tích kinh tế", "trợ giá"]}, {"s": "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "t": "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "v": 0.685, "shared": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "lạm phát", "ngân sách", "phân tích kinh tế", "phân tích tài chính", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_15_15_1_V_NCTH_BOT_Cai_Lay-II-Economic-Edited", "t": "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "v": 0.685, "shared": ["biến dạng giá", "doanh thu", "giá kinh tế", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "lạm phát", "ngân sách", "phân tích kinh tế", "phân tích tài chính", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "t": "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "v": 0.678, "shared": ["chiết khấu dòng tiền", "lạm phát", "ngân lưu", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "t": "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final", "v": 0.678, "shared": ["chiết khấu dòng tiền", "lạm phát", "ngân lưu", "phân tích kinh tế", "phân tích tài chính", "thẩm định dự án", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_luc_tr_299-304", "t": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "v": 0.676, "shared": ["hàng ngoại thương", "lãi suất", "phân tích kinh tế"]}, {"s": "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "v": 0.657, "shared": ["chi phí vốn", "chi phí đầu tư", "doanh thu", "ngân lưu", "ngân lưu ròng", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "v": 0.657, "shared": ["chi phí vốn", "chi phí đầu tư", "doanh thu", "ngân lưu"]}, {"s": "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "v": 0.657, "shared": ["chi phí vốn", "doanh thu", "ngân lưu", "ngân lưu ròng", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_5_Lecture05-Project_Financial_Appraisal", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "v": 0.657, "shared": ["chi phí vốn", "chi phí đầu tư", "ngân lưu", "ngân lưu ròng"]}, {"s": "Bài_6_-_7_Lecture06-Financial_Modeling-V", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "v": 0.657, "shared": ["chi phí vốn", "chi phí đầu tư", "doanh thu", "ngân lưu", "ngân lưu ròng", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "v": 0.656, "shared": ["chi phí đầu tư", "doanh thu", "ngân lưu", "ngân lưu ròng"]}, {"s": "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "t": "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "v": 0.655, "shared": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lạm phát", "ngân lưu", "suất chiết khấu"]}, {"s": "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "t": "Bài_3_03_2_E_Brealey_Myers_Allen-Ch5_16th_ed", "v": 0.655, "shared": ["chi phí vốn", "chiết khấu dòng tiền", "doanh thu", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "ngân lưu", "ngân sách", "suất chiết khấu"]}, {"s": "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "t": "Bài_5_Lecture05-Project_Financial_Appraisal", "v": 0.655, "shared": ["chi phí vốn", "chi phí đầu tư", "giá trị hiện tại", "giá trị hiện tại ròng", "ngân lưu", "suất chiết khấu"]}, {"s": "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "t": "Bài_6_-_7_06_2_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_CV13-32-82_0", "v": 0.655, "shared": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "lạm phát", "ngân lưu", "nợ vay", "suất chiết khấu"]}, {"s": "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "t": "Bài_6_-_7_Lecture06-Financial_Modeling-V", "v": 0.655, "shared": ["chi phí vốn", "chi phí đầu tư", "chiết khấu dòng tiền", "doanh thu", "giá trị hiện tại ròng", "lãi suất", "lạm phát", "ngân lưu", "nợ vay", "suất chiết khấu"]}, {"s": "Bài_3_03_1_E_Brealey_Myers_Allen-Ch2_16th_ed", "t": "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet", "v": 0.655, "shared": ["chi phí vốn", "chi phí đầu tư", "giá trị hiện tại", "lãi suất", "lạm phát", "ngân lưu"]}, {"s": "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "t": "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet", "v": 0.655, "shared": ["chi phí vốn", "giá trị hiện tại", "khấu hao", "lãi suất", "lạm phát", "ngân lưu", "ngân lưu ròng", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_5_05_1_E_NPV_and_Capital_Budgeting_E_--Timothy_A_Luehrman", "t": "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "v": 0.655, "shared": ["chi phí cơ hội", "chiết khấu dòng tiền", "giá trị thanh lý", "ngân lưu", "ngân lưu ròng"]}, {"s": "Bài_15_15_2_V_NCTH_BOT_Cai_Lay-III-Economic-Edited", "t": "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "v": 0.654, "shared": ["chi phí vốn", "doanh thu", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "lạm phát", "ngân lưu", "ngân lưu ròng", "ngân sách", "suất chiết khấu", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_3_03_3_E_Brealey_Myers_Allen-Ch6_16th_ed", "t": "Bài_5_Lecture05-Project_Financial_Appraisal", "v": 0.654, "shared": ["chi phí vốn", "giá trị hiện tại", "giá trị hiện tại ròng", "ngân lưu", "ngân lưu ròng", "ngân sách", "suất chiết khấu", "tỷ suất hoàn vốn nội bộ"]}, {"s": "Bài_5_Lecture05-Project_Financial_Appraisal", "t": "Bài_6_-_7_Lecture07-Principles_of_Project_Financial_Modeling-V", "v": 0.654, "shared": ["chi phí đầu tư", "ngân lưu", "ngân lưu ròng", "phân tích tài chính", "thẩm định dự án", "đầu tư công"]}, {"s": "Bài_5_Lecture05-Project_Financial_Appraisal", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1_Final", "v": 0.654, "shared": ["chi phí vốn", "giá trị hiện tại", "giá trị hiện tại ròng", "ngân lưu", "ngân lưu ròng", "thẩm định dự án", "đầu tư công"]}, {"s": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1_Final", "t": "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet", "v": 0.654, "shared": ["chi phí vốn", "giá trị hiện tại", "lãi suất", "lạm phát", "ngân lưu", "ngân lưu ròng"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_9--HIID", "t": "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "v": 0.626, "shared": ["doanh thu", "thẩm định dự án", "trợ giá"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "t": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "v": 0.6, "shared": ["chi phí cơ hội", "giá trị hiện tại", "giá trị hiện tại ròng", "hàng ngoại thương", "lạm phát", "phân tích kinh tế", "quan điểm tổng đầu tư", "trợ giá"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "t": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "v": 0.6, "shared": ["giá trị hiện tại", "giá trị hiện tại ròng", "hàng ngoại thương", "lạm phát", "phân tích kinh tế"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "t": "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "v": 0.6, "shared": ["lạm phát", "ngân lưu", "quan điểm tổng đầu tư", "thẩm định dự án", "trợ giá", "tỷ giá hối đoái"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "t": "Bài_6_-_7_06_4_V_SHD-Chu_o_ng_6--HIID", "v": 0.6, "shared": ["biến dạng giá", "chi phí cơ hội", "giá kinh tế", "giá trị hiện tại", "giá trị hiện tại ròng", "giá tài chính", "hàng ngoại thương", "lạm phát", "ngân lưu", "phân tích kinh tế", "quan điểm tổng đầu tư", "thẩm định dự án", "tỷ giá hối đoái"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_11--HIID", "t": "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam", "v": 0.6, "shared": ["chi phí cơ hội", "giá kinh tế", "giá trị hiện tại", "lạm phát", "ngân lưu", "phân tích kinh tế", "quan điểm tổng đầu tư", "trợ giá", "tỷ giá hối đoái"]}, {"s": "Bài_13_-_14_13_1_V_SHD-Chương_7_8--HIID", "t": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "v": 0.6, "shared": ["chi phí cơ hội", "doanh thu", "lạm phát", "phân tích kinh tế", "trợ giá", "đầu tư công"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "t": "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "v": 0.6, "shared": ["doanh thu", "lãi suất", "lạm phát", "quan điểm tổng đầu tư", "trợ giá"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_305-324", "t": "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam", "v": 0.6, "shared": ["chi phí cơ hội", "doanh thu", "giá trị hiện tại", "lãi suất", "lạm phát", "phân tích kinh tế", "quan điểm tổng đầu tư", "trợ giá"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "t": "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam", "v": 0.6, "shared": ["giá trị hiện tại", "lãi suất", "lạm phát", "nợ vay", "phân tích kinh tế"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1_Final", "v": 0.6, "shared": ["chi phí vốn", "giá trị hiện tại", "giá trị hiện tại ròng", "lãi suất", "lạm phát"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "t": "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet", "v": 0.6, "shared": ["chi phí vốn", "giá trị hiện tại", "lãi suất", "lạm phát", "phân tích kinh tế"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_lu_c_trang_325-328", "t": "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "v": 0.6, "shared": ["chi phí vốn", "giá trị hiện tại ròng", "lạm phát", "phân tích kinh tế"]}, {"s": "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "t": "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "v": 0.6, "shared": ["doanh thu", "giá trị thanh lý", "lãi suất", "lạm phát", "nợ vay", "trợ giá"]}, {"s": "Bài_13_-_14_13_3_V_WBI_Chu_o_ng_5-trang_70-73", "t": "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam", "v": 0.6, "shared": ["doanh thu", "giá kinh tế", "giá trị thanh lý", "lãi suất", "lạm phát", "nợ vay", "phân tích kinh tế", "trợ giá"]}, {"s": "Bài_6_-_7_06_1_Thong_tin_NCTH_Lap_mo_hinh_TC_du_an_xe_buyt_Cho_Lon-Go_Vap-Nguyen_Xuan_Thanh_Nguyen_Tan_Binh_CV13-32-81_0", "t": "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "v": 0.6, "shared": ["doanh thu", "giá trị thanh lý", "lãi suất", "lạm phát", "nợ vay", "trợ giá"]}, {"s": "Bài_6_-_7_06_3_V_WBI_chu_o_ng_5", "t": "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam", "v": 0.6, "shared": ["doanh thu", "giá kinh tế", "giá trị thanh lý", "lãi suất", "lạm phát", "nợ vay", "phân tích kinh tế", "trợ giá"]}, {"s": "Bài_8_08_1_V_Cong_ty_duong_Tate_Lyle_Nghe_An_Viet_Nam", "t": "Bài_9-10_09_1_V_NCTH_BOT_Cai_Lay_I", "v": 0.6, "shared": ["chi phí đầu tư", "doanh thu", "lãi suất", "nợ vay", "suất chiết khấu", "vốn chủ sở hữu"]}, {"s": "Bài_9-10_09_1_V_NCTH_BOT_Cai_Lay_I", "t": "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet", "v": 0.6, "shared": ["chi phí đầu tư", "hợp đồng BOT", "lãi suất", "thuế thu nhập doanh nghiệp"]}, {"s": "Bài_9-10_09_1_V_NCTH_BOT_Cai_Lay_I", "t": "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "v": 0.6, "shared": ["giá trị hiện tại ròng", "hợp đồng BOT", "mô hình tài chính", "ngân sách"]}, {"s": "Bài_9-10_09_1_V_NCTH_BOT_Cai_Lay_I", "t": "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final", "v": 0.6, "shared": ["giá trị hiện tại ròng", "hợp đồng BOT", "mô hình tài chính", "ngân sách"]}, {"s": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1_Final", "t": "Đề_cương_môn_học_Appraisal_Syllabus-2026_06_15-V-Updated", "v": 0.6, "shared": ["chi phí vốn", "giá trị hiện tại ròng", "lạm phát", "ngân lưu", "thẩm định dự án", "đầu tư công"]}, {"s": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1_Final", "t": "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final", "v": 0.6, "shared": ["chi phí vốn", "giá trị hiện tại ròng", "lạm phát", "ngân lưu", "thẩm định dự án", "đầu tư công"]}, {"s": "ProblemSet_ProblemSet1_BaiLam_ProblemSet1_GiaiChiTiet", "t": "Đề_cương_môn_học_Appraisal_Syllabus-MPP27-V-Final", "v": 0.6, "shared": ["chi phí vốn", "hợp đồng BOT", "lạm phát", "ngân lưu", "phân tích kinh tế", "phân tích tài chính"]}, {"s": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1-Q3_Input_Data_1", "t": "ProblemSet_ProblemSet1_Appraisal_2026-Problem_Set_1_Final", "v": 0.581, "shared": ["chi phí vốn", "ngân lưu", "ngân lưu ròng"]}, {"s": "Bài_13_-_14_13_2_V_Economic_Analysis_V_-Phu_luc_tr_299-304", "t": "Bài_9-10_09_1_V_NCTH_BOT_Cai_Lay_I", "v": 0.335, "shared": ["doanh thu", "lãi suất"]}], "tlinks": [["T0", "T1"], ["T0", "T2"], ["T1", "T2"]], "stats": {"docs": 40, "links": 185, "themes": 5}}, PREFIX="./";
+const THEMES=DATA.themes, DOCS=DATA.docs, EDGES=DATA.edges, TLINKS=DATA.tlinks;
+document.getElementById("sub").textContent=
+  DATA.stats.docs+" tài liệu · "+DATA.stats.themes+" cụm chủ đề · "+DATA.stats.links+" liên kết khái niệm. Cây tỏa tròn: tâm → cụm → tài liệu. Nhấn một tài liệu để thấy các tài liệu chia sẻ thuật ngữ chuyên ngành với nó.";
+const colorOf=Object.fromEntries(THEMES.map(t=>[t.id,t.color]));
+const docOf=Object.fromEntries(DOCS.map(d=>[d.id,d]));
 
-/* ================= ENGINE (khong can sua) ================= */
-const canvas = document.getElementById("diagramCanvas");
-const viewport = document.getElementById("diagramViewport");
-const detailPanel = document.getElementById("detailPanel");
-const scrim = document.getElementById("scrim");
+// ---- build nodes/links (tree) ----
+const nodes=[], links=[];
+const CENTER={id:"__c",type:"center",label:"THẨM ĐỊNH\nĐẦU TƯ CÔNG",r:32};
+nodes.push(CENTER);
+THEMES.forEach(t=>{nodes.push({id:t.id,type:"theme",theme:t.id,label:t.name,r:15});
+  links.push({s:"__c",t:t.id,kind:"core"});});
+TLINKS.forEach(([a,b])=>links.push({s:a,t:b,kind:"theme"}));
+DOCS.forEach(d=>{nodes.push({id:d.id,type:"doc",theme:d.theme,label:d.label,bai:d.bai,rel:d.rel,
+  concepts:d.concepts,deg:d.deg,r:4+Math.min(6,Math.sqrt(d.deg)*1.7)});
+  links.push({s:d.theme,t:d.id,kind:"core"});});
+const N=Object.fromEntries(nodes.map(n=>[n.id,n]));
 
-const nodeById = new Map();
-const parentById = new Map();
-const displayNumberById = new Map();
-(function index(node,parent){ nodeById.set(node.id,node);
-  if(parent) parentById.set(node.id,parent);
-  (node.children||[]).forEach(c=>index(c,node)); })(diagramData,null);
-(function bfs(root){ const q=[root]; let n=1; while(q.length){ const x=q.shift();
-  displayNumberById.set(x.id,n++); (x.children||[]).forEach(c=>q.push(c)); }})(diagramData);
+const svg=document.getElementById("svg");let W=svg.clientWidth,H=svg.clientHeight;
+nodes.forEach((n,i)=>{const a=i*2.399;const rad=n.type==="center"?0:(n.type==="theme"?150:330);
+  n.x=W/2+Math.cos(a)*rad+(Math.random()-.5)*50;n.y=H/2+Math.sin(a)*rad+(Math.random()-.5)*50;n.vx=0;n.vy=0;});
+CENTER.x=W/2;CENTER.y=H/2;
+const NS="http://www.w3.org/2000/svg";
+const gZoom=document.createElementNS(NS,"g");svg.appendChild(gZoom);
+const gSim=document.createElementNS(NS,"g");gZoom.appendChild(gSim);
+const gLink=document.createElementNS(NS,"g");gZoom.appendChild(gLink);
+const gNode=document.createElementNS(NS,"g");gZoom.appendChild(gNode);
 
-const state = { expanded:new Set([diagramData.id]), focusedChildByParent:new Map(), zoom:0.9 };
+// tree links
+const linkEls=links.map(l=>{const e=document.createElementNS(NS,"line");
+  e.setAttribute("class","link"+(l.kind==="theme"?" theme":""));gLink.appendChild(e);l.el=e;return l;});
+// similarity links (hidden until selection or toggle)
+const maxV=Math.max.apply(null,EDGES.map(e=>e.v));
+const simEls=EDGES.map(l=>{const e=document.createElementNS(NS,"line");e.setAttribute("class","simlink");
+  const col=docOf[l.s].theme===docOf[l.t].theme?colorOf[docOf[l.s].theme]:"#8595a8";
+  e.setAttribute("stroke",col);e.setAttribute("stroke-width",(0.5+l.v/maxV*2).toFixed(2));
+  gSim.appendChild(e);l.el=e;return l;});
 
-const hasChildren = n => (n.children||[]).length>0;
-function pathToRoot(id){ const p=[]; let c=nodeById.get(id); while(c){ p.unshift(c.id); c=parentById.get(c.id)||null; } return p; }
-function topBranch(id){ return pathToRoot(id)[1]; }
-function setFocus(path){ state.focusedChildByParent.clear();
-  for(let i=0;i<path.length-1;i++) state.focusedChildByParent.set(path[i],path[i+1]); }
-function visibleChildren(node){ const ch=node.children||[]; const f=state.focusedChildByParent.get(node.id);
-  if(!f) return ch; const a=ch.find(c=>c.id===f); return a?[a]:ch; }
+const nodeEls=nodes.map(n=>{const gg=document.createElementNS(NS,"g");gg.setAttribute("class","node "+n.type);
+  const c=document.createElementNS(NS,"circle");c.setAttribute("r",n.r);
+  if(n.type==="center"){c.setAttribute("fill","#e7edf5");}
+  else if(n.type==="theme"){c.setAttribute("fill",colorOf[n.theme]);c.setAttribute("stroke","#0f1419");c.setAttribute("stroke-width","2");}
+  else{c.setAttribute("fill",colorOf[n.theme]);c.setAttribute("fill-opacity",n.deg?".75":".35");c.setAttribute("stroke",colorOf[n.theme]);c.setAttribute("stroke-opacity",".5");}
+  gg.appendChild(c);
+  const tx=document.createElementNS(NS,"text");tx.setAttribute("text-anchor","middle");
+  if(n.type==="center"){String(n.label).split("\n").forEach((ln,i)=>{const ts=document.createElementNS(NS,"tspan");ts.setAttribute("x",0);ts.setAttribute("dy",i===0?"-2":"15");ts.textContent=ln;tx.appendChild(ts);});tx.setAttribute("y",0);}
+  else{let lbl=n.type==="doc"&&n.label.length>30?n.label.slice(0,28)+"…":n.label;tx.textContent=lbl;tx.setAttribute("y",(-n.r-5).toFixed(1));}
+  gg.appendChild(tx);gNode.appendChild(gg);n.el=gg;
+  gg.addEventListener("click",ev=>{ev.stopPropagation();select(n);});enableDrag(gg,n);return n;});
 
-function toggleNode(id){
-  if(state.expanded.has(id)){
-    const parent=parentById.get(id);
-    const p=parent?pathToRoot(parent.id):[]; state.expanded=new Set(p); setFocus(p);
-    render(); centerNode(parent?parent.id:diagramData.id); return;
-  }
-  const p=pathToRoot(id); state.expanded=new Set(p); setFocus(p);
-  render(); centerNode(id);
-}
+function tick(){
+  for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){const a=nodes[i],b=nodes[j];
+    let dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy||1;if(d2<90000){const f=2300/d2,d=Math.sqrt(d2);dx/=d;dy/=d;a.vx+=dx*f;a.vy+=dy*f;b.vx-=dx*f;b.vy-=dy*f;}}
+  links.forEach(l=>{const a=N[l.s],b=N[l.t];let dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+    const rest=l.kind==="theme"?210:(b.type==="theme"?150:70);const f=(d-rest)*0.02;dx/=d;dy/=d;a.vx+=dx*f;a.vy+=dy*f;b.vx-=dx*f;b.vy-=dy*f;});
+  nodes.forEach(n=>{n.vx+=(W/2-n.x)*0.001;n.vy+=(H/2-n.y)*0.001;});
+  CENTER.x=W/2;CENTER.y=H/2;CENTER.vx=0;CENTER.vy=0;
+  nodes.forEach(n=>{if(n.fixed)return;n.x+=n.vx*=.86;n.y+=n.vy*=.86;});draw();}
+function draw(){
+  linkEls.forEach(l=>{const a=N[l.s],b=N[l.t];l.el.setAttribute("x1",a.x);l.el.setAttribute("y1",a.y);l.el.setAttribute("x2",b.x);l.el.setAttribute("y2",b.y);});
+  simEls.forEach(l=>{const a=N[l.s],b=N[l.t];l.el.setAttribute("x1",a.x);l.el.setAttribute("y1",a.y);l.el.setAttribute("x2",b.x);l.el.setAttribute("y2",b.y);});
+  nodeEls.forEach(n=>n.el.setAttribute("transform",`translate(${n.x},${n.y})`));}
+let frames=0;(function loop(){tick();if(frames++<650)requestAnimationFrame(loop);})();
+function reheat(){frames=0;(function l(){tick();if(frames++<200)requestAnimationFrame(l);})();}
 
-function makeNode(node){
-  const wrap=document.createElement("div");
-  const b=topBranch(node.id);
-  wrap.className="node "+(node.kind||"")+(b?" branch-"+(((b%6)||6)):"")
-    +(hasChildren(node)?" has-children":"")+(state.expanded.has(node.id)?" is-expanded":"");
-  wrap.dataset.id=node.id;
-  const num=document.createElement("div"); num.className="node-num";
-  num.textContent=displayNumberById.get(node.id); wrap.appendChild(num);
-  const main=document.createElement("button"); main.type="button"; main.className="node-main";
-  main.textContent=node.title;
-  if(node.en){const en=document.createElement("span");en.className="node-en";en.textContent=node.en;main.appendChild(en);}
-  main.addEventListener("click",e=>{e.stopPropagation();openDetail(node.id);});
-  wrap.appendChild(main);
-  if(hasChildren(node)){
-    const bar=document.createElement("button"); bar.type="button"; bar.className="node-expand-bar";
-    bar.textContent=state.expanded.has(node.id)?"▲ thu":"▼ mo "+(node.children.length);
-    bar.addEventListener("click",e=>{e.stopPropagation();toggleNode(node.id);});
-    wrap.appendChild(bar);
-  }
-  return wrap;
-}
-function renderTree(node){
-  const li=document.createElement("li"); li.appendChild(makeNode(node));
-  if(hasChildren(node)&&state.expanded.has(node.id)){
-    const ul=document.createElement("ul");
-    visibleChildren(node).forEach(c=>ul.appendChild(renderTree(c)));
-    li.appendChild(ul);
-  }
-  return li;
-}
-function render(){
-  canvas.innerHTML="";
-  const tree=document.createElement("ul"); tree.className="tree";
-  tree.appendChild(renderTree(diagramData)); canvas.appendChild(tree);
-  applyZoom(); requestAnimationFrame(drawConnectors);
-}
-function drawConnectors(){
-  const old=canvas.querySelector("svg.links"); if(old) old.remove();
-  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
-  svg.setAttribute("class","links");
-  svg.setAttribute("width",canvas.scrollWidth); svg.setAttribute("height",canvas.scrollHeight);
-  const cRect=canvas.getBoundingClientRect(); const s=state.zoom||1;
-  const pt=(el,edge)=>{ const r=el.getBoundingClientRect();
-    return { x:(r.left-cRect.left)/s + (r.width/s)/2,
-             y:edge==="bottom"?(r.bottom-cRect.top)/s:(r.top-cRect.top)/s }; };
-  canvas.querySelectorAll(".node.has-children.is-expanded").forEach(pEl=>{
-    const li=pEl.closest("li"); const ul=li&&li.querySelector(":scope>ul"); if(!ul) return;
-    const pP=pt(pEl,"bottom");
-    ul.querySelectorAll(":scope>li>.node").forEach(cEl=>{
-      const cP=pt(cEl,"top"); const midY=pP.y+Math.max(16,(cP.y-pP.y)/2);
-      const path=document.createElementNS("http://www.w3.org/2000/svg","path");
-      path.setAttribute("d","M "+pP.x+" "+pP.y+" V "+midY+" H "+cP.x+" V "+cP.y);
-      svg.appendChild(path);
-    });
-  });
-  canvas.insertBefore(svg,canvas.firstChild);
-}
-function applyZoom(){ canvas.style.transform="scale("+state.zoom+")";
-  document.getElementById("zoomValue").textContent=state.zoom.toFixed(2)+"×"; }
-function centerNode(id){ requestAnimationFrame(()=>{
-  const el=canvas.querySelector('.node[data-id="'+id+'"]'); if(!el) return;
-  const vR=viewport.getBoundingClientRect(), nR=el.getBoundingClientRect();
-  const cx=nR.left-vR.left+viewport.scrollLeft+nR.width/2;
-  viewport.scrollLeft=Math.max(0,cx-viewport.clientWidth/2);
-  viewport.scrollTop=Math.max(0,nR.top-vR.top+viewport.scrollTop-70);
-});}
+let scale=1,tx0=0,ty0=0,panning=false,sx,sy;
+function applyZoom(){gZoom.setAttribute("transform",`translate(${tx0},${ty0}) scale(${scale})`);}
+svg.addEventListener("wheel",e=>{e.preventDefault();const f=e.deltaY<0?1.1:1/1.1;const mx=e.offsetX,my=e.offsetY;tx0=mx-(mx-tx0)*f;ty0=my-(my-ty0)*f;scale*=f;applyZoom();},{passive:false});
+svg.addEventListener("mousedown",e=>{if(e.target.closest(".node"))return;panning=true;svg.classList.add("grabbing");sx=e.clientX-tx0;sy=e.clientY-ty0;});
+window.addEventListener("mousemove",e=>{if(panning){tx0=e.clientX-sx;ty0=e.clientY-sy;applyZoom();}});
+window.addEventListener("mouseup",()=>{panning=false;svg.classList.remove("grabbing");});
+svg.addEventListener("click",()=>clearSel());
+function enableDrag(gg,n){let dr=false,ox,oy;gg.addEventListener("mousedown",e=>{e.stopPropagation();dr=true;n.fixed=true;const p=toG(e);ox=p.x-n.x;oy=p.y-n.y;});
+  window.addEventListener("mousemove",e=>{if(!dr)return;const p=toG(e);n.x=p.x-ox;n.y=p.y-oy;draw();});
+  window.addEventListener("mouseup",()=>{if(dr){dr=false;n.fixed=false;reheat();}});}
+function toG(e){const r=svg.getBoundingClientRect();return{x:(e.clientX-r.left-tx0)/scale,y:(e.clientY-r.top-ty0)/scale};}
 
-/* -------- mini Markdown -------- */
-function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-function inline(s){ return esc(s)
-  .replace(/`([^`]+)`/g,"<code>$1</code>")
-  .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
-  .replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>")
-  .replace(/\*([^*]+)\*/g,"<em>$1</em>"); }
-function renderMarkdown(src){
-  const lines=(src||"").split("\n"); let html="",list=false;
-  const closeList=()=>{ if(list){html+="</ul>";list=false;} };
-  for(const raw of lines){ const l=raw.trim();
-    if(!l){ closeList(); continue; }
-    let m;
-    if(m=l.match(/^#{1,4}\s+(.*)/)){ closeList(); html+="<h3>"+inline(m[1])+"</h3>"; }
-    else if(m=l.match(/^[-*]\s+(.*)/)){ if(!list){html+="<ul>";list=true;} html+="<li>"+inline(m[1])+"</li>"; }
-    else { closeList(); html+="<p>"+inline(l)+"</p>"; }
-  }
-  closeList(); return html;
-}
+const detail=document.getElementById("detail");
+let showAllSim=false;
+function nbrs(id){const o=[];EDGES.forEach(l=>{if(l.s===id)o.push([l.t,l.v,l.shared]);else if(l.t===id)o.push([l.s,l.v,l.shared]);});o.sort((a,b)=>b[1]-a[1]);return o;}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function showSimFor(id){simEls.forEach(l=>{const on=(l.s===id||l.t===id);l.el.style.strokeOpacity=on?0.55:0;});}
+function hideSim(){if(showAllSim){simEls.forEach(l=>l.el.style.strokeOpacity=0.13);}else{simEls.forEach(l=>l.el.style.strokeOpacity=0);}}
 
-/* -------- detail panel -------- */
-function openDetail(id){
-  const node=nodeById.get(id); if(!node) return;
-  document.getElementById("panelId").textContent="Node "+displayNumberById.get(id);
-  document.getElementById("panelTitle").textContent=node.title;
-  if(node.en){const pe=document.createElement("div");pe.className="panel-en";pe.textContent=node.en;document.getElementById("panelTitle").appendChild(pe);}
-  const g=document.getElementById("panelGroup"); g.textContent=node.group||""; g.hidden=!node.group;
-  document.getElementById("panelDescription").innerHTML=renderMarkdown(node.detail||"_Chua co mo ta._");
-  const pills=document.getElementById("panelChildren"); pills.innerHTML="";
-  const label=document.getElementById("childrenLabel");
-  const ch=node.children||[]; label.hidden=ch.length===0;
-  ch.forEach(c=>{ const b=document.createElement("button");
-    b.textContent=displayNumberById.get(c.id)+". "+c.title;
-    b.addEventListener("click",()=>openDetail(c.id)); pills.appendChild(b); });
-  detailPanel.classList.add("open"); scrim.hidden=false;
-}
-function closeDetail(){ detailPanel.classList.remove("open"); scrim.hidden=true; }
+function select(n){
+  if(n.type==="center"){clearSel();detail.innerHTML=`<h2>Thẩm định Đầu tư công · MPP27</h2><p class="empty">${DATA.stats.themes} cụm chủ đề, ${DATA.stats.docs} tài liệu. Nhấn một cụm (node có viền) hoặc một tài liệu.</p>`;return;}
+  if(n.type==="theme"){
+    const t=THEMES.find(t=>t.id===n.id);const keep=new Set([n.id,"__c",...t.docs]);
+    nodeEls.forEach(m=>m.el.classList.toggle("dim",!keep.has(m.id)));
+    linkEls.forEach(l=>l.el.classList.toggle("dim",!(keep.has(l.s)&&keep.has(l.t))));hideSim();
+    detail.innerHTML=`<span class="badge" style="background:${t.color}">Cụm chủ đề</span><h2>${esc(t.name)}</h2>
+      <p class="sec">${t.docs.length} tài liệu</p>
+      <ul class="doclist">${t.docs.map(id=>`<li><a data-go="${esc(id)}">${esc(docOf[id].label)}<span class="meta">${esc(docOf[id].bai)}</span></a></li>`).join("")}</ul>`;
+    detail.querySelectorAll("[data-go]").forEach(a=>a.addEventListener("click",()=>select(N[a.dataset.go])));return;}
+  // doc
+  const nb=nbrs(n.id);const keep=new Set([n.id,n.theme,"__c"]);nb.forEach(x=>keep.add(x[0]));
+  nodeEls.forEach(m=>m.el.classList.toggle("dim",!keep.has(m.id)));
+  linkEls.forEach(l=>l.el.classList.toggle("dim",!(keep.has(l.s)&&keep.has(l.t))));
+  showSimFor(n.id);
+  const t=THEMES.find(t=>t.id===n.theme);
+  detail.innerHTML=`<span class="badge" style="background:${t.color}">${esc(t.name)}</span><h2>${esc(n.label)}</h2>
+    <div class="meta" style="color:var(--muted);font-size:11.5px">${esc(n.bai||"")}</div>
+    <div class="sec">Khái niệm chuyên ngành (${n.concepts.length})</div>
+    <div class="chips">${n.concepts.length?n.concepts.map(c=>`<span class="chip">${esc(c)}</span>`).join(""):'<span class="empty">Không trích được khái niệm (bảng tính số liệu).</span>'}</div>
+    <div class="sec">Liên kết với ${nb.length} tài liệu</div>
+    <ul class="doclist">${nb.map(([id,v,sh])=>`<li><a data-go="${esc(id)}">${esc(docOf[id].label)}<span class="meta">${sh.length?'chung: '+sh.slice(0,5).map(esc).join(', '):'tương đồng'} · ${v}</span></a></li>`).join("")||'<li class="empty">Chưa nối được với tài liệu nào.</li>'}</ul>
+    <a class="open" href="${PREFIX+encodeURI(n.rel)}" target="_blank">↗ Mở tài liệu gốc</a>`;
+  detail.querySelectorAll("[data-go]").forEach(a=>a.addEventListener("click",()=>select(N[a.dataset.go])));}
+function clearSel(){nodeEls.forEach(m=>m.el.classList.remove("dim"));linkEls.forEach(l=>l.el.classList.remove("dim"));hideSim();}
 
-/* -------- controls -------- */
-document.getElementById("closePanel").addEventListener("click",closeDetail);
-scrim.addEventListener("click",closeDetail);
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDetail(); });
-document.getElementById("expandAll").addEventListener("click",()=>{
-  state.focusedChildByParent.clear(); state.expanded=new Set([...nodeById.values()].filter(hasChildren).map(n=>n.id));
-  render(); });
-document.getElementById("collapseAll").addEventListener("click",()=>{
-  state.expanded=new Set([diagramData.id]); state.focusedChildByParent.clear();
-  render(); centerNode(diagramData.id); });
-const zoomRange=document.getElementById("zoomRange");
-zoomRange.addEventListener("input",e=>{ state.zoom=Number(e.target.value); applyZoom();
-  requestAnimationFrame(drawConnectors); });
-/* pan */
-let drag=false,sx,sy,ssx,ssy;
-viewport.addEventListener("pointerdown",e=>{ if(e.target.closest("button"))return;
-  drag=true; viewport.classList.add("dragging"); sx=e.clientX;sy=e.clientY;
-  ssx=viewport.scrollLeft;ssy=viewport.scrollTop; viewport.setPointerCapture(e.pointerId); });
-viewport.addEventListener("pointermove",e=>{ if(!drag)return;
-  viewport.scrollLeft=ssx-(e.clientX-sx); viewport.scrollTop=ssy-(e.clientY-sy); });
-viewport.addEventListener("pointerup",()=>{drag=false;viewport.classList.remove("dragging");});
-window.addEventListener("resize",()=>requestAnimationFrame(drawConnectors));
+const legend=document.getElementById("legend");
+THEMES.forEach(t=>{const r=document.createElement("div");r.className="row";
+  r.innerHTML=`<span class="dot" style="background:${t.color}"></span><span>${esc(t.name)}</span>`;
+  r.addEventListener("click",()=>select(N[t.id]));legend.appendChild(r);});
+const tg=document.createElement("div");tg.className="tg";
+tg.innerHTML=`<input type="checkbox" id="tgsim"> <label for="tgsim" style="cursor:pointer">Hiện toàn bộ liên kết khái niệm</label>`;
+legend.appendChild(tg);
+tg.querySelector("#tgsim").addEventListener("change",e=>{showAllSim=e.target.checked;hideSim();});
 
-state.zoom=Number(zoomRange.value);
-render(); centerNode(diagramData.id);
-</script>
-</body>
-</html>
+document.getElementById("search").addEventListener("input",e=>{const q=e.target.value.trim().toLowerCase();if(!q){clearSel();return;}
+  const hit=new Set(["__c"]);DOCS.forEach(d=>{if(d.label.toLowerCase().includes(q)||d.concepts.some(c=>c.toLowerCase().includes(q)))hit.add(d.id);});
+  THEMES.forEach(t=>{if(t.name.toLowerCase().includes(q))hit.add(t.id);});
+  nodeEls.forEach(m=>m.el.classList.toggle("dim",!hit.has(m.id)));
+  linkEls.forEach(l=>l.el.classList.toggle("dim",!(hit.has(l.s)&&hit.has(l.t))));});
+window.addEventListener("resize",()=>{W=svg.clientWidth;H=svg.clientHeight;reheat();});
+</script></body></html>
