@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Công thức Excel cốt lõi — Thẩm định Đầu tư công (MPP27)</title>
+<style>
+:root{--bg:#0f1419;--card:#1a2230;--card2:#222c3d;--line:#2f3b4f;--text:#e7edf5;--muted:#9fb0c3;
+  --accent:#7aa2f7;--fin:#7aa2f7;--logic:#86d35a;--vba:#f5a623;--whatif:#c490e4;--note:#ef6f6c;--code:#ffd479}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,Arial,sans-serif;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto;padding:34px 22px 70px}
+h1{font-size:25px;margin:0 0 4px}
+.lead{color:var(--muted);font-size:13.5px;max-width:880px;margin:0 0 8px}
+.src{color:var(--muted);font-size:12px;font-style:italic;margin:0 0 18px}
+.bar{position:sticky;top:0;background:linear-gradient(var(--bg),var(--bg) 70%,transparent);padding:10px 0 12px;z-index:5}
+#q{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);color:var(--text);
+  border-radius:9px;padding:9px 13px;font-size:14px;outline:none}
+#q:focus{border-color:var(--accent)}
+.legend{font-size:12px;color:var(--muted);margin:8px 0 0;display:flex;flex-wrap:wrap;gap:14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+.star{color:#ffd479}
+.sec{margin:26px 0 10px;display:flex;align-items:center;gap:10px}
+.sec .pill{width:14px;height:14px;border-radius:4px}
+.sec h2{font-size:17px;margin:0}
+.sec .n{color:var(--muted);font-size:12.5px;margin-left:auto}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;background:var(--card);min-width:920px}
+thead th{background:var(--card2);text-align:left;font-size:11px;letter-spacing:.4px;text-transform:uppercase;
+  color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--line)}
+tbody td{padding:11px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#1e2736}
+.fn{font-weight:700;white-space:nowrap}
+.fn .s{color:#ffd479;margin-left:4px}
+.full{color:#cfe0f5;font-size:12.5px}
+.full em{color:var(--muted);font-style:normal;font-size:11.5px;display:block}
+code{font-family:"SFMono-Regular",Consolas,"Roboto Mono",monospace;font-size:11.5px;color:var(--code);
+  background:#11161d;border:1px solid var(--line);border-radius:5px;padding:1px 5px;display:inline-block;margin:1px 0}
+.ex{color:#bfe6c8;font-size:12.5px}
+.ex code{color:#ffd479}
+.muted{color:var(--muted)}
+.hide{display:none}
+.note-card{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--note);border-radius:10px;padding:12px 15px;margin:9px 0;font-size:13px}
+.note-card b{color:#ffb4b0}
+.foot{color:var(--muted);font-size:11.5px;margin-top:30px;border-top:1px solid var(--line);padding-top:12px}
+.c1{width:9%}.c2{width:14%}.c3{width:21%}.c4{width:29%}.c5{width:27%}
+</style></head>
+<body><div class="wrap">
+<h1>Công thức Excel cốt lõi — Thẩm định Đầu tư công</h1>
+<p class="lead">Bảng thống kê các hàm và công cụ Excel <b>thường dùng</b> và <b>quan trọng</b> trong môn Thẩm định Đầu tư công (MPP27), nhóm theo chức năng — kèm <b>tên đầy đủ</b> của viết tắt và <b>ví dụ cụ thể</b>. Đánh dấu <span class="star">★</span> là hàm cốt lõi bắt buộc nắm vững.</p>
+<p class="src">Tổng hợp từ tài liệu môn: bài giảng Lập mô hình tài chính (Lecture 06–07), các NCTH (xe buýt Chợ Lớn–Gò Vấp, xi măng Kho Sơn, BOT Cai Lậy), Problem Set 1, và file "Hướng dẫn thêm hàm tính thuế vào Excel" (bộ hàm VBA tự tạo của môn).</p>
+
+<div class="bar">
+  <input id="q" placeholder="Lọc nhanh: gõ tên hàm / tên đầy đủ / công dụng (vd: present value, thuế, độ nhạy)…">
+  <div class="legend">
+    <span><i class="dot" style="background:var(--fin)"></i>Hàm tài chính</span>
+    <span><i class="dot" style="background:var(--logic)"></i>Logic &amp; mô hình</span>
+    <span><i class="dot" style="background:var(--vba)"></i>Hàm tự tạo (VBA của môn)</span>
+    <span><i class="dot" style="background:var(--whatif)"></i>Công cụ What-if</span>
+    <span><span class="star">★</span> cốt lõi</span>
+  </div>
+</div>
+
+<!-- ============ A. HÀM TÀI CHÍNH ============ -->
+<div class="sec"><span class="pill" style="background:var(--fin)"></span><h2>A. Hàm tài chính — tiêu chí đầu tư &amp; giá trị thời gian của tiền</h2><span class="n">9 hàm</span></div>
+<div class="tblwrap"><table><thead><tr><th class="c1">Hàm</th><th class="c2">Tên đầy đủ (viết tắt của)</th><th class="c3">Cú pháp</th><th class="c4">Công dụng &amp; vai trò trong thẩm định</th><th class="c5">Ví dụ cụ thể</th></tr></thead><tbody>
+<tr><td class="fn">NPV<span class="s">★</span></td><td class="full">Net Present Value<em>Giá trị hiện tại ròng</em></td><td><code>=NPV(suất_ck; CF1:CFn)</code><br><span class="muted">đúng quy ước:</span> <code>=CF0 + NPV(r; CF1:CFn)</code></td><td>Hiện giá ròng của chuỗi ngân lưu; tiêu chí quyết định chính (NPV&gt;0 → khả thi). Tính trên từng quan điểm. <b>Lưu ý:</b> NPV của Excel coi giá trị đầu ở cuối kỳ 1 nên CF năm 0 để ngoài.</td><td class="ex">Vốn năm 0 = −100 tỷ; mỗi năm 1–5 thu 30 tỷ; r=10%:<br><code>=-100 + NPV(10%; B2:F2)</code> ≈ <b>+13,7 tỷ</b> → chấp nhận.</td></tr>
+<tr><td class="fn">IRR<span class="s">★</span></td><td class="full">Internal Rate of Return<em>Suất sinh lợi nội bộ</em></td><td><code>=IRR(dòng_tiền; [ước_đoán])</code></td><td>Suất làm NPV=0; so với chi phí vốn để kết luận. Cẩn trọng đa trị khi đổi dấu nhiều lần.</td><td class="ex"><code>=IRR({-100;30;30;30;30;30})</code> ≈ <b>15,2%</b> &gt; chi phí vốn 10% → chấp nhận.</td></tr>
+<tr><td class="fn">XNPV / XIRR</td><td class="full">Extended NPV / IRR<em>NPV / IRR theo ngày</em></td><td><code>=XNPV(r; dòng_tiền; ngày)</code><br><code>=XIRR(dòng_tiền; ngày)</code></td><td>NPV/IRR cho dòng tiền phát sinh vào các ngày không đều (theo mốc ngày thực).</td><td class="ex"><code>=XIRR(B2:D2; B1:D1)</code> với ngày 01/01/26, 15/03/27, 20/09/28 (thu phí BOT theo mốc).</td></tr>
+<tr><td class="fn">MIRR</td><td class="full">Modified IRR<em>Suất hoàn vốn nội bộ điều chỉnh</em></td><td><code>=MIRR(dòng_tiền; r_vay; r_tái_đt)</code></td><td>Tách lãi suất tài trợ phần âm và lãi suất tái đầu tư phần dương; khắc phục IRR đa trị.</td><td class="ex"><code>=MIRR(B2:H2; 8%; 10%)</code> khi dự án có tái đầu tư lớn giữa vòng đời.</td></tr>
+<tr><td class="fn">PV / FV<span class="s">★</span></td><td class="full">Present Value / Future Value<em>Giá trị hiện tại / tương lai</em></td><td><code>=PV(r; n; pmt; [fv])</code><br><code>=FV(r; n; pmt; [pv])</code></td><td>Giá trị hiện tại / tương lai của một dòng đều hoặc một khoản; nền tảng quy về cùng mốc thời gian.</td><td class="ex">Hiện giá 20 tr/năm trong 5 năm, r=10%:<br><code>=PV(10%; 5; -20)</code> ≈ <b>75,8 tr</b>.</td></tr>
+<tr><td class="fn">RATE / NPER</td><td class="full">Interest Rate / Number of Periods<em>Lãi suất / số kỳ</em></td><td><code>=RATE(n; pmt; pv; [fv])</code><br><code>=NPER(r; pmt; pv; [fv])</code></td><td>Giải ngược lãi suất / số kỳ của khoản vay – tiết kiệm đều.</td><td class="ex">Vay 100, trả 2/tháng trong 60 tháng:<br><code>=RATE(60; -2; 100)</code> → lãi suất/tháng.</td></tr>
+<tr><td class="fn">PMT<span class="s">★</span></td><td class="full">Payment<em>Khoản trả đều mỗi kỳ</em></td><td><code>=PMT(r; n; pv)</code></td><td>Khoản trả đều (gốc+lãi) của khoản vay trả góp đều; là mẫu số khi tính DSCR.</td><td class="ex">Vay 1.000 tỷ, 8%/năm, 10 năm:<br><code>=PMT(8%; 10; 1000)</code> ≈ <b>−149 tỷ/năm</b>.</td></tr>
+<tr><td class="fn">IPMT / PPMT</td><td class="full">Interest / Principal Payment<em>Phần lãi / phần gốc</em></td><td><code>=IPMT(r; kỳ; n; pv)</code><br><code>=PPMT(r; kỳ; n; pv)</code></td><td>Tách phần lãi và phần gốc của một kỳ; dựng lịch trả nợ (lãi vào BCTN, gốc vào ngân lưu tài trợ).</td><td class="ex">Kỳ 1 của khoản vay trên:<br><code>=IPMT(8%;1;10;1000)</code> = lãi; <code>=PPMT(8%;1;10;1000)</code> = gốc.</td></tr>
+<tr><td class="fn">SLN / DB / DDB / SYD</td><td class="full">Straight-Line / Declining Balance / Double-DB / Sum-of-Years' Digits<em>Các phương pháp khấu hao</em></td><td><code>=SLN(nguyên_giá; thanh_lý; tuổi_thọ)</code><br><code>=DDB(...)</code></td><td>Khấu hao đường thẳng / số dư giảm dần / tổng số năm; tạo lá chắn thuế, ảnh hưởng thuế &amp; ngân lưu.</td><td class="ex">Máy 500, thanh lý 50, 10 năm:<br><code>=SLN(500; 50; 10)</code> = <b>45/năm</b>.</td></tr>
+</tbody></table></div>
+
+<!-- ============ B. LOGIC & MÔ HÌNH ============ -->
+<div class="sec"><span class="pill" style="background:var(--logic)"></span><h2>B. Hàm logic &amp; xây mô hình linh hoạt</h2><span class="n">7 nhóm</span></div>
+<div class="tblwrap"><table><thead><tr><th class="c1">Hàm</th><th class="c2">Tên đầy đủ / nghĩa</th><th class="c3">Cú pháp</th><th class="c4">Công dụng &amp; vai trò trong thẩm định</th><th class="c5">Ví dụ cụ thể</th></tr></thead><tbody>
+<tr><td class="fn">IF<span class="s">★</span></td><td class="full">If<em>Nếu… thì…</em></td><td><code>=IF(điều_kiện; đúng; sai)</code></td><td>Rẽ nhánh logic; bật/tắt giả định, áp trần/sàn, mô hình điều kiện.</td><td class="ex"><code>=IF(EBT&gt;0; EBT*20%; 0)</code> — chỉ tính thuế khi có lãi.</td></tr>
+<tr><td class="fn">IFERROR</td><td class="full">If Error<em>Nếu lỗi thì…</em></td><td><code>=IFERROR(biểu_thức; gt_thay_thế)</code></td><td>Bắt lỗi (#DIV/0!, #N/A) trả giá trị thay thế; giữ mô hình sạch.</td><td class="ex"><code>=IFERROR(EBITDA/NợPhảiTrả; 0)</code> tránh #DIV/0! năm chưa có nợ.</td></tr>
+<tr><td class="fn">CHOOSE<span class="s">★</span></td><td class="full">Choose<em>Chọn theo chỉ số</em></td><td><code>=CHOOSE(số_kịch_bản; gt1; gt2; …)</code></td><td>Bộ chọn kịch bản: 1 ô điều khiển chuyển toàn bộ giả định Thấp/Cơ sở/Cao.</td><td class="ex"><code>=CHOOSE($B$1; 90; 100; 115)</code> với $B$1 = 1/2/3 → giá Thấp/Cơ sở/Cao.</td></tr>
+<tr><td class="fn">INDEX / MATCH</td><td class="full">Index / Match<em>Chỉ mục / Dò khớp</em></td><td><code>=INDEX(vùng; MATCH(khoá; cột; 0))</code></td><td>Tra cứu hai chiều linh hoạt hơn VLOOKUP; tra bảng tham số theo năm/nhóm.</td><td class="ex"><code>=INDEX(HSCĐ; MATCH("Điện"; HàngHóa; 0))</code> → hệ số chuyển đổi giá của "Điện".</td></tr>
+<tr><td class="fn">OFFSET / INDIRECT</td><td class="full">Offset / Indirect<em>Dời ô / Tham chiếu gián tiếp</em></td><td><code>=OFFSET(gốc; dòng; cột; [cao]; [rộng])</code></td><td>Tham chiếu vùng động theo vị trí / theo chuỗi; dòng tiền cuốn chiếu theo năm.</td><td class="ex"><code>=OFFSET($B$5; 0; Năm-1)</code> lấy ô dòng tiền của năm vận hành.</td></tr>
+<tr><td class="fn">SUMPRODUCT / SUMIFS</td><td class="full">Sum-Product / Sum-If-s<em>Nhân–cộng / Tổng có điều kiện</em></td><td><code>=SUMPRODUCT(vùng1; vùng2)</code><br><code>=SUMIFS(tổng; đk1; …)</code></td><td>Nhân–cộng theo cặp; tổng theo tiêu chí.</td><td class="ex"><code>=SUMPRODUCT(SảnLượng; ĐơnGiá)</code> = doanh thu năm.</td></tr>
+<tr><td class="fn">MAX / MIN<span class="s">★</span></td><td class="full">Maximum / Minimum<em>Lớn nhất / Nhỏ nhất</em></td><td><code>=MAX(0; thu_nhập_chịu_thuế)</code></td><td>Sàn/trần giá trị; mẫu <code>MAX(0; …)</code> rất hay gặp.</td><td class="ex"><code>=MAX(0; TNCT)*20%</code> — thuế không âm khi TNCT &lt; 0.</td></tr>
+</tbody></table></div>
+
+<!-- ============ C. HÀM TỰ TẠO VBA ============ -->
+<div class="sec"><span class="pill" style="background:var(--vba)"></span><h2>C. Hàm tự tạo (VBA) — bộ hàm riêng của môn</h2><span class="n">5 hàm · file hướng dẫn</span></div>
+<div class="tblwrap"><table><thead><tr><th class="c1">Hàm</th><th class="c2">Tên đầy đủ</th><th class="c3">Cú pháp</th><th class="c4">Công dụng &amp; vai trò trong thẩm định</th><th class="c5">Ví dụ cụ thể</th></tr></thead><tbody>
+<tr><td class="fn">TNCT<span class="s">★</span></td><td class="full">Thu Nhập Chịu Thuế</td><td><code>=TNCT(dòng_TN; năm; số_năm_kết_chuyển)</code></td><td>Thu nhập chịu thuế một năm, có kết chuyển lỗ luỹ kế sang năm sau (đúng luật thuế VN).</td><td class="ex"><code>=TNCT(B5:K5; 3; 5)</code> — TNCT năm thứ 3, kết chuyển lỗ tối đa 5 năm.</td></tr>
+<tr><td class="fn">ThueTN<span class="s">★</span></td><td class="full">Thuế Thu Nhập (doanh nghiệp) — 3 thời đoạn</td><td><code>=ThueTN(dòng_tiền; năm; n0;r0; n1;r1; rKhác)</code></td><td>Thuế TNDN với thuế suất thay đổi theo 3 thời đoạn (ưu đãi), tính từ năm đầu có TNCT&gt;0.</td><td class="ex"><code>=ThueTN(B5:K5; 3; 4;0; 4;0,05; 0,1)</code> — miễn 4 năm, 5% trong 4 năm kế, sau đó 10%.</td></tr>
+<tr><td class="fn">ThueTN4</td><td class="full">Thuế Thu Nhập — 4 thời đoạn</td><td><code>=ThueTN4(…; n2;r2; rKhác)</code></td><td>Như ThueTN nhưng 4 thời đoạn thuế suất (cơ cấu ưu đãi phức tạp hơn).</td><td class="ex"><code>=ThueTN4(B5:K5; 3; 4;0; 4;0,05; 4;0,1; 0,2)</code> — miễn → 5% → 10% → 20%.</td></tr>
+<tr><td class="fn">TGHV</td><td class="full">Thời Gian Hoàn Vốn</td><td><code>=TGHV(dòng_ngân_lưu_tích_luỹ)</code></td><td>Payback — nội suy năm dòng tiền luỹ kế chuyển dương.</td><td class="ex"><code>=TGHV(B6:K6)</code> → ví dụ <b>6,3 năm</b>.</td></tr>
+<tr><td class="fn">FD</td><td class="full">Formula Display<em>Hiển thị công thức</em></td><td><code>=FD(ô)</code></td><td>Hiển thị công thức của một ô dưới dạng văn bản để chú thích/đối chiếu.</td><td class="ex"><code>=FD(B5)</code> → trả về chuỗi <code>B5=NPV(...)</code>.</td></tr>
+</tbody></table></div>
+<div class="note-card"><b>Cách nạp:</b> <code>ALT+F11</code> → Insert → Module → dán mã VBA trong file hướng dẫn → lưu workbook dạng <code>.xlsm</code> (hoặc .xls) để giữ macro. Quy ước chung của môn để cả lớp dùng thống nhất một bộ hàm.</div>
+
+<!-- ============ D. WHAT-IF ============ -->
+<div class="sec"><span class="pill" style="background:var(--whatif)"></span><h2>D. Công cụ What-if — phân tích rủi ro &amp; độ nhạy</h2><span class="n">3 công cụ</span></div>
+<div class="tblwrap"><table><thead><tr><th class="c1">Công cụ</th><th class="c2">Tên đầy đủ / nghĩa</th><th class="c3">Đường dẫn</th><th class="c4">Công dụng &amp; vai trò trong thẩm định</th><th class="c5">Ví dụ cụ thể</th></tr></thead><tbody>
+<tr><td class="fn">Data Table<span class="s">★</span></td><td class="full">Data Table<em>Bảng độ nhạy</em></td><td><code>Data ▸ What-If ▸ Data Table</code></td><td>Bảng độ nhạy 1–2 biến: tự tính lại NPV/IRR khi biến đầu vào chạy.</td><td class="ex">Cho suất chiết khấu chạy 8%→14% theo cột → NPV cập nhật tự động ở mỗi mức.</td></tr>
+<tr><td class="fn">Goal Seek<span class="s">★</span></td><td class="full">Goal Seek<em>Dò tìm mục tiêu</em></td><td><code>Data ▸ What-If ▸ Goal Seek</code></td><td>Tìm giá trị đầu vào để một ô đạt mục tiêu (vd NPV=0).</td><td class="ex">Set ô NPV = 0 bằng cách đổi ô "giá vé" → ra <b>giá vé hoà vốn</b>.</td></tr>
+<tr><td class="fn">Scenario Manager</td><td class="full">Scenario Manager<em>Trình quản lý kịch bản</em></td><td><code>Data ▸ What-If ▸ Scenario Manager</code></td><td>Lưu &amp; so sánh nhiều bộ giả định; thường kết hợp CHOOSE.</td><td class="ex">Lưu 3 kịch bản Thấp/Cơ sở/Cao của giá &amp; sản lượng để so NPV.</td></tr>
+</tbody></table></div>
+
+<!-- ============ E. LƯU Ý ============ -->
+<div class="sec"><span class="pill" style="background:var(--note)"></span><h2>E. Lưu ý &amp; bẫy thường gặp</h2></div>
+<div class="note-card"><b>1. Quy ước NPV cuối kỳ.</b> Hàm <code>NPV()</code> chiết khấu giá trị đầu tiên về <i>cuối</i> năm 1. Vốn năm 0 phải để ngoài: <code>=CF0 + NPV(r; CF1:CFn)</code> — lỗi kinh điển làm sai kết quả.</div>
+<div class="note-card"><b>2. IRR đa trị.</b> Dòng tiền đổi dấu nhiều lần có thể cho nhiều IRR hoặc không hội tụ → ưu tiên <b>NPV</b> và dùng <b>MIRR</b> bổ trợ.</div>
+<div class="note-card"><b>3. Thực vs danh nghĩa.</b> Suất chiết khấu và dòng tiền phải nhất quán: ngân lưu thực ↔ suất thực; ngân lưu danh nghĩa ↔ suất danh nghĩa (có lạm phát).</div>
+<div class="note-card"><b>4. Tham chiếu tuyệt đối.</b> Khoá ô giả định bằng <code>$</code> (vd <code>$B$2</code>) trước khi kéo công thức để tránh trượt tham chiếu khi dựng bảng dòng tiền nhiều năm.</div>
+<div class="note-card"><b>5. Tách quan điểm phân tích.</b> Một mô hình thường tính NPV/IRR trên nhiều quan điểm (tổng đầu tư, chủ sở hữu, ngân hàng, ngân sách, nền kinh tế) — cùng bộ hàm, khác dòng ngân lưu đầu vào.</div>
+
+<p class="foot">Báo cáo tổng hợp tự động từ kho tri thức môn học (MPP27 – Thẩm định Đầu tư công). Ô lọc đầu trang tìm theo tên hàm, tên đầy đủ hoặc công dụng. ★ = hàm/công cụ cốt lõi. Số liệu trong ví dụ là minh hoạ.</p>
+</div>
+<script>
+const q=document.getElementById("q");
+q.addEventListener("input",()=>{const v=q.value.trim().toLowerCase();
+  document.querySelectorAll("tbody tr").forEach(tr=>{
+    tr.classList.toggle("hide", v && !tr.textContent.toLowerCase().includes(v));});
+});
+</script>
+</body></html>

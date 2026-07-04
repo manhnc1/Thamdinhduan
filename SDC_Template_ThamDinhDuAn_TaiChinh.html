@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Template Thẩm định Tài chính Dự án (MPP27)</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#111c33; --ink:#e5edff; --muted:#93a4c9;
+    --line:#31456f; --accent:#4f8cff;
+    --b1:#4f8cff; --b2:#22c55e; --b3:#f59e0b; --b4:#ec4899; --b5:#a855f7; --b6:#14b8a6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+       background:var(--bg);color:var(--ink)}
+  .site-shell{max-width:1200px;margin:0 auto;padding:20px 16px 40px}
+  .hero h1{margin:0 0 6px;font-size:26px}
+  .hero .lede{margin:0;color:var(--muted);max-width:760px;font-size:14px;line-height:1.5}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:18px 0 12px}
+  .toolbar button{background:var(--card);color:var(--ink);border:1px solid var(--line);
+       border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
+  .toolbar button:hover{border-color:var(--accent)}
+  .zoom-control{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin-left:auto}
+  .diagram-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .diagram-viewport{overflow:auto;height:70vh;cursor:grab}
+  .diagram-viewport.dragging{cursor:grabbing}
+  .diagram-canvas{transform-origin:top center;padding:28px 40px;width:max-content;min-width:100%;position:relative}
+  ul.tree,ul.tree ul{list-style:none;margin:0;padding:0;display:flex;gap:26px;justify-content:center}
+  ul.tree{flex-direction:column;align-items:center}
+  ul.tree li{display:flex;flex-direction:column;align-items:center;position:relative}
+  ul.tree li>ul{margin-top:34px}
+  .node{position:relative;z-index:2;display:flex;flex-direction:column;align-items:stretch;min-width:130px;max-width:200px}
+  .node-main{background:#16233f;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;
+       cursor:pointer;color:var(--ink);text-align:center;font-size:13px;line-height:1.35;font-weight:600;transition:.15s}
+  .node-main:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .node-en{display:block;font-size:9.5px;font-weight:400;font-style:italic;color:var(--muted);margin-top:2px;line-height:1.25}
+  .panel-en{font-size:13px;font-weight:400;font-style:italic;color:var(--muted);margin-top:2px}
+  .node .node-num{font-size:10px;color:var(--muted);margin-bottom:3px;text-align:center}
+  .node.is-expanded .node-main{box-shadow:0 0 0 2px rgba(79,140,255,.25)}
+  .node-expand-bar{margin-top:5px;height:14px;border:none;border-radius:6px;background:#1d2c4d;color:var(--muted);
+       cursor:pointer;font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center}
+  .node-expand-bar:hover{background:var(--accent);color:#fff}
+  .node.branch-1 .node-main{border-color:var(--b1)} .node.branch-2 .node-main{border-color:var(--b2)}
+  .node.branch-3 .node-main{border-color:var(--b3)} .node.branch-4 .node-main{border-color:var(--b4)}
+  .node.branch-5 .node-main{border-color:var(--b5)} .node.branch-6 .node-main{border-color:var(--b6)}
+  svg.links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+  svg.links path{fill:none;stroke:var(--line);stroke-width:1.6}
+  .scrim{position:fixed;inset:0;background:rgba(5,10,24,.55);z-index:40}
+  .detail-panel{position:fixed;top:0;right:0;height:100vh;width:min(440px,92vw);background:var(--card);
+       border-left:1px solid var(--line);transform:translateX(100%);transition:.25s;z-index:50;
+       display:flex;flex-direction:column;padding:20px}
+  .detail-panel.open{transform:translateX(0)}
+  .panel-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .panel-id{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .panel-header h2{margin:4px 0 0;font-size:19px}
+  .icon-button{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
+  .panel-group{color:var(--accent);font-size:12px;margin:10px 0 4px;font-weight:600}
+  .markdown-content{font-size:14px;line-height:1.6;color:#cdd8f2;overflow:auto}
+  .markdown-content h3{font-size:15px;margin:14px 0 6px}
+  .markdown-content ul{padding-left:18px;margin:6px 0}
+  .markdown-content code{background:#0c1830;padding:1px 5px;border-radius:4px;font-size:12px}
+  .markdown-content a{color:var(--accent)}
+  .child-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .child-pills button{background:#16233f;border:1px solid var(--line);color:var(--ink);border-radius:20px;
+       padding:5px 10px;font-size:12px;cursor:pointer}
+  .child-pills button:hover{border-color:var(--accent)}
+  h3.section{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:18px 0 6px}
+</style>
+</head>
+<body>
+<div class="site-shell">
+  <header class="hero">
+    <h1>Template Thẩm định Tài chính Dự án (MPP27)</h1>
+    <p class="lede">Bấm thanh dưới mỗi node để mở/thu nhánh; bấm tên node để xem chi tiết công thức và nguồn tham khảo.</p>
+  </header>
+  <nav class="toolbar">
+    <button id="expandAll" type="button">Mở toàn bộ</button>
+    <button id="collapseAll" type="button">Thu gọn</button>
+    <label class="zoom-control">Zoom
+      <input id="zoomRange" type="range" min="0.5" max="1.4" value="0.9" step="0.05" />
+      <span id="zoomValue">0.90×</span>
+    </label>
+  </nav>
+  <main>
+    <section class="diagram-card">
+      <div id="diagramViewport" class="diagram-viewport">
+        <div id="diagramCanvas" class="diagram-canvas"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="scrim" class="scrim" hidden></div>
+<aside id="detailPanel" class="detail-panel" aria-hidden="true">
+  <div class="panel-header">
+    <div><div id="panelId" class="panel-id">Node</div><h2 id="panelTitle"></h2></div>
+    <button id="closePanel" class="icon-button" type="button" aria-label="Dong">&times;</button>
+  </div>
+  <div id="panelGroup" class="panel-group"></div>
+  <div id="panelDescription" class="markdown-content"></div>
+  <h3 class="section" id="childrenLabel" hidden>Cac nhanh con</h3>
+  <div id="panelChildren" class="child-pills"></div>
+</aside>
+
+<script>
+/* ============================================================
+   DU LIEU - chi can thay object diagramData nay cho topic moi.
+   Moi node: { id, title, en(phu de tieng Anh, tuy chon), group, kind, detail(Markdown), children:[] }
+   ============================================================ */
+const diagramData =
+/*__DIAGRAM_DATA__*/
+{
+  "id": 1,
+  "title": "Template Thẩm định Tài chính Dự án",
+  "en": "Project Financial Appraisal Template",
+  "group": "MPP27 — Thẩm định Đầu tư công",
+  "detail": "**Phiên bản tổng hợp từ 5 case:** Tate & Lyle · Kho Sơn Cement · Chợ Lớn–Gò Vấp Bus · BOT Cai Lậy (Tài chính / Kinh tế / Phân phối).\n\n**Chú giải:**\n- Khối **★** áp dụng cho *mọi dự án*.\n- Khối **[V]** là *variant tùy loại dự án* — bật/tắt qua nhánh \"7 cờ điều khiển\".",
+  "children": [
+    {
+      "id": 2,
+      "title": "★ Công thức trọng tâm",
+      "en": "Core Formulas",
+      "detail": "6 công thức nền tảng dùng xuyên suốt template: suất chiết khấu, FCFF, FCFE, NPV, IRR, DSCR.",
+      "children": [
+        {
+          "id": 3,
+          "title": "① Suất chiết khấu",
+          "en": "Discount Rate",
+          "detail": "Chọn **1 trong 3 cách** tùy mục đích phân tích.\n\n**Quan hệ Fisher (danh nghĩa ↔ thực):**\n\n`(1 + r_nom) = (1 + r_real)·(1 + π)`\n\n**Nguồn:** Modigliani–Miller (1958) · Sharpe (1964) — CAPM · Fisher (1930) *The Theory of Interest* · Brealey–Myers–Allen Ch.9, 17–19 · Jenkins–Kuo–Harberger *Cost-Benefit Analysis* Ch.8 · World Bank OP 10.04 (1994) — gốc hurdle 10%",
+          "children": [
+            {
+              "id": 4,
+              "title": "(a) WACC từ CAPM",
+              "en": "WACC from CAPM",
+              "kind": "leaf",
+              "detail": "Dùng cho **định giá doanh nghiệp niêm yết**.\n\n- `WACC = (E/V)·Re + (D/V)·Rd·(1−t)`\n- `Re = Rf + β·(Rm − Rf)` — CAPM\n- `Rd = LIBOR/lãi tham chiếu + spread`"
+            },
+            {
+              "id": 5,
+              "title": "(b) Hurdle rate ngoại sinh",
+              "en": "Exogenous Hurdle Rate",
+              "kind": "leaf",
+              "detail": "Dùng cho **thẩm định dự án** — *cách phổ biến nhất*.\n\n- Lấy từ chuẩn của tổ chức tài trợ: IFC 10% thực · ADB 12% thực · WB 10–12%\n- Hoặc từ chi phí cơ hội của chủ đầu tư"
+            },
+            {
+              "id": 6,
+              "title": "(c) EOCK",
+              "en": "Economic Opportunity Cost of Capital",
+              "kind": "leaf",
+              "detail": "Dùng cho **phân tích kinh tế – xã hội**.\n\n- Ngưỡng suất sinh lợi xã hội (Việt Nam ~8% thực)\n- Dùng để chiết khấu ngân lưu (NCF) kinh tế"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "title": "② FCFF — Ngân lưu tự do của dự án",
+          "en": "Free Cash Flow to Firm",
+          "kind": "leaf",
+          "detail": "**Top-down (từ EBIT):**\n\n`FCFF = EBIT·(1−t) + D&A − ΔWC − CapEx + Terminal Value`\n\n**Bottom-up (từ NI):**\n\n`FCFF = NI + Interest·(1−t) + D&A − ΔWC − CapEx`\n\n**Giải thích:** cộng lại khấu hao (phi tiền mặt), trừ ΔWC + CapEx (đầu tư tài sản), cộng TV (giá trị thanh lý).\n\n**Nguồn:** Damodaran *Investment Valuation* Ch.10 · Jenkins–Kuo–Harberger Ch.5"
+        },
+        {
+          "id": 8,
+          "title": "③ FCFE — Ngân lưu chủ sở hữu",
+          "en": "Free Cash Flow to Equity",
+          "kind": "leaf",
+          "detail": "**Công thức:**\n\n`FCFE = FCFF − Interest·(1−t) − Principal + Net Borrowing`\n\n`= NI + D&A − ΔWC − CapEx + Net Borrowing`\n\n**Chiết khấu bằng Re** (không phải WACC).\n\n**Nguồn:** Damodaran Ch.14"
+        },
+        {
+          "id": 9,
+          "title": "④ NPV — Giá trị hiện tại ròng",
+          "en": "Net Present Value",
+          "kind": "leaf",
+          "detail": "`NPV = Σ (t=0→T) CF_t / (1 + r)^t`\n\n**Quy tắc:** NPV > 0 → chấp nhận.\n\n**Nguồn:** Fisher (1930) · Hirshleifer (1958) *JPE* · Jenkins–Kuo–Harberger Ch.3"
+        },
+        {
+          "id": 10,
+          "title": "⑤ IRR — Suất sinh lợi nội tại",
+          "en": "Internal Rate of Return",
+          "kind": "leaf",
+          "detail": "IRR là `r*` sao cho `NPV(r*) = 0`.\n\n**Cảnh báo:** nhiều nghiệm khi ngân lưu đổi dấu nhiều lần.\n\n**Nguồn:** Brealey–Myers–Allen Ch.5 §5.3"
+        },
+        {
+          "id": 11,
+          "title": "⑥ DSCR — Hệ số an toàn trả nợ",
+          "en": "Debt Service Coverage Ratio",
+          "kind": "leaf",
+          "detail": "Góc nhìn **ngân hàng**.\n\n- `DSCR_t = CFADS_t / Debt Service_t`\n- `CFADS = FCFF + Interest·(1−t)`\n- `Debt Service = Interest + Principal`\n\n**Ngưỡng:** ≥ 1.2 (ngân hàng thương mại) · ≥ 1.4 (project finance).\n\n**Nguồn:** Yescombe *Principles of Project Finance* Ch.13 · Esty (2004)"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "⓪ Khung quyết định",
+      "en": "Decision Framework",
+      "detail": "**Setup mô hình** — trả lời 5 câu hỏi trước khi gõ ô đầu tiên.",
+      "children": [
+        {
+          "id": 13,
+          "title": "CH1 — Loại dự án?",
+          "en": "Project Type",
+          "kind": "leaf",
+          "detail": "- **Sản xuất / thương mại** (Tate & Lyle, Cement)\n- **Vận tải dịch vụ** (Bus)\n- **Hạ tầng BOT** (Cai Lậy đường bộ)\n- **Dự án công** (cấp nước, y tế, giáo dục)"
+        },
+        {
+          "id": 14,
+          "title": "CH2 — Quan điểm phân tích?",
+          "en": "Analytical Perspective",
+          "kind": "leaf",
+          "detail": "- **Tổng đầu tư (TIPV)** — chiết khấu @WACC\n- **Chủ sở hữu (Equity)** — chiết khấu @Re\n- **Ngân hàng (Banker)** — DSCR\n- **Kinh tế (Economic)** — chiết khấu @EOCK\n- **Phân phối (Distributive)** — bóc tách thặng dư theo nhóm"
+        },
+        {
+          "id": 15,
+          "title": "CH3 — Mặt bằng giá?",
+          "en": "Price Basis",
+          "kind": "leaf",
+          "detail": "- **Danh nghĩa** (có lạm phát) — BOT, project finance\n- **Thực** (loại lạm phát) — case study Fulbright, so sánh quốc tế\n- *Thông lệ:* tính cả 2 song song để cross-check"
+        },
+        {
+          "id": 16,
+          "title": "CH4 — Đơn vị tiền chính?",
+          "en": "Main Currency",
+          "kind": "leaf",
+          "detail": "VND / USD / song tiền (cần tỷ giá)."
+        },
+        {
+          "id": 17,
+          "title": "CH5 — Số đường lạm phát?",
+          "en": "Number of Inflation Streams",
+          "kind": "leaf",
+          "detail": "- **1** (CPI VND) cho sản xuất\n- **2** (CPI VND + chỉ số giá xây dựng) cho BOT\n- **3** (+ lạm phát USD) cho dự án có vay USD / nhập khẩu"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "B1–B6 · Cấu trúc mô hình",
+      "en": "Model Structure",
+      "detail": "6 khối bảng tính từ input đến output: Thông số → Chỉ số giá & Ngân lưu đầu tư → Lịch nợ → Doanh thu & Chi phí → Khấu hao & KQHĐKD & VLĐ → FCF & chỉ tiêu thẩm định.",
+      "children": [
+        {
+          "id": 19,
+          "title": "B1 · Bảng thông số",
+          "en": "Input Parameters",
+          "detail": "**Input layer** — mọi giả định tập trung một chỗ, các bảng sau chỉ tham chiếu.",
+          "children": [
+            {
+              "id": 20,
+              "title": "1.1 Vĩ mô [★]",
+              "en": "Macroeconomic Assumptions",
+              "kind": "leaf",
+              "detail": "Lạm phát VND, USD (nếu có), tỷ giá gốc + dự báo, lãi suất tham chiếu (LIBOR/VNIBOR/lãi NHNN).\n\n**Nguồn:** Mankiw *Macroeconomics* Ch.5 · Jenkins–Kuo–Harberger Ch.9"
+            },
+            {
+              "id": 21,
+              "title": "1.2 Chi phí đầu tư [★]",
+              "en": "Capital Expenditure",
+              "kind": "leaf",
+              "detail": "- CapEx theo từng năm (xây dựng nhiều năm)\n- CapEx tách theo **N nhóm tài sản** (mỗi nhóm 1 tuổi khấu hao riêng)\n- Tỷ lệ nội tệ / ngoại tệ\n- Đội giá dự phòng (contingency)\n\n**Nguồn:** Jenkins–Kuo–Harberger Ch.6"
+            },
+            {
+              "id": 22,
+              "title": "1.3 Vay nợ [V]",
+              "en": "Debt Financing",
+              "kind": "leaf",
+              "detail": "*Bỏ qua nếu phân tích kinh tế.*\n\n- M nguồn vay song song (vd: IFC-A, IFC-B, NH thương mại, vốn tự có)\n- Mỗi nguồn: gốc, spread vs lãi tham chiếu, kỳ hạn, ân hạn\n- Cờ: **lãi vay TGXD nhập gốc** *(BOT thường có, sản xuất không)*\n\n**Nguồn:** Brealey–Myers Ch.24 · Yescombe Ch.13"
+            },
+            {
+              "id": 23,
+              "title": "1.4 Vận hành / sản xuất [V]",
+              "en": "Operating Assumptions",
+              "kind": "leaf",
+              "detail": "*Biến thể theo loại dự án:*\n\n- **Sản xuất:** công suất, năng suất, giá đầu vào/đầu ra, tỷ lệ tiêu hao\n- **BOT:** lưu lượng xe (3 kịch bản low/med/high), giá vé theo 8 nhóm xe, chu kỳ điều chỉnh\n- **Bus:** số chuyến/ngày, giá vé, trợ giá Nhà nước\n- **Cấp nước:** sản lượng, giá nước, tỷ lệ thất thoát"
+            },
+            {
+              "id": 24,
+              "title": "1.5 Thuế [★]",
+              "en": "Taxes",
+              "kind": "leaf",
+              "detail": "- Thuế suất TNDN, ưu đãi miễn thuế, lộ trình giảm\n- VAT đầu ra / đầu vào\n- Thuế nhập khẩu (nếu có nguyên liệu nhập)\n\n**Nguồn:** Harberger (1962) *JPE* · Jenkins–Kuo–Harberger Ch.11"
+            },
+            {
+              "id": 25,
+              "title": "1.6 Chi phí vốn [★]",
+              "en": "Cost of Capital",
+              "kind": "leaf",
+              "detail": "WACC / hurdle rate / Re / Rd / EOCK — chọn theo Câu hỏi 2 ở khung quyết định ⓪.\n\n*Lưu ý:* trong thẩm định dự án thường **hardcode** từ chuẩn tổ chức tài trợ.\n\n**Nguồn:** xem khối ★ Công thức trọng tâm ①"
+            }
+          ]
+        },
+        {
+          "id": 26,
+          "title": "B2 · Chỉ số giá + Ngân lưu đầu tư [★]",
+          "en": "Price Indices & Investment Cash Flow",
+          "detail": "Dựng chỉ số giá **trước mọi quy đổi**, sau đó tính ngân lưu chi phí đầu tư danh nghĩa.",
+          "children": [
+            {
+              "id": 27,
+              "title": "Chỉ số giá & tỷ giá PPP",
+              "en": "Price Indices & PPP Exchange Rate",
+              "kind": "leaf",
+              "detail": "- `P_t = P_(t−1) · (1 + π)`\n- `E_t = E_0 · (P_dom,t / P_for,t)` — *Purchasing Power Parity*\n\n**Nguồn:** Cassel (1918) · Krugman–Obstfeld Ch.16 · Jenkins–Kuo–Harberger Ch.9"
+            },
+            {
+              "id": 28,
+              "title": "Ngân lưu CP đầu tư danh nghĩa",
+              "en": "Nominal Investment Cash Flow",
+              "kind": "leaf",
+              "detail": "`I_nom,t = I_real,t · P_t`\n\n[V] **2 đường lạm phát** cho BOT: tách CPI vs chỉ số giá xây dựng."
+            },
+            {
+              "id": 29,
+              "title": "IDC nhập gốc [V]",
+              "en": "Capitalized Interest During Construction",
+              "kind": "leaf",
+              "detail": "- Áp dụng cho dự án xây dựng dài (BOT, nhà máy điện)\n- Lãi vay trong thời gian xây dựng **cộng vào nguyên giá khấu hao** thay vì trừ vào lợi nhuận\n\n**Nguồn:** Yescombe Ch.13 §13.5"
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "title": "B3 · Lịch nợ vay [V]",
+          "en": "Debt Schedule",
+          "detail": "Khung **5 dòng × M nguồn vay**. Bỏ qua nếu chỉ phân tích kinh tế.",
+          "children": [
+            {
+              "id": 31,
+              "title": "Khung chuẩn 5 dòng",
+              "en": "Five-Line Framework",
+              "kind": "leaf",
+              "detail": "1. Dư nợ đầu kỳ = (5) Dư nợ cuối kỳ trước\n2. Giải ngân theo lịch\n3. Trả lãi: `I_t = ((D_begin + D_end)/2) · (lãi gốc + spread)`\n4. Trả gốc — *chọn phương pháp:*\n   - Chia đều: `A = P / n`\n   - Niên kim cố định: `A = P · i / (1 − (1+i)^−n)`\n   - Sculpted: theo DSCR mục tiêu mỗi năm\n5. Dư nợ cuối kỳ = (1) + (2) − (4)"
+            },
+            {
+              "id": 32,
+              "title": "Hợp nhất M nguồn",
+              "en": "Consolidating M Debt Tranches",
+              "kind": "leaf",
+              "detail": "- Cộng dọc M nhóm để có ngân lưu nợ vay tổng\n- `CFD_t = Disbursement − Interest − Principal`\n\n**Nguồn:** Yescombe Ch.13 · Jenkins–Kuo–Harberger Ch.7"
+            }
+          ]
+        },
+        {
+          "id": 33,
+          "title": "B4 · Doanh thu + Chi phí hoạt động",
+          "en": "Revenue & Operating Costs",
+          "detail": "Doanh thu là khối **variant theo loại dự án**; chi phí chia biến đổi / cố định; xử lý VAT nếu có.",
+          "children": [
+            {
+              "id": 34,
+              "title": "Doanh thu [V]",
+              "en": "Revenue",
+              "kind": "leaf",
+              "detail": "*Công thức tùy loại dự án:*\n\n- **Sản xuất:** `Rev = Q · P_dom`; với `P_dom = P_world · (1 + tariff)` nếu có bảo hộ\n- **BOT:** `Rev = Σ_i (giá vé_i × số xe_i × 365 × hệ số tăng trưởng)`\n- **Bus:** `Rev = (giá vé × số khách) + trợ giá NN`\n- **Cấp nước:** `Rev = giá nước · (sản lượng · (1 − thất thoát))`"
+            },
+            {
+              "id": 35,
+              "title": "Chi phí biến đổi [★]",
+              "en": "Variable Costs",
+              "kind": "leaf",
+              "detail": "- Nguyên liệu: `Cost = P_input · Q · (chỉ số giá NN/nội địa)`\n- Lao động sản xuất: `L_t = L_(t−1)·(1+π)·(Q_t/Q_(t−1))`"
+            },
+            {
+              "id": 36,
+              "title": "Chi phí cố định [★]",
+              "en": "Fixed Costs",
+              "kind": "leaf",
+              "detail": "- `QLBH = QLBH_(t−1) · (1 + π)`\n- Bảo trì = `% CapEx · (1 + π)` — đặc biệt quan trọng với BOT"
+            },
+            {
+              "id": 37,
+              "title": "VAT đầu vào được hoàn [V]",
+              "en": "Input VAT Refund",
+              "kind": "leaf",
+              "detail": "*Bỏ qua khi không có VAT.*\n\n`VAT_in = Cost · (rate / (1 + rate))` — *gross-up*\n\n**Nguồn:** Schenk–Thuronyi–Cui (2015) *Value Added Tax: A Comparative Approach*"
+            }
+          ]
+        },
+        {
+          "id": 38,
+          "title": "B5 · Khấu hao + KQHĐKD + VLĐ [V]",
+          "en": "Depreciation, Income Statement & Working Capital",
+          "detail": "*Bỏ qua khi phân tích kinh tế* (không có thuế, nợ, khấu hao).",
+          "children": [
+            {
+              "id": 39,
+              "title": "Khấu hao theo nhóm tài sản",
+              "en": "Depreciation by Asset Class",
+              "kind": "leaf",
+              "detail": "- `D_asset,t = CapEx_asset / N_asset` (đường thẳng — phổ biến nhất)\n- Có thể đổi sang số dư giảm dần / SOYD theo TT 45/2013/TT-BTC\n- *Ma trận N nhóm × T năm; cộng theo cột để có khấu hao tổng*\n\n**Nguồn:** IAS 16 · TT 45/2013/TT-BTC (Việt Nam)"
+            },
+            {
+              "id": 40,
+              "title": "Báo cáo KQHĐKD",
+              "en": "Income Statement",
+              "kind": "leaf",
+              "detail": "Chuỗi: `Rev_net → EBITDA → EBIT → EBT → NI`\n\n- `EBITDA = Rev − Operating Costs`\n- `EBIT = EBITDA − D&A`\n- `EBT = EBIT − Interest`\n\n**R178 thuế suất hiệu dụng (điểm dễ sai nhất):**\n\n`t_eff = t · 1{Σ EBT_s > 0 ∧ EBT_t > 0 ∧ qua năm miễn thuế}`\n\nXử lý đồng thời *loss carry-forward* và *tax holiday*.\n\n`NI = EBT · (1 − t_eff)`"
+            },
+            {
+              "id": 41,
+              "title": "Vốn lưu động [V]",
+              "en": "Working Capital",
+              "kind": "leaf",
+              "detail": "*BOT không có vì thu tiền mặt.*\n\n- `WC_t = ω · Revenue_t`\n- `ΔWC_t = WC_t − WC_(t−1)`\n\n**Nguồn:** Brealey–Myers Ch.30"
+            }
+          ]
+        },
+        {
+          "id": 42,
+          "title": "B6 · FCF + NPV/IRR/DSCR + Độ nhạy",
+          "en": "Free Cash Flow, Appraisal Metrics & Sensitivity",
+          "detail": "Khối output: 5 quan điểm phân tích + phân tích độ nhạy.",
+          "children": [
+            {
+              "id": 43,
+              "title": "QĐ1 — Tổng đầu tư (TIPV) [★]",
+              "en": "Total Investment Point of View",
+              "kind": "leaf",
+              "detail": "*Luôn có.*\n\n- FCFF danh nghĩa = `EBIAT + D − ΔWC − CapEx + TV`\n- FCFF thực = `FCFF danh nghĩa / (1 + π)^t` — *Fisher*\n- `DCF = FCFF / (1 + WACC)^t`\n- NPV @ WACC · IRR · PB · DPB\n- *Hai mặt bằng giá tính song song → cross-check Fisher*"
+            },
+            {
+              "id": 44,
+              "title": "QĐ2 — Chủ sở hữu (Equity) [V]",
+              "en": "Owner's Perspective",
+              "kind": "leaf",
+              "detail": "- `FCFE = FCFF − Interest·(1−t) − Principal + Net Borrowing`\n- NPV @ Re · IRR Equity\n- *Cho thấy lợi ích của chủ đầu tư sau khi trả nợ*"
+            },
+            {
+              "id": 45,
+              "title": "QĐ3 — Ngân hàng (Banker) [V]",
+              "en": "Banker's Perspective",
+              "kind": "leaf",
+              "detail": "- `DSCR_t = (FCFF + Interest·(1−t)) / (Interest + Principal)`\n- Báo cáo DSCR min, DSCR trung bình\n- *Ngưỡng phê duyệt: 1.2 – 1.4*"
+            },
+            {
+              "id": 46,
+              "title": "QĐ4 — Kinh tế (Economic) [V]",
+              "en": "Economic Analysis",
+              "kind": "leaf",
+              "detail": "Chuyển ngân lưu tài chính → kinh tế qua các hệ số:\n\n- **SERF** (Shadow Exchange Rate Factor) — tỷ giá hối đoái mờ\n- **SWRF** (Shadow Wage Rate Factor) — tỷ lệ lương mờ\n- Hệ số GPMB, hệ số ngoại tác môi trường\n\nLợi ích kinh tế đặc thù (BOT): **VOT** (giá trị thời gian) + **VOC** (chi phí vận hành xe). Phân biệt **thay thế** vs **tăng thêm**.\n\nNPV @ EOCK. *Không có thuế, không có nợ, không có khấu hao.*\n\n**Nguồn:** Jenkins–Kuo–Harberger Ch.6–9 · Harberger (1972) *Project Evaluation*"
+            },
+            {
+              "id": 47,
+              "title": "QĐ5 — Phân phối (Distributive) [V]",
+              "en": "Distributive Analysis",
+              "kind": "leaf",
+              "detail": "- 3 NPV song song: FA @ WACC · FA @ EOCK · EA @ EOCK\n- Chênh lệch (kinh tế − tài chính) = **thặng dư xã hội**\n- Phân bổ thặng dư cho: Nhà nước (thuế), người tiêu dùng (giá thấp hơn), lao động (lương cao hơn), người bị GPMB (đền bù), chủ đầu tư\n\n**Nguồn:** Jenkins–Kuo–Harberger Ch.12 *Externalities and Distributive Effects*"
+            },
+            {
+              "id": 48,
+              "title": "Phân tích độ nhạy [★]",
+              "en": "Sensitivity Analysis",
+              "kind": "leaf",
+              "detail": "- **1 chiều:** thay đổi 1 biến → quan sát NPV/IRR/DSCR min\n- **2 chiều:** thay đổi 2 biến đồng thời → bảng 2D\n- **Monte Carlo** (nếu cần): biến ngẫu nhiên theo phân phối xác suất\n\n**Nguồn:** Savvides (1994) *Project Appraisal* 9(1) · Jenkins–Kuo–Harberger Ch.10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "title": "⚙ 7 cờ điều khiển",
+      "en": "7 Control Flags",
+      "detail": "Các switch bật/tắt variant của template — cài ở đầu mô hình, các bảng tham chiếu qua INDEX/CHOOSE.",
+      "children": [
+        {
+          "id": 50,
+          "title": "Cờ 1 — Scenario_ID",
+          "en": "Scenario Switch",
+          "kind": "leaf",
+          "detail": "Switch kịch bản (giá, lưu lượng, công suất) qua `INDEX`/`CHOOSE`."
+        },
+        {
+          "id": 51,
+          "title": "Cờ 2 — VAT_INCL (Y/N)",
+          "en": "VAT Inclusion",
+          "kind": "leaf",
+          "detail": "Bật/tắt cộng VAT vào doanh thu + tính hoàn VAT đầu vào."
+        },
+        {
+          "id": 52,
+          "title": "Cờ 3 — IDC_capitalize (Y/N)",
+          "en": "Capitalize IDC",
+          "kind": "leaf",
+          "detail": "Lãi vay TGXD nhập gốc (BOT, nhà máy điện) hay tính vào chi phí lãi vay ngay."
+        },
+        {
+          "id": 53,
+          "title": "Cờ 4 — Price_basis (Real/Nominal)",
+          "en": "Price Basis",
+          "kind": "leaf",
+          "detail": "Chọn mặt bằng giá để báo cáo (tốt nhất tính cả 2)."
+        },
+        {
+          "id": 54,
+          "title": "Cờ 5 — Currency_main (VND/USD)",
+          "en": "Main Currency",
+          "kind": "leaf",
+          "detail": "Đơn vị tiền chính để chiết khấu."
+        },
+        {
+          "id": 55,
+          "title": "Cờ 6 — N_inflation_streams (1/2/3)",
+          "en": "Inflation Streams",
+          "kind": "leaf",
+          "detail": "Số đường lạm phát: 1 = CPI · 2 = CPI + xây dựng · 3 = + USD."
+        },
+        {
+          "id": 56,
+          "title": "Cờ 7 — Perspective_active",
+          "en": "Active Perspectives",
+          "kind": "leaf",
+          "detail": "TIPV / Equity / Banker / Economic / Distributive (chọn nhiều)."
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "title": "✅ Quy trình xây dựng",
+      "en": "Build Sequence (14 Steps)",
+      "kind": "leaf",
+      "detail": "1. Trả lời **5 câu hỏi** ở ⓪ (Khung quyết định)\n2. Khung năm + cài **7 cờ điều khiển**\n3. Nhập Bảng thông số **B1** (vĩ mô + đầu tư + thuế)\n4. Dựng Bảng chỉ số giá **B2.1** (xong trước mọi quy đổi)\n5. Ngân lưu CP đầu tư **B2.2** (+ IDC nếu áp dụng)\n6. Lịch nợ vay **B3** (nếu áp dụng TIPV/Equity/Banker)\n7. Doanh thu **B4.1** (công thức theo loại dự án)\n8. Chi phí **B4.2** (biến đổi + cố định + VAT)\n9. Khấu hao **B5.1** (ma trận N nhóm × T năm)\n10. KQHĐKD **B5.2** (chú ý R178 thuế hiệu dụng)\n11. Vốn lưu động **B5.3** (bỏ qua nếu thu tiền mặt)\n12. FCFF + NPV/IRR (**TIPV** — danh nghĩa + thực)\n13. Mở rộng các quan điểm: Equity, Banker, Economic, Distributive\n14. Phân tích độ nhạy (1D + 2D)"
+    },
+    {
+      "id": 58,
+      "title": "📌 Mapping 5 case trong môn học",
+      "en": "Course Case Mapping",
+      "detail": "Đối chiếu template với 5 case đã học — mỗi case minh họa một cấu hình cờ khác nhau.",
+      "children": [
+        {
+          "id": 59,
+          "title": "Tate & Lyle Sugar",
+          "en": "Bài 8, 13–14",
+          "kind": "leaf",
+          "detail": "- **Loại:** sản xuất xuất khẩu\n- **Đặc thù:** đa kịch bản giá đường, giá mía; 3 nguồn vay USD; ưu đãi miễn thuế\n- **Suất chiết khấu:** hurdle IFC 10% thực (B75 hardcode)\n- Có đủ B1–B6, quan điểm TIPV"
+        },
+        {
+          "id": 60,
+          "title": "Kho Sơn Cement",
+          "en": "Bài 11",
+          "kind": "leaf",
+          "detail": "- **Loại:** sản xuất (rút gọn)\n- **Đặc thù:** KHÔNG có B2 (chỉ số giá), KHÔNG có B4 (chi phí chi tiết) — EBIT cho trước\n- **Quan điểm:** 3 quan điểm song song (FCFP/TIPV/Equity)\n- **Mục đích:** minh họa tương đương DCF"
+        },
+        {
+          "id": 61,
+          "title": "Chợ Lớn–Gò Vấp Bus",
+          "en": "Bài 6–7",
+          "kind": "leaf",
+          "detail": "- **Loại:** vận tải dịch vụ\n- **Đặc thù:** doanh thu có TRỢ GIÁ; chi phí nhiên liệu nhập (cần tỷ giá)\n- Có đủ B1–B6, 2 mặt bằng giá song song (danh nghĩa + thực)"
+        },
+        {
+          "id": 62,
+          "title": "BOT Cai Lậy — Finance",
+          "en": "Bài 9–10",
+          "kind": "leaf",
+          "detail": "- **Loại:** hạ tầng BOT đường bộ\n- **Đặc thù:** 8 nhóm xe, 3 kịch bản lưu lượng, chu kỳ điều chỉnh giá vé, giảm tải khi cao tốc khai thác, IDC nhập gốc, 2 đường lạm phát (CPI + xây dựng), không VLĐ\n- **Quan điểm:** TIPV + DSCR + IRR nợ vay"
+        },
+        {
+          "id": 63,
+          "title": "BOT Cai Lậy — Economic",
+          "en": "Bài 15-II",
+          "kind": "leaf",
+          "detail": "- **Quan điểm kinh tế**\n- Doanh thu = tiết kiệm **VOT** + tiết kiệm **VOC**\n- Phân tách thay thế / tăng thêm\n- KHÔNG có thuế / nợ / khấu hao\n- Chiết khấu @ EOCK"
+        },
+        {
+          "id": 64,
+          "title": "BOT Cai Lậy — Distributive",
+          "en": "Bài 15-III",
+          "kind": "leaf",
+          "detail": "- **Quan điểm phân phối**\n- 3 NPV song song (FA@WACC, FA@EOCK, EA@EOCK)\n- Bóc tách thặng dư cho 5 nhóm: Nhà nước, người sử dụng, chủ đầu tư, lao động, người được đền bù"
+        }
+      ]
+    },
+    {
+      "id": 65,
+      "title": "🎯 Gợi ý áp dụng cho dự án mới",
+      "en": "Application Tips",
+      "detail": "Checklist trước khi bắt đầu, cách xử lý dự án dạng mới, và các sai lầm thường gặp.",
+      "children": [
+        {
+          "id": 66,
+          "title": "Trước khi gõ ô đầu tiên",
+          "en": "Before You Start",
+          "kind": "leaf",
+          "detail": "- Trả lời 5 câu hỏi ở ⓪ — đặc biệt **Quan điểm phân tích**\n- Liệt kê các kịch bản cần test → quyết định số switch `CHOOSE`/`INDEX`\n- Vẽ tay sơ đồ phụ thuộc giữa các sheet (nếu tách Finance/Economic/Distributive)"
+        },
+        {
+          "id": 67,
+          "title": "Dự án dạng mới",
+          "en": "New Project Types",
+          "kind": "leaf",
+          "detail": "- **Năng lượng (NMĐ):** giống BOT + giá bán điện theo PPA + hệ số availability\n- **Cấp nước / Xử lý nước thải:** giống BOT + thất thoát nước + giá khối nước nhiều bậc\n- **Y tế / Giáo dục:** nhiều khi không có doanh thu tiền mặt → tập trung Economic/Distributive\n- **Bất động sản:** dòng tiền tập trung 1–2 năm cuối → đặc biệt nhạy với IRR"
+        },
+        {
+          "id": 68,
+          "title": "Sai lầm thường gặp",
+          "en": "Common Pitfalls",
+          "kind": "leaf",
+          "detail": "- Trộn FCFF với WACC thực (NPV phồng giả)\n- Quên cộng ngược lãi sau thuế khi tính DSCR\n- Tính thuế TNDN không có loss carry-forward → over-tax năm 1–2\n- Quên IDC nhập gốc cho BOT → underestimate khấu hao\n- Dùng tỷ giá danh nghĩa cho phân tích thực"
+        }
+      ]
+    }
+  ]
+};
+
+/* ================= ENGINE (khong can sua) ================= */
+const canvas = document.getElementById("diagramCanvas");
+const viewport = document.getElementById("diagramViewport");
+const detailPanel = document.getElementById("detailPanel");
+const scrim = document.getElementById("scrim");
+
+const nodeById = new Map();
+const parentById = new Map();
+const displayNumberById = new Map();
+(function index(node,parent){ nodeById.set(node.id,node);
+  if(parent) parentById.set(node.id,parent);
+  (node.children||[]).forEach(c=>index(c,node)); })(diagramData,null);
+(function bfs(root){ const q=[root]; let n=1; while(q.length){ const x=q.shift();
+  displayNumberById.set(x.id,n++); (x.children||[]).forEach(c=>q.push(c)); }})(diagramData);
+
+const state = { expanded:new Set([diagramData.id]), focusedChildByParent:new Map(), zoom:0.9 };
+
+const hasChildren = n => (n.children||[]).length>0;
+function pathToRoot(id){ const p=[]; let c=nodeById.get(id); while(c){ p.unshift(c.id); c=parentById.get(c.id)||null; } return p; }
+function topBranch(id){ return pathToRoot(id)[1]; }
+function setFocus(path){ state.focusedChildByParent.clear();
+  for(let i=0;i<path.length-1;i++) state.focusedChildByParent.set(path[i],path[i+1]); }
+function visibleChildren(node){ const ch=node.children||[]; const f=state.focusedChildByParent.get(node.id);
+  if(!f) return ch; const a=ch.find(c=>c.id===f); return a?[a]:ch; }
+
+function toggleNode(id){
+  if(state.expanded.has(id)){
+    const parent=parentById.get(id);
+    const p=parent?pathToRoot(parent.id):[]; state.expanded=new Set(p); setFocus(p);
+    render(); centerNode(parent?parent.id:diagramData.id); return;
+  }
+  const p=pathToRoot(id); state.expanded=new Set(p); setFocus(p);
+  render(); centerNode(id);
+}
+
+function makeNode(node){
+  const wrap=document.createElement("div");
+  const b=topBranch(node.id);
+  wrap.className="node "+(node.kind||"")+(b?" branch-"+(((b%6)||6)):"")
+    +(hasChildren(node)?" has-children":"")+(state.expanded.has(node.id)?" is-expanded":"");
+  wrap.dataset.id=node.id;
+  const num=document.createElement("div"); num.className="node-num";
+  num.textContent=displayNumberById.get(node.id); wrap.appendChild(num);
+  const main=document.createElement("button"); main.type="button"; main.className="node-main";
+  main.textContent=node.title;
+  if(node.en){const en=document.createElement("span");en.className="node-en";en.textContent=node.en;main.appendChild(en);}
+  main.addEventListener("click",e=>{e.stopPropagation();openDetail(node.id);});
+  wrap.appendChild(main);
+  if(hasChildren(node)){
+    const bar=document.createElement("button"); bar.type="button"; bar.className="node-expand-bar";
+    bar.textContent=state.expanded.has(node.id)?"▲ thu":"▼ mo "+(node.children.length);
+    bar.addEventListener("click",e=>{e.stopPropagation();toggleNode(node.id);});
+    wrap.appendChild(bar);
+  }
+  return wrap;
+}
+function renderTree(node){
+  const li=document.createElement("li"); li.appendChild(makeNode(node));
+  if(hasChildren(node)&&state.expanded.has(node.id)){
+    const ul=document.createElement("ul");
+    visibleChildren(node).forEach(c=>ul.appendChild(renderTree(c)));
+    li.appendChild(ul);
+  }
+  return li;
+}
+function render(){
+  canvas.innerHTML="";
+  const tree=document.createElement("ul"); tree.className="tree";
+  tree.appendChild(renderTree(diagramData)); canvas.appendChild(tree);
+  applyZoom(); requestAnimationFrame(drawConnectors);
+}
+function drawConnectors(){
+  const old=canvas.querySelector("svg.links"); if(old) old.remove();
+  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("class","links");
+  svg.setAttribute("width",canvas.scrollWidth); svg.setAttribute("height",canvas.scrollHeight);
+  const cRect=canvas.getBoundingClientRect(); const s=state.zoom||1;
+  const pt=(el,edge)=>{ const r=el.getBoundingClientRect();
+    return { x:(r.left-cRect.left)/s + (r.width/s)/2,
+             y:edge==="bottom"?(r.bottom-cRect.top)/s:(r.top-cRect.top)/s }; };
+  canvas.querySelectorAll(".node.has-children.is-expanded").forEach(pEl=>{
+    const li=pEl.closest("li"); const ul=li&&li.querySelector(":scope>ul"); if(!ul) return;
+    const pP=pt(pEl,"bottom");
+    ul.querySelectorAll(":scope>li>.node").forEach(cEl=>{
+      const cP=pt(cEl,"top"); const midY=pP.y+Math.max(16,(cP.y-pP.y)/2);
+      const path=document.createElementNS("http://www.w3.org/2000/svg","path");
+      path.setAttribute("d","M "+pP.x+" "+pP.y+" V "+midY+" H "+cP.x+" V "+cP.y);
+      svg.appendChild(path);
+    });
+  });
+  canvas.insertBefore(svg,canvas.firstChild);
+}
+function applyZoom(){ canvas.style.transform="scale("+state.zoom+")";
+  document.getElementById("zoomValue").textContent=state.zoom.toFixed(2)+"×"; }
+function centerNode(id){ requestAnimationFrame(()=>{
+  const el=canvas.querySelector('.node[data-id="'+id+'"]'); if(!el) return;
+  const vR=viewport.getBoundingClientRect(), nR=el.getBoundingClientRect();
+  const cx=nR.left-vR.left+viewport.scrollLeft+nR.width/2;
+  viewport.scrollLeft=Math.max(0,cx-viewport.clientWidth/2);
+  viewport.scrollTop=Math.max(0,nR.top-vR.top+viewport.scrollTop-70);
+});}
+
+/* -------- mini Markdown -------- */
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function inline(s){ return esc(s)
+  .replace(/`([^`]+)`/g,"<code>$1</code>")
+  .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+  .replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>")
+  .replace(/\*([^*]+)\*/g,"<em>$1</em>"); }
+function renderMarkdown(src){
+  const lines=(src||"").split("\n"); let html="",list=false;
+  const closeList=()=>{ if(list){html+="</ul>";list=false;} };
+  for(const raw of lines){ const l=raw.trim();
+    if(!l){ closeList(); continue; }
+    let m;
+    if(m=l.match(/^#{1,4}\s+(.*)/)){ closeList(); html+="<h3>"+inline(m[1])+"</h3>"; }
+    else if(m=l.match(/^[-*]\s+(.*)/)){ if(!list){html+="<ul>";list=true;} html+="<li>"+inline(m[1])+"</li>"; }
+    else { closeList(); html+="<p>"+inline(l)+"</p>"; }
+  }
+  closeList(); return html;
+}
+
+/* -------- detail panel -------- */
+function openDetail(id){
+  const node=nodeById.get(id); if(!node) return;
+  document.getElementById("panelId").textContent="Node "+displayNumberById.get(id);
+  document.getElementById("panelTitle").textContent=node.title;
+  if(node.en){const pe=document.createElement("div");pe.className="panel-en";pe.textContent=node.en;document.getElementById("panelTitle").appendChild(pe);}
+  const g=document.getElementById("panelGroup"); g.textContent=node.group||""; g.hidden=!node.group;
+  document.getElementById("panelDescription").innerHTML=renderMarkdown(node.detail||"_Chua co mo ta._");
+  const pills=document.getElementById("panelChildren"); pills.innerHTML="";
+  const label=document.getElementById("childrenLabel");
+  const ch=node.children||[]; label.hidden=ch.length===0;
+  ch.forEach(c=>{ const b=document.createElement("button");
+    b.textContent=displayNumberById.get(c.id)+". "+c.title;
+    b.addEventListener("click",()=>openDetail(c.id)); pills.appendChild(b); });
+  detailPanel.classList.add("open"); scrim.hidden=false;
+}
+function closeDetail(){ detailPanel.classList.remove("open"); scrim.hidden=true; }
+
+/* -------- controls -------- */
+document.getElementById("closePanel").addEventListener("click",closeDetail);
+scrim.addEventListener("click",closeDetail);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDetail(); });
+document.getElementById("expandAll").addEventListener("click",()=>{
+  state.focusedChildByParent.clear(); state.expanded=new Set([...nodeById.values()].filter(hasChildren).map(n=>n.id));
+  render(); });
+document.getElementById("collapseAll").addEventListener("click",()=>{
+  state.expanded=new Set([diagramData.id]); state.focusedChildByParent.clear();
+  render(); centerNode(diagramData.id); });
+const zoomRange=document.getElementById("zoomRange");
+zoomRange.addEventListener("input",e=>{ state.zoom=Number(e.target.value); applyZoom();
+  requestAnimationFrame(drawConnectors); });
+/* pan */
+let drag=false,sx,sy,ssx,ssy;
+viewport.addEventListener("pointerdown",e=>{ if(e.target.closest("button"))return;
+  drag=true; viewport.classList.add("dragging"); sx=e.clientX;sy=e.clientY;
+  ssx=viewport.scrollLeft;ssy=viewport.scrollTop; viewport.setPointerCapture(e.pointerId); });
+viewport.addEventListener("pointermove",e=>{ if(!drag)return;
+  viewport.scrollLeft=ssx-(e.clientX-sx); viewport.scrollTop=ssy-(e.clientY-sy); });
+viewport.addEventListener("pointerup",()=>{drag=false;viewport.classList.remove("dragging");});
+window.addEventListener("resize",()=>requestAnimationFrame(drawConnectors));
+
+state.zoom=Number(zoomRange.value);
+render(); centerNode(diagramData.id);
+</script>
+</body>
+</html>
