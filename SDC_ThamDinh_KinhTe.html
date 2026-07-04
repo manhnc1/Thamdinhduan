@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chi phí & lợi ích kinh tế của dự án — minh họa từng bước</title>
+<style>
+:root{
+  --teal:#0F9B8E; --red:#A32D2D; --amber:#BA7517; --blue:#185FA5; --purple:#534AB7;
+  --tx:#1f2421; --tx2:#5f5e5a; --bg:#faf9f7; --card:#ffffff; --bd:#e4e2db;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  line-height:1.65;}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 60px}
+h1{font-size:24px;font-weight:600;margin:0 0 4px}
+.sub{color:var(--tx2);font-size:14px;margin:0 0 26px}
+h2{font-size:19px;font-weight:600;margin:34px 0 6px;padding-top:14px;border-top:1px solid var(--bd)}
+h2 .n{color:var(--blue)}
+p{font-size:14.5px;color:var(--tx);margin:8px 0}
+.muted{color:var(--tx2);font-size:13.5px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px 18px;margin:14px 0}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--tx2);margin:10px 0 4px}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:18px;height:3px;border-radius:2px;display:inline-block}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 12px}
+.ind{font-size:13px;color:var(--tx2)}
+button{font-size:13px;padding:8px 16px;border:1px solid #c9c7c0;background:#fff;border-radius:8px;
+  cursor:pointer;color:var(--tx)}
+button:hover{background:#f4f3ef}
+button:disabled{opacity:.4;cursor:default}
+.stitle{font-size:16px;font-weight:600;margin:0 0 6px}
+.sdesc{font-size:14px;line-height:1.6;color:var(--tx2);min-height:96px}
+.flow{opacity:.14;transition:opacity .25s}
+.flow.on{opacity:1}
+.foot{margin-top:34px;font-size:12.5px;color:var(--tx2);border-top:1px solid var(--bd);padding-top:14px}
+svg{width:100%;height:auto;display:block}
+.note{font-size:13px;color:var(--tx2);margin:6px 0}
+.key{display:inline-block;font-weight:600;color:var(--red)}
+.meterwrap{display:flex;height:20px;background:#fff;border:1px solid var(--bd);border-radius:5px;overflow:hidden;max-width:340px;margin-top:6px}
+.seg{height:100%;width:0;transition:width .35s}
+.seg.teal{background:var(--teal);opacity:.8}
+.seg.purple{background:var(--purple);opacity:.72}
+.meterlab{font-size:12.5px;color:var(--tx);margin-top:5px;font-weight:600}
+.steppanel{border-left:4px solid var(--bd);padding-left:12px;margin-top:6px;transition:border-color .25s}
+.steppanel .stitle{transition:color .25s}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin:12px 0}
+th,td{border:1px solid var(--bd);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#f4f3ef;font-weight:600}
+td.c{text-align:center}
+.tabs{display:flex;gap:8px;margin:0 0 20px;border-bottom:2px solid var(--bd);flex-wrap:wrap}
+.tab{font-size:14px;font-weight:600;padding:10px 18px;border:none;border-bottom:3px solid transparent;background:none;color:var(--tx2);margin-bottom:-2px;cursor:pointer}
+.tab:hover{background:#f4f3ef}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tabpage{animation:fade .3s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.rule{background:#f4f3ef;border-left:4px solid var(--blue);border-radius:0;padding:12px 16px;margin:14px 0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Chi phí &amp; lợi ích kinh tế của dự án — minh họa hình học từng bước</h1>
+<p class="sub">Theo Bài đọc Hướng dẫn phân tích chi phí – lợi ích (Jenkins &amp; Harberger), SHD Chương 7–8 (thị trường không biến dạng) và Chương 9 (thị trường biến dạng) · môn Thẩm định đầu tư công (MPP27, FSPPM). Ví dụ chuẩn: thị trường phòng khách sạn bãi biển.</p>
+
+<div class="tabs">
+<button class="tab active" data-tab="1">1 · Lợi ích đầu ra (Ch.8–9)</button>
+<button class="tab" data-tab="2">2 · Chi phí nhập lượng (Ch.9)</button>
+<button class="tab" data-tab="3">3 · Giá kinh tế đầu vào &amp; SER</button>
+</div>
+
+<div class="tabpage" id="page1">
+<h2><span class="n">A.</span> Ba định đề nền tảng</h2>
+<p>Mọi phép đo lợi ích – chi phí kinh tế đều dựng trên ba định đề của kinh tế học phúc lợi ứng dụng:</p>
+<div class="card">
+<p style="margin:2px 0"><strong>(a) Giá cầu = mức sẵn lòng chi trả (WTP).</strong> Đường cầu cho biết đơn vị sản phẩm đáng giá bao nhiêu với người dùng.</p>
+<p style="margin:2px 0"><strong>(b) Giá cung = chi phí cơ hội.</strong> Đường cung cho biết chi phí tài nguyên thực để cung thêm một đơn vị.</p>
+<p style="margin:2px 0"><strong>(c) Tổng gộp toàn xã hội.</strong> Lợi ích và chi phí được cộng dồn trên mọi cư dân, không quan tâm ai nhận — nên các khoản chuyển giao (thuế, trợ giá) bị loại.</p>
+</div>
+<p class="note">Trong thị trường không biến dạng, giá cầu = giá cung ở đơn vị cuối cùng. Khi có thuế/trợ giá, hai giá tách ra đúng bằng "cái nêm" — đó là toàn bộ khác biệt giữa Chương 8 và Chương 9.</p>
+
+<h2><span class="n">B.</span> Chương 8 — thị trường KHÔNG biến dạng</h2>
+<p>Nhà nước xây thêm 10.000 phòng-đêm/năm vào một thị trường không có thuế. Bấm <strong>Tiếp ›</strong> để xem lợi ích kinh tế hình thành từ hai mảnh: <em>tài nguyên tiết kiệm</em> (phần thay thế) và <em>tiêu dùng tăng thêm</em> (phần tăng thêm).</p>
+
+<div class="card">
+<svg viewBox="0 0 640 372" role="img" aria-label="Hình 8-2: lợi ích kinh tế của dự án trong thị trường không biến dạng">
+<defs>
+<marker id="axB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5f5e5a"/></marker>
+</defs>
+<g class="flow" id="gTeal"><polygon points="385,160 430,140 430,340 385,340" fill="#0F9B8E" fill-opacity="0.5"/></g>
+<g class="flow" id="gPurple"><polygon points="430,140 502,160 502,340 430,340" fill="#534AB7" fill-opacity="0.42"/></g>
+<line x1="70" y1="340" x2="618" y2="340" stroke="#5f5e5a" stroke-width="1.3" marker-end="url(#axB)"/>
+<line x1="70" y1="340" x2="70" y2="34" stroke="#5f5e5a" stroke-width="1.3" marker-end="url(#axB)"/>
+<text x="74" y="30" font-size="11" fill="#5f5e5a">Giá $/đêm</text>
+<text x="616" y="366" font-size="11" fill="#5f5e5a" text-anchor="end">Số phòng-đêm/năm (ngàn)</text>
+<line x1="70" y1="40" x2="610" y2="190" stroke="#185FA5" stroke-width="2"/>
+<text x="565" y="172" font-size="11" font-weight="600" fill="#185FA5">AD₀</text>
+<line x1="70" y1="300" x2="610" y2="60" stroke="#0F9B8E" stroke-width="2"/>
+<text x="565" y="80" font-size="11" font-weight="600" fill="#0F9B8E">BS₀</text>
+<g class="flow" id="gDst">
+  <line x1="190" y1="300" x2="610" y2="113" stroke="#BA7517" stroke-width="1.9" stroke-dasharray="6 4"/>
+  <text x="560" y="132" font-size="11" font-weight="600" fill="#BA7517">DSₜ</text>
+</g>
+<line x1="70" y1="140" x2="430" y2="140" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="66" y="137" font-size="10.5" fill="#1f2421" text-anchor="end">$20</text>
+<circle cx="430" cy="140" r="3.4" fill="#1f2421"/>
+<text x="436" y="136" font-size="11" font-weight="600" fill="#1f2421">C</text>
+<g class="flow" id="gP1">
+  <line x1="70" y1="160" x2="502" y2="160" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="66" y="171" font-size="10.5" fill="#1f2421" text-anchor="end">$18</text>
+</g>
+<g class="flow" id="gGF">
+  <line x1="385" y1="340" x2="385" y2="160" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="502" y1="340" x2="502" y2="160" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="430" y1="340" x2="430" y2="140" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <circle cx="385" cy="160" r="3.4" fill="#1f2421"/><text x="366" y="156" font-size="11" font-weight="600" fill="#1f2421">G</text>
+  <circle cx="502" cy="160" r="3.4" fill="#1f2421"/><text x="508" y="156" font-size="11" font-weight="600" fill="#1f2421">F</text>
+  <text x="385" y="356" font-size="10.5" fill="#5f5e5a" text-anchor="middle">Q₃≈26</text>
+  <text x="430" y="368" font-size="10.5" fill="#5f5e5a" text-anchor="middle">Q₀=30</text>
+  <text x="502" y="356" font-size="10.5" fill="#5f5e5a" text-anchor="middle">Q₂≈36</text>
+</g>
+</svg>
+<div class="lg">
+<span><i class="dot" style="background:#185FA5"></i>AD₀ — cầu = WTP (giá cầu)</span>
+<span><i class="dot" style="background:#0F9B8E"></i>BS₀ — cung tư nhân (giá cung)</span>
+<span><i class="dot" style="background:#BA7517"></i>DSₜ — cung sau khi có dự án</span>
+</div>
+<div class="lg">
+<span><i class="dot" style="background:#0F9B8E"></i>Mảng xanh: tài nguyên tiết kiệm (thay thế)</span>
+<span><i class="dot" style="background:#534AB7"></i>Mảng tím: tiêu dùng tăng thêm (tăng thêm)</span>
+</div>
+<div class="meterwrap"><div class="seg teal" id="mbBt"></div><div class="seg purple" id="mbBp"></div></div>
+<div class="meterlab" id="mlB">Lợi ích ròng: chưa tính</div>
+<div class="bar">
+<button id="prevB" aria-label="Bước trước">‹ Trước</button>
+<span class="ind" id="indB">Bước 0 / 5</span>
+<button id="nextB">Tiếp ›</button>
+</div>
+<div class="steppanel" id="spB"><div class="stitle" id="stitleB"></div>
+<div class="sdesc" id="sdescB"></div></div>
+</div>
+<p class="note"><span class="key">Công thức:</span> Lợi ích = (lượng thay thế × giá cung) + (lượng tăng thêm × giá cầu) = $73.150 + $116.850 = <strong>$190.000/năm = $19/phòng-đêm</strong>. Chuyển giao thu nhập giữa chủ khách sạn cũ và người tiêu dùng không tính vì không phải nguồn lực thực.</p>
+
+<h2><span class="n">C.</span> Chương 9 — thị trường CÓ biến dạng (thuế doanh thu 25%)</h2>
+<p>Giờ đánh thuế doanh thu 25% lên tiền phòng. Điều thay đổi duy nhất về hình học: <strong>giá cầu và giá cung không còn bằng nhau</strong> — thuế chèn một cái "nêm". Cách đo lợi ích y hệt Chương 8, chỉ khác mỗi mảnh dùng một giá riêng.</p>
+
+<div class="card">
+<svg viewBox="0 0 640 382" role="img" aria-label="Hình 9-2: lợi ích kinh tế của dự án khi có thuế doanh thu">
+<defs>
+<marker id="axC" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5f5e5a"/></marker>
+</defs>
+<g class="flow" id="gTealC"><polygon points="330,185 370,167 370,340 330,340" fill="#0F9B8E" fill-opacity="0.5"/></g>
+<g class="flow" id="gPurpleC"><polygon points="370,123 450,146 450,340 370,340" fill="#534AB7" fill-opacity="0.42"/></g>
+<line x1="70" y1="340" x2="618" y2="340" stroke="#5f5e5a" stroke-width="1.3" marker-end="url(#axC)"/>
+<line x1="70" y1="340" x2="70" y2="34" stroke="#5f5e5a" stroke-width="1.3" marker-end="url(#axC)"/>
+<text x="74" y="30" font-size="11" fill="#5f5e5a">Giá $/đêm</text>
+<text x="616" y="376" font-size="11" fill="#5f5e5a" text-anchor="end">Số phòng-đêm/năm (ngàn)</text>
+<line x1="70" y1="40" x2="610" y2="190" stroke="#185FA5" stroke-width="2"/>
+<text x="565" y="176" font-size="11" font-weight="600" fill="#185FA5">AD₀</text>
+<line x1="70" y1="300" x2="610" y2="60" stroke="#0F9B8E" stroke-width="2"/>
+<text x="565" y="80" font-size="11" font-weight="600" fill="#0F9B8E">BS₀</text>
+<g class="flow" id="gNDn">
+  <line x1="70" y1="84" x2="610" y2="234" stroke="#185FA5" stroke-width="1.7" stroke-dasharray="6 4"/>
+  <text x="556" y="230" font-size="11" font-weight="600" fill="#185FA5">NDₙ</text>
+</g>
+<g class="flow" id="gDST">
+  <line x1="190" y1="300" x2="610" y2="113" stroke="#BA7517" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <text x="556" y="132" font-size="11" font-weight="600" fill="#BA7517">DSₜ</text>
+  <line x1="70" y1="185" x2="450" y2="185" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="66" y="196" font-size="10.5" fill="#0F9B8E" text-anchor="end">$15,55</text>
+  <line x1="70" y1="146" x2="450" y2="146" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="66" y="143" font-size="10.5" fill="#185FA5" text-anchor="end">$19,44</text>
+  <line x1="330" y1="340" x2="330" y2="185" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="450" y1="340" x2="450" y2="146" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <circle cx="330" cy="185" r="3.4" fill="#1f2421"/><text x="311" y="182" font-size="11" font-weight="600" fill="#1f2421">J</text>
+  <circle cx="450" cy="146" r="3.4" fill="#1f2421"/><text x="456" y="143" font-size="11" font-weight="600" fill="#1f2421">F</text>
+  <text x="330" y="356" font-size="10.5" fill="#5f5e5a" text-anchor="middle">Qˢ≈22</text>
+  <text x="450" y="356" font-size="10.5" fill="#5f5e5a" text-anchor="middle">Qᵈ≈32</text>
+</g>
+<g class="flow" id="gWedge">
+  <rect x="366" y="123" width="8" height="44" fill="#BA7517" fill-opacity="0.85"/>
+  <line x1="70" y1="167" x2="370" y2="167" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="66" y="171" font-size="10.5" fill="#0F9B8E" text-anchor="end">$17,33</text>
+  <line x1="70" y1="123" x2="370" y2="123" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="66" y="120" font-size="10.5" fill="#185FA5" text-anchor="end">$21,66</text>
+  <line x1="370" y1="340" x2="370" y2="123" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <circle cx="370" cy="167" r="3.4" fill="#1f2421"/><text x="376" y="180" font-size="11" font-weight="600" fill="#1f2421">E</text>
+  <circle cx="370" cy="123" r="3.4" fill="#1f2421"/><text x="376" y="119" font-size="11" font-weight="600" fill="#1f2421">G₀</text>
+  <text x="382" y="149" font-size="10" font-weight="600" fill="#BA7517">thuế $4,33</text>
+  <text x="370" y="370" font-size="10.5" fill="#5f5e5a" text-anchor="middle">Q₁=25</text>
+</g>
+</svg>
+<div class="lg">
+<span><i class="dot" style="background:#185FA5"></i>AD₀ — giá cầu (gồm thuế)</span>
+<span><i class="dot" style="background:#0F9B8E"></i>BS₀ — giá cung</span>
+<span><i class="dot" style="background:#185FA5"></i>NDₙ — cầu trừ thuế</span>
+<span><i class="dot" style="background:#BA7517"></i>nêm thuế / DSₜ</span>
+</div>
+<div class="meterwrap"><div class="seg teal" id="mbCt"></div><div class="seg purple" id="mbCp"></div></div>
+<div class="meterlab" id="mlC">Lợi ích ròng: chưa tính</div>
+<div class="bar">
+<button id="prevC" aria-label="Bước trước">‹ Trước</button>
+<span class="ind" id="indC">Bước 0 / 5</span>
+<button id="nextC">Tiếp ›</button>
+</div>
+<div class="steppanel" id="spC"><div class="stitle" id="stitleC"></div>
+<div class="sdesc" id="sdescC"></div></div>
+</div>
+
+<h2><span class="n">D.</span> Kinh tế ≠ tài chính — và liên hệ nhà máy bia</h2>
+<table>
+<tr><th>Khoản mục</th><th class="c">Phân tích tài chính</th><th class="c">Phân tích kinh tế</th></tr>
+<tr><td>Giá dùng cho đầu ra</td><td class="c">Giá thị trường (net thuế) $15,55</td><td class="c">Giá trị kinh tế $19,18</td></tr>
+<tr><td>Thuế VAT / doanh thu / TTĐB</td><td class="c">Có — dòng tiền thực</td><td class="c">Loại — là chuyển giao</td></tr>
+<tr><td>Phần thay thế nguồn cung khác</td><td class="c">Tính theo doanh thu</td><td class="c">Chỉ tính tài nguyên tiết kiệm (giá cung)</td></tr>
+<tr><td>Phần tiêu dùng tăng thêm</td><td class="c">Tính theo doanh thu</td><td class="c">Tính theo WTP (giá cầu)</td></tr>
+<tr><td>Ngoại tác (ô nhiễm, y tế xã hội)</td><td class="c">Không</td><td class="c">Có — trừ trực tiếp</td></tr>
+</table>
+<p class="note">Với <strong>nhà máy bia</strong>: cùng logic này. Phần bia <em>thay thế</em> nhà máy khác chỉ đáng giá bằng tài nguyên tiết kiệm (giá cung); phần bia làm dân uống <em>nhiều hơn</em> đáng giá theo WTP (giá cầu) — nhưng đồng thời sinh ngoại tác tiêu cực phải trừ. Thuế TTĐB bị loại như một khoản chuyển giao; nếu đã tính ngoại tác thì <span class="key">không được tính lại TTĐB</span> (tránh tính trùng).</p>
+
+</div>
+
+<div class="tabpage" id="page2" style="display:none">
+<h2><span class="n">E.</span> Đối xứng: chi phí kinh tế của NHẬP LƯỢNG</h2>
+<p>Chương 9 chỉ ra một kết quả gọn: <strong>cùng một mô hình cung – cầu đo lợi ích của đầu ra thì cũng đo được chi phí của nhập lượng.</strong> Khác biệt duy nhất về hình học: khi dự án <em>mua</em> một nhập lượng, nó làm <strong>đường cầu dịch sang phải</strong> (chứ không phải đường cung), khiến giá thị trường <strong>tăng</strong>.</p>
+<div class="rule">Chi phí kinh tế của nhập lượng = <strong>bình quân gia quyền</strong> của: (a) <strong>giá cung Pˢ</strong> cho phần nhập lượng do sản xuất tăng thêm đáp ứng, và (b) <strong>giá cầu Pᵈ</strong> cho phần chiếm chỗ của những người dùng khác (họ phải mua ít đi). Trọng số theo độ co giãn cung – cầu.</div>
+
+<h2><span class="n">F.</span> Ví dụ: xi măng cho dự án làm đường (Hình 9-5)</h2>
+<p>Thị trường xi măng có thuế doanh thu 25%. Dự án làm đường cần thêm 50.000 tấn/tháng. Bấm <strong>Tiếp ›</strong> để xem chi phí kinh tế hình thành từ hai mảnh: <em>sản xuất thêm</em> (giá cung) và <em>chiếm chỗ người dùng khác</em> (giá cầu).</p>
+
+<div class="card">
+<svg viewBox="0 0 640 372" role="img" aria-label="Hình 9-5: chi phí kinh tế của nhập lượng xi măng khi bị đánh thuế">
+<defs>
+<marker id="axD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5f5e5a"/></marker>
+</defs>
+<g class="flow" id="gcTeal"><polygon points="440,156 515,128 515,340 440,340" fill="#0F9B8E" fill-opacity="0.5"/></g>
+<g class="flow" id="gcPurple"><polygon points="290,82 440,110 440,340 290,340" fill="#534AB7" fill-opacity="0.42"/></g>
+<line x1="70" y1="340" x2="618" y2="340" stroke="#5f5e5a" stroke-width="1.3" marker-end="url(#axD)"/>
+<line x1="70" y1="340" x2="70" y2="34" stroke="#5f5e5a" stroke-width="1.3" marker-end="url(#axD)"/>
+<text x="74" y="30" font-size="11" fill="#5f5e5a">Giá $/tấn</text>
+<text x="616" y="366" font-size="11" fill="#5f5e5a" text-anchor="end">Lượng xi măng/tháng (ngàn tấn)</text>
+<line x1="70" y1="297" x2="610" y2="91" stroke="#0F9B8E" stroke-width="2"/>
+<text x="582" y="88" font-size="11" font-weight="600" fill="#0F9B8E">AS₀</text>
+<line x1="70" y1="40" x2="610" y2="143" stroke="#185FA5" stroke-width="2"/>
+<text x="586" y="137" font-size="11" font-weight="600" fill="#185FA5">BD₀</text>
+<line x1="70" y1="100" x2="610" y2="182" stroke="#185FA5" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="556" y="176" font-size="11" font-weight="600" fill="#185FA5">NDₙ</text>
+<g class="flow" id="gcCDn">
+  <line x1="295" y1="100" x2="610" y2="148" stroke="#BA7517" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <text x="300" y="96" font-size="11" font-weight="600" fill="#BA7517">CDₙ</text>
+</g>
+<line x1="70" y1="156" x2="440" y2="156" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="66" y="159" font-size="10.5" fill="#0F9B8E" text-anchor="end">$42,86</text>
+<line x1="70" y1="110" x2="440" y2="110" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="66" y="107" font-size="10.5" fill="#185FA5" text-anchor="end">$53,57</text>
+<line x1="440" y1="340" x2="440" y2="110" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+<circle cx="440" cy="156" r="3.4" fill="#1f2421"/>
+<circle cx="440" cy="110" r="3.4" fill="#1f2421"/>
+<text x="440" y="356" font-size="10.5" fill="#5f5e5a" text-anchor="middle">Q₁=82</text>
+<g class="flow" id="gcNew">
+  <line x1="70" y1="128" x2="515" y2="128" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="66" y="125" font-size="10.5" fill="#0F9B8E" text-anchor="end">$49,53</text>
+  <line x1="515" y1="340" x2="515" y2="128" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="290" y1="340" x2="290" y2="82" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+  <circle cx="515" cy="128" r="3.4" fill="#1f2421"/><text x="521" y="124" font-size="11" font-weight="600" fill="#1f2421">E</text>
+  <circle cx="290" cy="82" r="3.4" fill="#1f2421"/><text x="272" y="79" font-size="11" font-weight="600" fill="#1f2421">F</text>
+  <text x="296" y="72" font-size="10" fill="#185FA5">Pᵈ₁≈$62</text>
+  <text x="515" y="356" font-size="10.5" fill="#5f5e5a" text-anchor="middle">Qˢ≈99</text>
+  <text x="290" y="368" font-size="10.5" fill="#5f5e5a" text-anchor="middle">Qᵈ≈49</text>
+</g>
+</svg>
+<div class="lg">
+<span><i class="dot" style="background:#0F9B8E"></i>AS₀ — cung (giá cung = chi phí tài nguyên)</span>
+<span><i class="dot" style="background:#185FA5"></i>BD₀ — cầu gồm thuế (giá cầu)</span>
+<span><i class="dot" style="background:#BA7517"></i>NDₙ/CDₙ — cầu sau thuế / có dự án</span>
+</div>
+<div class="lg">
+<span><i class="dot" style="background:#0F9B8E"></i>Mảng xanh: sản xuất thêm (giá cung)</span>
+<span><i class="dot" style="background:#534AB7"></i>Mảng tím: chiếm chỗ người dùng khác (giá cầu)</span>
+</div>
+<div class="meterwrap"><div class="seg teal" id="mbDt"></div><div class="seg purple" id="mbDp"></div></div>
+<div class="meterlab" id="mlD">Chi phí kinh tế: chưa tính</div>
+<div class="bar">
+<button id="prevD" aria-label="Bước trước">‹ Trước</button>
+<span class="ind" id="indD">Bước 0 / 5</span>
+<button id="nextD">Tiếp ›</button>
+</div>
+<div class="steppanel" id="spD"><div class="stitle" id="stitleD"></div>
+<div class="sdesc" id="sdescD"></div></div>
+</div>
+<p class="note"><span class="key">Kết quả:</span> chi phí kinh tế của xi măng = <strong>$54,46/tấn</strong>, nằm giữa giá thị trường $46,20 và chi phí tài chính gồm thuế $57,75. Thuế doanh thu là chuyển giao nên không nằm trọn trong chi phí kinh tế; phần chiếm chỗ người dùng khác vẫn tính theo giá cầu gồm thuế (giá trị thật họ mất).</p>
+
+<h2><span class="n">G.</span> Bảng 9-1 — quy đổi giá thị trường sang giá cung / giá cầu</h2>
+<p>Với mọi loại thuế và trợ giá, chỉ cần quy giá thị trường Pᵐ về giá cung Pˢ và giá cầu Pᵈ theo bảng sau, rồi thế vào công thức bình quân gia quyền là ra chi phí (hoặc lợi ích) kinh tế:</p>
+<table>
+<tr><th>Loại biến dạng trên thị trường</th><th class="c">Giá cung Pˢ</th><th class="c">Giá cầu Pᵈ</th></tr>
+<tr><td>1. Thuế doanh thu tỷ lệ tˢ trên giá bán lẻ</td><td class="c">Pᵐ</td><td class="c">Pᵐ(1 + tˢ)</td></tr>
+<tr><td>2. Thuế doanh thu Tˢ/đơn vị trên giá bán lẻ</td><td class="c">Pᵐ</td><td class="c">Pᵐ + Tˢ</td></tr>
+<tr><td>3. Trợ giá tỷ lệ K trên chi phí sản xuất</td><td class="c">Pᵐ/(1 − K)</td><td class="c">Pᵐ</td></tr>
+<tr><td>4. Trợ giá Kᵤ/đơn vị sản phẩm</td><td class="c">Pᵐ + Kᵤ</td><td class="c">Pᵐ</td></tr>
+<tr><td>5. Thuế sản xuất tỷ lệ tᵖ trên chi phí</td><td class="c">Pᵐ/(1 + tᵖ)</td><td class="c">Pᵐ</td></tr>
+<tr><td>6. Thuế sản xuất Tᵖ/đơn vị</td><td class="c">Pᵐ − Tᵖ</td><td class="c">Pᵐ</td></tr>
+<tr><td>7. Thuế doanh thu đánh kép t₁, t₂ trên giá bán lẻ</td><td class="c">Pᵐ</td><td class="c">Pᵐ(1 + t₁)(1 + t₂)</td></tr>
+</table>
+<p class="note">Công thức chung (phương trình 9-10 / 9-15): giá trị kinh tế mỗi đơn vị = [Eᵢₚ·Pˢ − Nᵢₚ·(Qᵈ/Qˢ)·Pᵈ] / [Eᵢₚ − Nᵢₚ·(Qᵈ/Qˢ)], với Eᵢₚ là co giãn cung, Nᵢₚ là co giãn cầu. Dùng chung cho cả lợi ích đầu ra lẫn chi phí nhập lượng.</p>
+
+<h2><span class="n">H.</span> Ba trường hợp đặc biệt của cùng nguyên tắc</h2>
+<p>Chi phí kinh tế của <strong>lao động</strong> và <strong>vốn</strong> chỉ là hai ứng dụng của đúng khuôn khổ trên:</p>
+<div class="rule"><strong>Lao động (lương kinh tế).</strong> Lao động rút từ thất nghiệp → định giá theo giá cung (reservation wage, thấp); rút từ việc khác → định giá theo giá cầu (sản phẩm biên nơi cũ). Lương kinh tế = bình quân gia quyền hai nguồn; chênh lệch với lương thị trường là rent cho người lao động.</div>
+<div class="rule"><strong>Vốn (suất chiết khấu kinh tế EOCK).</strong> Là bình quân gia quyền chi phí ba nguồn: đầu tư tư nhân bị chèn lấn (giá cầu vốn), tiết kiệm tăng thêm (giá cung vốn), và vốn nước ngoài (chi phí vay biên). Là tham số quốc gia — không đổi theo cách tài trợ của từng dự án; vốn nước ngoài chỉ tác động vào ngân lưu và tỷ giá kinh tế, không vào suất chiết khấu.</div>
+</div>
+
+<div class="tabpage" id="page3" style="display:none">
+<h2><span class="n">I.</span> Bản đồ: đầu vào → giá tài chính → giá kinh tế</h2>
+<p>Mọi đầu vào của dự án đều đi qua cùng một bước: lấy <strong>giá tài chính</strong> (giá thị trường doanh nghiệp thực trả) rồi quy về <strong>giá kinh tế</strong> (giá trị nguồn lực thật với xã hội), bằng cách bóc thuế/trợ giá (chuyển giao) và cộng/trừ ngoại tác, chi phí cơ hội.</p>
+<table>
+<tr><th>Đầu vào</th><th>Giá tài chính (thị trường)</th><th>Giá kinh tế</th><th>Ghi chú</th></tr>
+<tr><td><strong>Vốn</strong></td><td>Chi phí vốn tài chính: WACC, rₑ, r_d</td><td>ECOC / EOCK ≈ <strong>8–12%</strong> (giá thực)</td><td>Bình quân gia quyền 3 nguồn vốn; là tham số quốc gia, không đổi theo cách tài trợ dự án</td></tr>
+<tr><td><strong>Lao động</strong></td><td>Lương + BHXH + BHYT + BHTN + chi phí tuyển</td><td>Lương kinh tế (shadow wage)</td><td>Bình quân giá cung (rút từ thất nghiệp) &amp; giá cầu (rút từ việc khác); chênh lệch = rent cho người lao động</td></tr>
+<tr><td><strong>Ngoại tệ</strong></td><td>Tỷ giá thị trường FER (chưa bóc thuế XNK)</td><td>SER = FER × (1 + phí thưởng NT)</td><td>Phí thưởng sinh ra từ thuế nhập khẩu &amp; thuế/trợ giá xuất khẩu; thường +vài %</td></tr>
+<tr><td><strong>Đất đai</strong> (mua/thuê)</td><td>Tiền thuê / tiền sử dụng đất theo quy định tài chính</td><td>Chi phí cơ hội = giá trị phương án dùng tốt nhất kế tiếp</td><td><strong>Chỉ có thay thế</strong> — cung đất cố định, không có phần "sản xuất thêm"</td></tr>
+</table>
+
+<h2><span class="n">J.</span> SER — tỷ giá hối đoái kinh tế (Shadow Exchange Rate)</h2>
+<p>Một đơn vị ngoại tệ đáng giá với nền kinh tế <strong>hơn</strong> tỷ giá thị trường, vì ở điểm biên nó được dùng để nhập hàng chịu <strong>thuế nhập khẩu</strong>: giá trị trong nước của hàng nhập = giá biên giới + thuế. Phần thuế đó chính là <strong>phí thưởng ngoại tệ</strong> làm SER &gt; FER.</p>
+<div class="card">
+<svg viewBox="0 0 640 330" role="img" aria-label="Tỷ giá kinh tế SER cao hơn tỷ giá tài chính FER do phí thưởng ngoại tệ">
+<defs>
+<marker id="axS" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5f5e5a"/></marker>
+</defs>
+<line x1="80" y1="300" x2="618" y2="300" stroke="#5f5e5a" stroke-width="1.3" marker-end="url(#axS)"/>
+<line x1="80" y1="300" x2="80" y2="44" stroke="#5f5e5a" stroke-width="1.3" marker-end="url(#axS)"/>
+<text x="84" y="40" font-size="11" fill="#5f5e5a">VND/USD</text>
+<text x="616" y="322" font-size="11" fill="#5f5e5a" text-anchor="end">Lượng ngoại tệ (USD)</text>
+<line x1="80" y1="240" x2="600" y2="120" stroke="#0F9B8E" stroke-width="2"/>
+<text x="470" y="116" font-size="11" font-weight="600" fill="#0F9B8E">Cung NT (xuất khẩu)</text>
+<line x1="80" y1="100" x2="600" y2="260" stroke="#185FA5" stroke-width="2"/>
+<text x="470" y="270" font-size="11" font-weight="600" fill="#185FA5">Cầu NT (nhập khẩu)</text>
+<line x1="80" y1="130" x2="560" y2="130" stroke="#BA7517" stroke-width="1.4" stroke-dasharray="6 4"/>
+<line x1="80" y1="180" x2="340" y2="180" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+<line x1="340" y1="300" x2="340" y2="180" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+<circle cx="340" cy="180" r="3.6" fill="#1f2421"/>
+<text x="76" y="184" font-size="11" fill="#1f2421" text-anchor="end">25.000</text>
+<text x="76" y="134" font-size="11" fill="#854F0B" text-anchor="end">26.250</text>
+<text x="348" y="176" font-size="11" font-weight="600" fill="#1f2421">FER</text>
+<text x="470" y="126" font-size="11" font-weight="600" fill="#BA7517">SER</text>
+<rect x="104" y="130" width="9" height="50" fill="#BA7517" fill-opacity="0.8"/>
+<text x="120" y="150" font-size="10.5" font-weight="600" fill="#854F0B">phí thưởng</text>
+<text x="120" y="164" font-size="10.5" font-weight="600" fill="#854F0B">ngoại tệ ≈ 5%</text>
+</svg>
+<div class="lg">
+<span><i class="dot" style="background:#185FA5"></i>Cầu ngoại tệ (nhập khẩu)</span>
+<span><i class="dot" style="background:#0F9B8E"></i>Cung ngoại tệ (xuất khẩu)</span>
+<span><i class="dot" style="background:#BA7517"></i>SER = FER + phí thưởng</span>
+</div>
+</div>
+<div class="rule"><strong>Công thức:</strong> SER = FER × (1 + FXP), với FXP = phí thưởng ngoại tệ (foreign exchange premium) ≈ bình quân gia quyền thuế nhập khẩu (phía cầu) và thuế/trợ giá xuất khẩu (phía cung), trọng số theo độ co giãn cung – cầu ngoại tệ.</div>
+<p class="note">Hệ số chuyển đổi ngoại tệ = SER/FER &gt; 1 (thường 1,03–1,10 tùy nước). Dùng SER để: (i) quy mọi dòng ngoại tệ (vốn vay, hồi hương lợi nhuận, hàng ngoại thương) sang giá kinh tế nội địa; (ii) định giá hàng ngoại thương theo giá biên giới (FOB/CIF) rồi nhân SER. Con số 25.000 / 5% ở trên chỉ là minh họa.</p>
+
+<h2><span class="n">K.</span> Đất đai — vì sao "chỉ có thay thế"?</h2>
+<p>Đất khác mọi đầu vào khác ở chỗ <strong>tổng cung gần như cố định</strong> (độ co giãn cung ≈ 0). Trong công thức bình quân gia quyền giá cung – giá cầu, khi co giãn cung = 0 thì <strong>trọng số dồn hết về phía giá cầu</strong>: dự án dùng đất không làm "sản xuất thêm" đất, mà chỉ <strong>đẩy đất ra khỏi mục đích sử dụng khác</strong> — thay thế 100%.</p>
+<div class="rule"><strong>Giá kinh tế của đất = chi phí cơ hội</strong> = giá trị ròng của phương án sử dụng tốt nhất kế tiếp (giá trị nông nghiệp bị mất, giá thuê thị trường của chính mảnh đất đó…). <strong>Tiền thuế/tiền sử dụng đất nộp nhà nước là chuyển giao</strong> → không phải chi phí kinh tế, trừ khi nó phản ánh đúng giá thuê thị trường.</div>
+<p class="note">Đối chiếu với xi măng (tab 2): xi măng có cả phần sản xuất thêm (giá cung) và phần chiếm chỗ (giá cầu). Đất chỉ có phần chiếm chỗ — đó là hệ quả trực tiếp của việc cung đất không co giãn.</p>
+
+<h2><span class="n">L.</span> ECOC / EOCK — chi phí kinh tế của vốn</h2>
+<p>Suất chiết khấu dùng cho toàn bộ ngân lưu kinh tế. Là <strong>bình quân gia quyền chi phí ba nguồn vốn</strong>: đầu tư tư nhân bị chèn lấn (suất sinh lợi biên), tiết kiệm tăng thêm (tỷ suất thời gian của người tiết kiệm), và vốn nước ngoài (chi phí vay biên). Với Việt Nam, tài liệu thường dùng khoảng <strong>8–12% giá thực</strong>.</p>
+<div class="rule">Vì là tham số quốc gia, EOCK <strong>không đổi theo cách tài trợ của từng dự án</strong>. Dự án có vốn nước ngoài vẫn chiết khấu bằng EOCK; vốn nước ngoài chỉ tác động vào <strong>ngân lưu</strong> (phần lợi ích chảy ra ngoài bị trừ ở quan điểm quốc gia) và được quy đổi qua <strong>SER</strong>, chứ không tác động vào suất chiết khấu.</div>
+</div>
+
+<div class="foot">
+Nguồn: Glenn P. Jenkins &amp; Arnold C. Harberger, "Hướng dẫn phân tích chi phí – lợi ích cho các quyết định đầu tư", Chương 7–8 &amp; Chương 9 (bản dịch Chương trình Giảng dạy Kinh tế Fulbright); tài liệu môn Thẩm định đầu tư công, MPP27, FSPPM. Số liệu ví dụ khách sạn bãi biển lấy từ Hình 8-1, 8-2 và 9-1, 9-2 của bài đọc. Tài liệu minh họa phục vụ học tập.
+</div>
+</div>
+
+<script>
+(function(){
+ var tabs=document.querySelectorAll('.tab');
+ var pages=document.querySelectorAll('.tabpage');
+ tabs.forEach(function(b){b.onclick=function(){
+  tabs.forEach(function(x){x.classList.remove('active');});
+  b.classList.add('active');
+  pages.forEach(function(p){p.style.display='none';});
+  document.getElementById('page'+b.getAttribute('data-tab')).style.display='block';
+ };});
+})();
+(function(){
+var steps=[
+{t:"Bước 0 — Thị trường tự do cân bằng",hi:[],pct:0,ml:"Lợi ích ròng: chưa tính",
+ d:"Chưa có dự án. Đường cầu AD₀ (mức sẵn lòng chi trả) cắt đường cung tư nhân BS₀ (chi phí tài nguyên biên) tại điểm C: giá $20, lượng 30 ngàn phòng-đêm/năm. Đây là điểm xuất phát."},
+{t:"Bước 1 — Dự án nhà nước bơm thêm cung",hi:["gDst"],pct:0,ml:"Lợi ích ròng: chưa tính",
+ d:"Nhà nước xây thêm 10.000 phòng-đêm/năm. Tổng cung thị trường dịch song song sang phải thành DSₜ. Lưu ý: BS₀ vẫn giữ nguyên vì nó đo chi phí tài nguyên của khu vực tư nhân."},
+{t:"Bước 2 — Thừa cung → giá giảm còn $18",hi:["gDst","gP1"],pct:0,ml:"Lợi ích ròng: chưa tính",
+ d:"Ở giá cũ $20, cung vượt cầu. Các khách sạn phải hạ giá để lấp phòng. Cân bằng mới ở giá $18 (giao của DSₜ và AD₀)."},
+{t:"Bước 3 — Tư nhân rút cung, người dùng mua thêm",hi:["gDst","gP1","gGF"],pct:0,ml:"Lợi ích ròng: chưa tính",
+ d:"Giá $18 kéo theo hai phản ứng: tư nhân giảm cung từ 30 xuống Q₃≈26 (điểm G trên BS₀); người tiêu dùng tăng mua từ 30 lên Q₂≈36 (điểm F trên AD₀). 10.000 phòng của dự án lấp đúng khoảng Q₃→Q₂."},
+{t:"Bước 4 — Phần THAY THẾ: tài nguyên tiết kiệm",hi:["gDst","gP1","gGF","gTeal"],pct:38.5,ml:"Tài nguyên tiết kiệm: $73.150",
+ d:"Mảng xanh dưới đường cung BS₀ (từ Q₃ đến Q₀) = giá trị tài nguyên xã hội tiết kiệm được vì tư nhân sản xuất ít đi. Phần này định giá theo GIÁ CUNG. = $73.150/năm."},
+{t:"Bước 5 — Phần TĂNG THÊM: tiêu dùng mới",hi:["gDst","gP1","gGF","gTeal","gPurple"],pct:100,ml:"Tổng lợi ích: $190.000 = $19/đơn vị",
+ d:"Mảng tím dưới đường cầu AD₀ (từ Q₀ đến Q₂) = giá trị người tiêu dùng sẵn lòng trả cho lượng dùng thêm. Phần này định giá theo GIÁ CẦU (WTP). = $116.850. Tổng lợi ích kinh tế = 73.150 + 116.850 = $190.000/năm = $19/phòng-đêm. Chuyển giao thu nhập giữa chủ cũ và người tiêu dùng KHÔNG tính."}
+];
+var cur=0, ids=["gDst","gP1","gGF","gTeal","gPurple"];
+var col=["#888780","#4a76b0","#4a76b0","#BA7517","#0F9B8E","#534AB7"];
+var segT=[0,0,0,0,38.5,38.5], segP=[0,0,0,0,0,61.5];
+function render(){
+ var s=steps[cur];
+ ids.forEach(function(id){var el=document.getElementById(id);if(el)el.classList.toggle("on",s.hi.indexOf(id)>-1);});
+ document.getElementById("mbBt").style.width=segT[cur]+"%";
+ document.getElementById("mbBp").style.width=segP[cur]+"%";
+ document.getElementById("mlB").textContent=s.ml;
+ document.getElementById("spB").style.borderColor=col[cur];
+ var tl=document.getElementById("stitleB");tl.textContent=s.t;tl.style.color=col[cur];
+ document.getElementById("sdescB").textContent=s.d;
+ document.getElementById("indB").textContent="Bước "+cur+" / 5";
+ document.getElementById("prevB").disabled=(cur===0);
+ document.getElementById("nextB").disabled=(cur===steps.length-1);
+}
+document.getElementById("nextB").onclick=function(){if(cur<steps.length-1){cur++;render();}};
+document.getElementById("prevB").onclick=function(){if(cur>0){cur--;render();}};
+render();
+})();
+
+(function(){
+var steps=[
+{t:"Bước 0 — Đánh thuế doanh thu 25%",hi:["gNDn"],pct:0,ml:"Lợi ích ròng: chưa tính",
+ d:"Thuế 25% không đổi mức người tiêu dùng sẵn lòng trả (AD₀ giữ nguyên), nhưng số tiền tới tay nhà cung ứng bị giảm phần thuế → đường mà nhà cung ứng 'nhìn thấy' tụt xuống thành NDₙ = AD₀ trừ thuế."},
+{t:"Bước 1 — Nêm thuế tách giá cầu khỏi giá cung",hi:["gNDn","gWedge"],pct:0,ml:"Lợi ích ròng: chưa tính",
+ d:"Cân bằng có thuế ở điểm E (NDₙ cắt BS₀), lượng Q₁=25 ngàn. Nhà sản xuất nhận giá cung Pˢ=$17,33; người tiêu dùng trả giá cầu Pᵈ=$21,66. Khoảng cách dọc giữa hai đường = nêm thuế $4,33."},
+{t:"Bước 2 — Dự án cung thêm 10.000 phòng",hi:["gNDn","gWedge","gDST"],pct:0,ml:"Lợi ích ròng: chưa tính",
+ d:"Tổng cung dịch phải thành DSₜ. Giá cung giảm còn Pˢ=$15,55, giá cầu giảm còn Pᵈ=$19,44. Tư nhân giảm cung về Qˢ≈22 (điểm J); cầu tăng lên Qᵈ≈32 (điểm F); chênh lệch đúng 10.000 phòng của dự án."},
+{t:"Bước 3 — Phần THAY THẾ định giá theo giá cung",hi:["gNDn","gWedge","gDST","gTealC"],pct:28.5,ml:"Tài nguyên tiết kiệm: $54.750",
+ d:"Mảng xanh dưới BS₀ (từ Qˢ đến Q₁) = tài nguyên tiết kiệm khi tư nhân giảm cung, định giá theo GIÁ CUNG ($15,55–$17,33). = $54.750."},
+{t:"Bước 4 — Phần TĂNG THÊM định giá theo giá cầu",hi:["gNDn","gWedge","gDST","gTealC","gPurpleC"],pct:100,ml:"Tổng lợi ích: $191.820 = $19,18/đơn vị",
+ d:"Mảng tím dưới AD₀ (từ Q₁ đến Qᵈ) = giá trị tiêu dùng tăng thêm, định giá theo GIÁ CẦU gồm cả thuế ($19,44–$21,66). = $137.070. Tổng = 54.750 + 137.070 = $191.820 = $19,18/phòng-đêm."},
+{t:"Bước 5 — Kinh tế ≠ tài chính",hi:["gNDn","gWedge","gDST","gTealC","gPurpleC"],pct:100,ml:"Tài chính $15,55  ·  Kinh tế $19,18",
+ d:"Nhìn tài chính, dự án chỉ thu giá thị trường $15,55/đơn vị. Nhưng giá trị kinh tế là $19,18. Chênh lệch = khoản thuế người tiêu dùng sẵn lòng trả thêm + thặng dư tiêu dùng và tài nguyên tiết kiệm (tam giác JEH). Nhà nước — chứ không phải dự án — hưởng tiền thuế, nhưng với xã hội đó vẫn là lợi ích thật."}
+];
+var cur=0, ids=["gNDn","gWedge","gDST","gTealC","gPurpleC"];
+var col=["#185FA5","#BA7517","#BA7517","#0F9B8E","#534AB7","#A32D2D"];
+var segT=[0,0,0,28.5,28.5,28.5], segP=[0,0,0,0,71.5,71.5];
+function render(){
+ var s=steps[cur];
+ ids.forEach(function(id){var el=document.getElementById(id);if(el)el.classList.toggle("on",s.hi.indexOf(id)>-1);});
+ document.getElementById("mbCt").style.width=segT[cur]+"%";
+ document.getElementById("mbCp").style.width=segP[cur]+"%";
+ document.getElementById("mlC").textContent=s.ml;
+ document.getElementById("spC").style.borderColor=col[cur];
+ var tl=document.getElementById("stitleC");tl.textContent=s.t;tl.style.color=col[cur];
+ document.getElementById("sdescC").textContent=s.d;
+ document.getElementById("indC").textContent="Bước "+cur+" / 5";
+ document.getElementById("prevC").disabled=(cur===0);
+ document.getElementById("nextC").disabled=(cur===steps.length-1);
+}
+document.getElementById("nextC").onclick=function(){if(cur<steps.length-1){cur++;render();}};
+document.getElementById("prevC").onclick=function(){if(cur>0){cur--;render();}};
+render();
+})();
+
+(function(){
+var steps=[
+{t:"Bước 0 — Thị trường xi măng có thuế 25%",hi:[],
+ d:"Chưa có dự án. Đường cung AS₀ = chi phí tài nguyên biên. Thuế doanh thu 25% khiến giá cầu gồm thuế Pᵈ₀=$53,57 tách khỏi giá thị trường / giá cung Pˢ₀=$42,86. Lượng cân bằng Q₁=82 ngàn tấn/tháng."},
+{t:"Bước 1 — Dự án làm đường cần thêm 50.000 tấn",hi:["gcCDn"],
+ d:"Dự án dùng xi măng làm nhập lượng → CẦU tăng. Đường cầu sau thuế dịch song song sang phải NDₙ→CDₙ đúng bằng 50 ngàn tấn. Lưu ý: nhập lượng làm dịch đường CẦU (khác đầu ra làm dịch đường cung)."},
+{t:"Bước 2 — Giá tăng: sản xuất tăng, người khác giảm mua",hi:["gcCDn","gcNew"],
+ d:"Giá thị trường tăng lên Pˢ₁=$49,53. Nhà sản xuất tăng cung lên Qˢ≈99 (điểm E); người dùng xi măng khác bị giá cao đẩy lùi, giảm mua còn Qᵈ≈49 (điểm F, giá cầu gồm thuế ≈$62). Chênh lệch Qᵈ→Qˢ đúng 50 ngàn tấn của dự án."},
+{t:"Bước 3 — Phần SẢN XUẤT THÊM (giá cung)",hi:["gcCDn","gcNew","gcTeal"],
+ d:"Mảng xanh dưới AS₀ (từ Q₁ đến Qˢ) = chi phí tài nguyên thực để sản xuất thêm xi măng. Định giá theo GIÁ CUNG Pˢ."},
+{t:"Bước 4 — Phần CHIẾM CHỖ người dùng khác (giá cầu)",hi:["gcCDn","gcNew","gcTeal","gcPurple"],
+ d:"Mảng tím dưới BD₀ (từ Qᵈ đến Q₁) = giá trị xi măng mà người dùng khác phải từ bỏ, gồm cả thuế họ lẽ ra trả. Định giá theo GIÁ CẦU Pᵈ. Tổng chi phí kinh tế = $54,46/tấn."},
+{t:"Bước 5 — Kinh tế ≠ tài chính",hi:["gcCDn","gcNew","gcTeal","gcPurple"],
+ d:"Giá thị trường xi măng chỉ $46,20/tấn; chi phí tài chính của dự án gồm thuế $57,75/tấn; nhưng CHI PHÍ KINH TẾ = $54,46/tấn — nằm giữa giá cung và giá cầu gồm thuế, theo bình quân gia quyền độ co giãn. Thuế là chuyển giao nên không nằm trọn trong chi phí kinh tế."}
+];
+var cur=0, ids=["gcCDn","gcNew","gcTeal","gcPurple"];
+var col=["#185FA5","#BA7517","#BA7517","#0F9B8E","#534AB7","#A32D2D"];
+var segT=[0,0,0,33,33,33], segP=[0,0,0,0,67,67];
+var mls=["Chi phí kinh tế: chưa tính","Chi phí kinh tế: chưa tính","Chi phí kinh tế: chưa tính","Phần sản xuất thêm (giá cung)","Tổng chi phí kinh tế: $54,46/tấn","Tài chính $57,75  ·  Kinh tế $54,46"];
+function render(){
+ var s=steps[cur];
+ ids.forEach(function(id){var el=document.getElementById(id);if(el)el.classList.toggle("on",s.hi.indexOf(id)>-1);});
+ document.getElementById("mbDt").style.width=segT[cur]+"%";
+ document.getElementById("mbDp").style.width=segP[cur]+"%";
+ document.getElementById("mlD").textContent=mls[cur];
+ document.getElementById("spD").style.borderColor=col[cur];
+ var tl=document.getElementById("stitleD");tl.textContent=s.t;tl.style.color=col[cur];
+ document.getElementById("sdescD").textContent=s.d;
+ document.getElementById("indD").textContent="Bước "+cur+" / 5";
+ document.getElementById("prevD").disabled=(cur===0);
+ document.getElementById("nextD").disabled=(cur===steps.length-1);
+}
+document.getElementById("nextD").onclick=function(){if(cur<steps.length-1){cur++;render();}};
+document.getElementById("prevD").onclick=function(){if(cur>0){cur--;render();}};
+render();
+})();
+</script>
+</body>
+</html>
