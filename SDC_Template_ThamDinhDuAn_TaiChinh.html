@@ -162,29 +162,36 @@ const diagramData =
           "detail": "**Top-down (từ EBIT):**\n\n`FCFF = EBIT·(1−t) + D&A − ΔWC − CapEx + Terminal Value`\n\n**Bottom-up (từ NI):**\n\n`FCFF = NI + Interest·(1−t) + D&A − ΔWC − CapEx`\n\n**Giải thích:** cộng lại khấu hao (phi tiền mặt), trừ ΔWC + CapEx (đầu tư tài sản), cộng TV (giá trị thanh lý).\n\n**Nguồn:** Damodaran *Investment Valuation* Ch.10 · Jenkins–Kuo–Harberger Ch.5"
         },
         {
+          "id": 69,
+          "title": "③ NCF — Ngân lưu Tổng đầu tư",
+          "en": "Net Cash Flow — Total Investment Point of View (TIPV)",
+          "kind": "leaf",
+          "detail": "Ngân lưu ròng **thuộc về chủ nợ + chủ đầu tư** (còn gọi là *ngân lưu vốn đầu tư*) — tính đúng thực tế dự án có vay nợ, nên đòi hỏi lập **lịch nợ vay** (B3).\n\n**Gián tiếp (từ NI — Kho Sơn Bảng 4):**\n\n`NCF_TIPV = NI + Interest + D&A + TV − CapEx (− ΔWC nếu có)`\n\n*Chú ý:* cộng ngược **đủ lãi vay** (không nhân (1−t)) vì lá chắn thuế đã nằm trong dòng thuế thực nộp → suất chiết khấu là **WACC dùng Rd trước thuế**.\n\n**Trực tiếp (bảng ngân lưu vào/ra):**\n\n`NCF = Ngân lưu vào (Doanh thu + Thanh lý) − Ngân lưu ra (CapEx + CP hoạt động + Thuế + ΔWC)`\n\nKhông bao gồm giải ngân / trả gốc / trả lãi — đó là ngân lưu **tài trợ**, chỉ xuất hiện khi chuyển sang FCFE.\n\n**Tương đương DCF với FCFF ②** (minh họa Kho Sơn Cement):\n- FCFF (như không vay nợ) @ WACC sau thuế 12,1% → NPV = 44,88 tỷ\n- NCF TIPV (có vay nợ, cộng đủ lãi) @ WACC trước thuế 13% → NPV = 44,88 tỷ\n\n**Nguồn:** Kho Sơn Cement (Bài 11) tr.2–5 · Jenkins–Kuo–Harberger Ch.3 · xem thêm B6·QĐ1"
+        },
+        {
           "id": 8,
-          "title": "③ FCFE — Ngân lưu chủ sở hữu",
+          "title": "④ FCFE — Ngân lưu chủ sở hữu",
           "en": "Free Cash Flow to Equity",
           "kind": "leaf",
           "detail": "**Công thức:**\n\n`FCFE = FCFF − Interest·(1−t) − Principal + Net Borrowing`\n\n`= NI + D&A − ΔWC − CapEx + Net Borrowing`\n\n**Chiết khấu bằng Re** (không phải WACC).\n\n**Nguồn:** Damodaran Ch.14"
         },
         {
           "id": 9,
-          "title": "④ NPV — Giá trị hiện tại ròng",
+          "title": "⑤ NPV — Giá trị hiện tại ròng",
           "en": "Net Present Value",
           "kind": "leaf",
           "detail": "`NPV = Σ (t=0→T) CF_t / (1 + r)^t`\n\n**Quy tắc:** NPV > 0 → chấp nhận.\n\n**Nguồn:** Fisher (1930) · Hirshleifer (1958) *JPE* · Jenkins–Kuo–Harberger Ch.3"
         },
         {
           "id": 10,
-          "title": "⑤ IRR — Suất sinh lợi nội tại",
+          "title": "⑥ IRR — Suất sinh lợi nội tại",
           "en": "Internal Rate of Return",
           "kind": "leaf",
           "detail": "IRR là `r*` sao cho `NPV(r*) = 0`.\n\n**Cảnh báo:** nhiều nghiệm khi ngân lưu đổi dấu nhiều lần.\n\n**Nguồn:** Brealey–Myers–Allen Ch.5 §5.3"
         },
         {
           "id": 11,
-          "title": "⑥ DSCR — Hệ số an toàn trả nợ",
+          "title": "⑦ DSCR — Hệ số an toàn trả nợ",
           "en": "Debt Service Coverage Ratio",
           "kind": "leaf",
           "detail": "Góc nhìn **ngân hàng**.\n\n- `DSCR_t = CFADS_t / Debt Service_t`\n- `CFADS = FCFF + Interest·(1−t)`\n- `Debt Service = Interest + Principal`\n\n**Ngưỡng:** ≥ 1.2 (ngân hàng thương mại) · ≥ 1.4 (project finance).\n\n**Nguồn:** Yescombe *Principles of Project Finance* Ch.13 · Esty (2004)"
