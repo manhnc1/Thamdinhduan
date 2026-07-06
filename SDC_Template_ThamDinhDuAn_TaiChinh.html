@@ -65,6 +65,15 @@
        padding:5px 10px;font-size:12px;cursor:pointer}
   .child-pills button:hover{border-color:var(--accent)}
   h3.section{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:18px 0 6px}
+  .panel-figure{background:#f8f9fb;border:1px solid var(--line);border-radius:10px;padding:8px;margin:14px 0 6px;cursor:zoom-in}
+  .panel-figure svg{width:100%;height:auto;display:block}
+  .fig-zoom{background:#16233f;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:6px}
+  .fig-zoom:hover{border-color:var(--accent)}
+  .fig-overlay{position:fixed;inset:0;background:rgba(2,6,20,.86);display:flex;align-items:center;justify-content:center;z-index:200;padding:24px}
+  .fig-overlay[hidden]{display:none}
+  .fig-stage{background:#fff;border-radius:14px;padding:18px;max-width:96vw;max-height:92vh;overflow:auto}
+  .fig-stage svg{width:min(1120px,92vw);height:auto;display:block}
+  .fig-close{position:absolute;top:18px;right:24px;background:#fff;border:none;border-radius:8px;width:38px;height:38px;font-size:22px;cursor:pointer;line-height:1}
 </style>
 </head>
 <body>
@@ -104,6 +113,11 @@
   <h3 class="section" id="childrenLabel" hidden>Cac nhanh con</h3>
   <div id="panelChildren" class="child-pills"></div>
 </aside>
+
+<div id="figOverlay" class="fig-overlay" hidden>
+  <button id="figClose" class="fig-close" type="button" aria-label="Dong">&times;</button>
+  <div class="fig-stage" id="figStage"></div>
+</div>
 
 <script>
 /* ============================================================
@@ -245,7 +259,83 @@ const diagramData =
       "id": 18,
       "title": "B1–B6 · Cấu trúc mô hình",
       "en": "Model Structure",
-      "detail": "6 khối bảng tính từ input đến output: Thông số → Chỉ số giá & Ngân lưu đầu tư → Lịch nợ → Doanh thu & Chi phí → Khấu hao & KQHĐKD & VLĐ → FCF & chỉ tiêu thẩm định.",
+      "detail": "6 khối bảng tính từ input đến output: Thông số → Chỉ số giá & Ngân lưu đầu tư → Lịch nợ → Doanh thu & Chi phí → Khấu hao & KQHĐKD & VLĐ → FCF & chỉ tiêu thẩm định.\n\n**Sơ đồ dòng ngân lưu tổng thể** — mọi khối B2–B6 hội tụ về dòng ngân lưu ròng (bấm sơ đồ để phóng to):",
+      "figure": `<svg viewBox="0 0 1000 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sơ đồ cấu trúc mô hình tài chính - trục ngân lưu">
+<defs>
+<marker id="ab" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6" fill="none" stroke="#4f8cff" stroke-width="1.3"/></marker>
+<marker id="ag" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6" fill="none" stroke="#16a34a" stroke-width="1.3"/></marker>
+<marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6" fill="none" stroke="#f43f5e" stroke-width="1.3"/></marker>
+</defs>
+<text x="20" y="24" font-size="11.5" fill="#64748b">Chú giải:</text>
+<line x1="78" y1="20" x2="102" y2="20" stroke="#16a34a" stroke-width="2" marker-end="url(#ag)"/><text x="108" y="24" font-size="11.5" fill="#334155">dòng vào (↑)</text>
+<line x1="212" y1="20" x2="236" y2="20" stroke="#f43f5e" stroke-width="2" marker-end="url(#ar)"/><text x="242" y="24" font-size="11.5" fill="#334155">dòng ra (↓)</text>
+<line x1="350" y1="20" x2="374" y2="20" stroke="#4f8cff" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#ab)"/><text x="380" y="24" font-size="11.5" fill="#334155">tài trợ (vốn/nợ)</text>
+<line x1="171" y1="278" x2="905" y2="278" stroke="#475569" stroke-width="1.8"/>
+<text x="700" y="272" font-size="10.5" font-style="italic" fill="#64748b">trục ngân lưu ròng theo thời gian →</text>
+<circle cx="300" cy="278" r="3" fill="#475569"/><circle cx="345" cy="278" r="3" fill="#475569"/><circle cx="470" cy="278" r="3" fill="#475569"/><circle cx="610" cy="278" r="3" fill="#475569"/><circle cx="640" cy="278" r="3" fill="#475569"/><circle cx="800" cy="278" r="3" fill="#475569"/><circle cx="835" cy="278" r="3" fill="#475569"/>
+<rect x="92" y="224" width="76" height="110" rx="8" fill="#fdeef2" stroke="#f43f5e" stroke-width="1.6"/>
+<text x="130" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2421">Chỉ</text>
+<text x="130" y="290" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2421">số giá</text>
+<text x="130" y="312" text-anchor="middle" font-size="9.5" fill="#f43f5e">B2</text>
+<rect x="230" y="54" width="96" height="46" rx="8" fill="#eef4ff" stroke="#4f8cff" stroke-width="1.6"/>
+<text x="278" y="75" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2421">Vốn CSH</text>
+<text x="278" y="90" text-anchor="middle" font-size="9.5" fill="#4f8cff">B1</text>
+<rect x="356" y="50" width="120" height="30" rx="7" fill="#eef4ff" stroke="#4f8cff" stroke-width="1.6"/>
+<text x="416" y="69" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2421">Ngân lưu nợ · B3</text>
+<rect x="398" y="92" width="90" height="36" rx="6" fill="#eef4ff" stroke="#8bb4ff"/><text x="443" y="114" text-anchor="middle" font-size="11" fill="#1f2421">Trả nợ gốc</text>
+<rect x="352" y="150" width="88" height="36" rx="6" fill="#eef4ff" stroke="#8bb4ff"/><text x="396" y="172" text-anchor="middle" font-size="11" fill="#1f2421">Giải ngân nợ</text>
+<rect x="446" y="150" width="106" height="36" rx="6" fill="#fdeef2" stroke="#f4a3b4"/><text x="499" y="172" text-anchor="middle" font-size="11" fill="#1f2421">Lãi vay thực trả</text>
+<rect x="446" y="206" width="106" height="34" rx="6" fill="#fdeef2" stroke="#f4a3b4"/><text x="499" y="227" text-anchor="middle" font-size="11" fill="#1f2421">Lãi vay TGXD</text>
+<rect x="576" y="50" width="116" height="48" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
+<text x="634" y="72" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2421">(+) Doanh thu</text>
+<text x="634" y="88" text-anchor="middle" font-size="9.5" fill="#16a34a">B4</text>
+<rect x="724" y="44" width="186" height="56" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
+<text x="817" y="66" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2421">(+) Thanh lý TS / Giá trị</text>
+<text x="817" y="81" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2421">kết thúc (TV)</text>
+<text x="817" y="95" text-anchor="middle" font-size="9.5" fill="#16a34a">B4 · B6</text>
+<rect x="712" y="150" width="184" height="46" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="6 3"/>
+<text x="804" y="170" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1f2421">(−) Khoản phải thu / Tiền mặt</text>
+<text x="804" y="186" text-anchor="middle" font-size="9.5" fill="#16a34a">B5 · VLĐ</text>
+<rect x="742" y="204" width="154" height="34" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="6 3"/>
+<text x="819" y="225" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1f2421">(+) Khoản phải trả</text>
+<rect x="230" y="400" width="94" height="50" rx="8" fill="#fdeef2" stroke="#f43f5e" stroke-width="1.6"/>
+<text x="277" y="422" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2421">(−) CPĐT</text>
+<text x="277" y="438" text-anchor="middle" font-size="9.5" fill="#f43f5e">B2</text>
+<rect x="392" y="400" width="90" height="50" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
+<text x="437" y="422" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2421">Khấu hao</text>
+<text x="437" y="438" text-anchor="middle" font-size="9.5" fill="#16a34a">B5</text>
+<rect x="500" y="400" width="108" height="50" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
+<text x="554" y="422" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1f2421">(−) Chi phí vận hành</text>
+<text x="554" y="438" text-anchor="middle" font-size="9.5" fill="#16a34a">B4</text>
+<rect x="626" y="400" width="92" height="50" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
+<text x="672" y="422" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2421">(−) Thuế TNDN</text>
+<text x="672" y="438" text-anchor="middle" font-size="9.5" fill="#16a34a">B5</text>
+<rect x="746" y="400" width="140" height="50" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
+<text x="816" y="422" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2421">Báo cáo KQHĐKD</text>
+<text x="816" y="438" text-anchor="middle" font-size="9.5" fill="#16a34a">B5</text>
+<path d="M278,100 L278,276" stroke="#4f8cff" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ab)" fill="none"/>
+<path d="M416,80 L416,90" stroke="#4f8cff" stroke-width="1.5" fill="none"/>
+<path d="M443,128 L443,276" stroke="#4f8cff" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ab)" fill="none"/>
+<path d="M396,186 L396,276" stroke="#4f8cff" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ab)" fill="none"/>
+<path d="M499,186 L499,206" stroke="#f43f5e" stroke-width="1.4" fill="none"/>
+<path d="M610,276 L610,102" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ag)" fill="none"/>
+<path d="M640,276 L640,102" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ag)" fill="none"/>
+<path d="M800,276 L800,104" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ag)" fill="none"/>
+<path d="M835,276 L835,104" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ag)" fill="none"/>
+<path d="M804,196 L804,204" stroke="#16a34a" stroke-width="1.4" fill="none"/>
+<path d="M804,238 L804,276" stroke="#16a34a" stroke-width="1.5" marker-end="url(#ag)" fill="none"/>
+<path d="M300,280 L300,398" stroke="#f43f5e" stroke-width="1.6" marker-end="url(#ar)" fill="none"/>
+<path d="M470,280 L470,398" stroke="#f43f5e" stroke-width="1.6" marker-end="url(#ar)" fill="none"/>
+<path d="M168,300 L392,410" stroke="#f43f5e" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ar)" fill="none"/>
+<path d="M324,412 L392,428" stroke="#64748b" stroke-width="1.3" marker-end="url(#ag)" fill="none"/>
+<path d="M168,318 L500,420" stroke="#f43f5e" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ar)" fill="none"/>
+<path d="M482,428 L500,428" stroke="#64748b" stroke-width="1.3" marker-end="url(#ag)" fill="none"/>
+<path d="M608,428 L626,428" stroke="#64748b" stroke-width="1.3" marker-end="url(#ag)" fill="none"/>
+<path d="M718,428 L746,428" stroke="#64748b" stroke-width="1.3" marker-end="url(#ag)" fill="none"/>
+<path d="M816,398 L816,290" stroke="#16a34a" stroke-width="1.5" marker-end="url(#ag)" fill="none"/>
+<text x="150" y="360" font-size="9.5" fill="#f43f5e">Chỉ số giá → quy đổi danh nghĩa</text>
+<text x="524" y="474" font-size="9.5" fill="#64748b">KQHĐKD: DT − CP vận hành − Khấu hao − Lãi vay − Thuế</text>
+</svg>`,
       "children": [
         {
           "id": 19,
@@ -733,6 +823,14 @@ function renderMarkdown(src){
   closeList(); return html;
 }
 
+/* -------- figure lightbox -------- */
+function openFigure(svg){ const s=document.getElementById("figStage"); s.innerHTML=svg; document.getElementById("figOverlay").hidden=false; }
+function closeFigure(){ document.getElementById("figOverlay").hidden=true; document.getElementById("figStage").innerHTML=""; }
+(function(){ const ov=document.getElementById("figOverlay"), cb=document.getElementById("figClose");
+  if(cb) cb.onclick=closeFigure;
+  if(ov) ov.addEventListener("click",e=>{ if(e.target===ov) closeFigure(); });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeFigure(); }); })();
+
 /* -------- detail panel -------- */
 let detailHistory=[], currentDetailId=null;
 function updateBackBtn(){ document.getElementById("backPanel").hidden = detailHistory.length===0; }
@@ -745,7 +843,15 @@ function openDetail(id, fromBack){
   document.getElementById("panelTitle").textContent=node.title;
   if(node.en){const pe=document.createElement("div");pe.className="panel-en";pe.textContent=node.en;document.getElementById("panelTitle").appendChild(pe);}
   const g=document.getElementById("panelGroup"); g.textContent=node.group||""; g.hidden=!node.group;
-  document.getElementById("panelDescription").innerHTML=renderMarkdown(node.detail||"_Chua co mo ta._");
+  const _desc=document.getElementById("panelDescription");
+  _desc.innerHTML=renderMarkdown(node.detail||"_Chua co mo ta._");
+  if(node.figure){
+    const fw=document.createElement("div"); fw.className="panel-figure"; fw.innerHTML=node.figure;
+    fw.addEventListener("click",()=>openFigure(node.figure));
+    const zb=document.createElement("button"); zb.className="fig-zoom"; zb.type="button"; zb.textContent="⤢ Xem sơ đồ cỡ lớn";
+    zb.addEventListener("click",()=>openFigure(node.figure));
+    _desc.appendChild(fw); _desc.appendChild(zb);
+  }
   const pills=document.getElementById("panelChildren"); pills.innerHTML="";
   const label=document.getElementById("childrenLabel");
   const ch=node.children||[]; label.hidden=ch.length===0;
