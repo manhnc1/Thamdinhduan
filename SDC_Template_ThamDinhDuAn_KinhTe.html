@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Template Thẩm định Kinh tế Dự án (MPP27)</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#111c33; --ink:#e5edff; --muted:#93a4c9;
+    --line:#31456f; --accent:#4f8cff;
+    --b1:#4f8cff; --b2:#22c55e; --b3:#f59e0b; --b4:#ec4899; --b5:#a855f7; --b6:#14b8a6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+       background:var(--bg);color:var(--ink)}
+  .site-shell{max-width:1200px;margin:0 auto;padding:20px 16px 40px}
+  .hero h1{margin:0 0 6px;font-size:26px}
+  .hero .lede{margin:0;color:var(--muted);max-width:760px;font-size:14px;line-height:1.5}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:18px 0 12px}
+  .toolbar button{background:var(--card);color:var(--ink);border:1px solid var(--line);
+       border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
+  .toolbar button:hover{border-color:var(--accent)}
+  .zoom-control{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin-left:auto}
+  .diagram-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .diagram-viewport{overflow:auto;height:70vh;cursor:grab}
+  .diagram-viewport.dragging{cursor:grabbing}
+  .diagram-canvas{transform-origin:top center;padding:28px 40px;width:max-content;min-width:100%;position:relative}
+  ul.tree,ul.tree ul{list-style:none;margin:0;padding:0;display:flex;gap:26px;justify-content:center}
+  ul.tree{flex-direction:column;align-items:center}
+  ul.tree li{display:flex;flex-direction:column;align-items:center;position:relative}
+  ul.tree li>ul{margin-top:34px}
+  .node{position:relative;z-index:2;display:flex;flex-direction:column;align-items:stretch;min-width:130px;max-width:200px}
+  .node-main{background:#16233f;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;
+       cursor:pointer;color:var(--ink);text-align:center;font-size:13px;line-height:1.35;font-weight:600;transition:.15s}
+  .node-main:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .node-en{display:block;font-size:9.5px;font-weight:400;font-style:italic;color:var(--muted);margin-top:2px;line-height:1.25}
+  .panel-en{font-size:13px;font-weight:400;font-style:italic;color:var(--muted);margin-top:2px}
+  .node .node-num{font-size:10px;color:var(--muted);margin-bottom:3px;text-align:center}
+  .node.is-expanded .node-main{box-shadow:0 0 0 2px rgba(79,140,255,.25)}
+  .node-expand-bar{margin-top:5px;height:14px;border:none;border-radius:6px;background:#1d2c4d;color:var(--muted);
+       cursor:pointer;font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center}
+  .node-expand-bar:hover{background:var(--accent);color:#fff}
+  .node.branch-1 .node-main{border-color:var(--b1)} .node.branch-2 .node-main{border-color:var(--b2)}
+  .node.branch-3 .node-main{border-color:var(--b3)} .node.branch-4 .node-main{border-color:var(--b4)}
+  .node.branch-5 .node-main{border-color:var(--b5)} .node.branch-6 .node-main{border-color:var(--b6)}
+  svg.links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+  svg.links path{fill:none;stroke:var(--line);stroke-width:1.6}
+  .scrim{position:fixed;inset:0;background:rgba(5,10,24,.55);z-index:40}
+  .detail-panel{position:fixed;top:0;right:0;height:100vh;width:min(440px,92vw);background:var(--card);
+       border-left:1px solid var(--line);transform:translateX(100%);transition:.25s;z-index:50;
+       display:flex;flex-direction:column;padding:20px}
+  .detail-panel.open{transform:translateX(0)}
+  .panel-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .panel-id{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .panel-header h2{margin:4px 0 0;font-size:19px}
+  .icon-button{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
+  .panel-group{color:var(--accent);font-size:12px;margin:10px 0 4px;font-weight:600}
+  .markdown-content{font-size:14px;line-height:1.6;color:#cdd8f2;overflow:auto}
+  .markdown-content h3{font-size:15px;margin:14px 0 6px}
+  .markdown-content ul{padding-left:18px;margin:6px 0}
+  .markdown-content code{background:#0c1830;padding:1px 5px;border-radius:4px;font-size:12px}
+  .markdown-content a{color:var(--accent)}
+  .child-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .child-pills button{background:#16233f;border:1px solid var(--line);color:var(--ink);border-radius:20px;
+       padding:5px 10px;font-size:12px;cursor:pointer}
+  .child-pills button:hover{border-color:var(--accent)}
+  h3.section{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:18px 0 6px}
+</style>
+</head>
+<body>
+<div class="site-shell">
+  <header class="hero">
+    <h1>Template Thẩm định Kinh tế Dự án (MPP27)</h1>
+    <p class="lede">Cách lập bảng thẩm định <strong>kinh tế</strong> dự án — minh họa bằng case Nghệ An Tate &amp; Lyle, nền tảng Chương 7–13 (Jenkins–Kuo–Harberger). Bấm thanh dưới mỗi node để mở/thu nhánh; bấm tên node để xem công thức, ô Excel và nguồn tham khảo.</p>
+  </header>
+  <nav class="toolbar">
+    <button id="expandAll" type="button">Mở toàn bộ</button>
+    <button id="collapseAll" type="button">Thu gọn</button>
+    <label class="zoom-control">Zoom
+      <input id="zoomRange" type="range" min="0.5" max="1.4" value="0.9" step="0.05" />
+      <span id="zoomValue">0.90×</span>
+    </label>
+  </nav>
+  <main>
+    <section class="diagram-card">
+      <div id="diagramViewport" class="diagram-viewport">
+        <div id="diagramCanvas" class="diagram-canvas"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="scrim" class="scrim" hidden></div>
+<aside id="detailPanel" class="detail-panel" aria-hidden="true">
+  <div class="panel-header">
+    <div style="display:flex;align-items:flex-start;gap:10px">
+      <button id="backPanel" class="icon-button" type="button" aria-label="Quay lai" title="Quay lại node trước" hidden>&#8592;</button>
+      <div><div id="panelId" class="panel-id">Node</div><h2 id="panelTitle"></h2></div>
+    </div>
+    <button id="closePanel" class="icon-button" type="button" aria-label="Dong">&times;</button>
+  </div>
+  <div id="panelGroup" class="panel-group"></div>
+  <div id="panelDescription" class="markdown-content"></div>
+  <h3 class="section" id="childrenLabel" hidden>Cac nhanh con</h3>
+  <div id="panelChildren" class="child-pills"></div>
+</aside>
+
+<script>
+/* ============================================================
+   DU LIEU - chi can thay object diagramData nay cho topic moi.
+   Moi node: { id, title, en(phu de tieng Anh, tuy chon), group, kind, detail(Markdown), children:[] }
+   ============================================================ */
+const diagramData =
+/*__DIAGRAM_DATA__*/
+{
+  "id": 1,
+  "title": "Template Thẩm định Kinh tế Dự án",
+  "en": "Project Economic Appraisal Template",
+  "group": "MPP27 — Thẩm định Đầu tư công",
+  "detail": "**Cách lập bảng thẩm định KINH TẾ** — minh họa bằng case **Nghệ An Tate & Lyle** (nhà máy đường), nền tảng lý thuyết Chương 7–13 (Jenkins–Kuo–Harberger, HIID).\n\n**Ý tưởng cốt lõi:** phân tích kinh tế dùng *cùng một mô hình ngân lưu* với phân tích tài chính, nhưng:\n- (1) thay **giá tài chính** bằng **giá kinh tế** (giá mờ),\n- (2) **loại bỏ các khoản chuyển giao** (thuế, trợ giá, lãi vay),\n- (3) **cộng thêm ngoại tác / thặng dư** cho các nhóm bị ảnh hưởng,\n- rồi chiết khấu ở **EOCK** (chi phí cơ hội kinh tế của vốn).\n\n**Chú giải:** khối **★** = nguyên lý *mọi dự án*; khối **[Excel]** = ánh xạ trực tiếp tới sheet/dòng trong file thực hành Tate & Lyle.",
+  "children": [
+    {
+      "id": 2,
+      "title": "★ Khung khái niệm",
+      "en": "Conceptual Framework",
+      "detail": "5 nguyên lý nền tảng trả lời: *vì sao* phân tích kinh tế, *đo* lợi ích–chi phí thế nào, và *khác* phân tích tài chính ở đâu.",
+      "children": [
+        {
+          "id": 3,
+          "title": "① Tài chính · Kinh tế · Phân phối",
+          "en": "Three Perspectives",
+          "kind": "leaf",
+          "detail": "Ba lớp phân tích **nhất quán, cùng đơn vị tính**, kiểm toán chéo được nhau:\n\n- **Tài chính:** phúc lợi của *một nhóm* (chủ đầu tư, một doanh nghiệp) — tiền vào/ra theo giá thị trường.\n- **Kinh tế:** phúc lợi của *toàn bộ cư dân quốc gia* — dùng giá kinh tế, cộng dồn không phân biệt ai.\n- **Phân phối:** *ai được – ai mất* — bóc tách chênh lệch kinh tế trừ tài chính cho từng nhóm.\n\nPhân tích kinh tế lấy số liệu tài chính làm điểm khởi đầu, rồi bổ sung nguyên tắc kinh tế học phúc lợi ứng dụng.\n\n**Nguồn:** Ch.7 §7.1–7.2 (HIID Jenkins–Harberger)."
+        },
+        {
+          "id": 4,
+          "title": "② Ba định đề Harberger",
+          "en": "Harberger's Three Postulates",
+          "kind": "leaf",
+          "detail": "Nền tảng đo lường lợi ích–chi phí kinh tế:\n\n- **(a) Giá cầu đo lợi ích** — giá cầu cạnh tranh = mức **sẵn lòng chi trả (WTP)** của người dùng.\n- **(b) Giá cung đo chi phí** — giá cung cạnh tranh = **chi phí cơ hội** nguồn lực bỏ ra.\n- **(c) Cộng dồn không phân biệt ai được–ai mất** — khi tính lợi ích/chi phí ròng, tổng gộp qua mọi người; vấn đề phân phối xử lý riêng.\n\n**Nguồn:** Harberger (1971), *\"Three Basic Postulates for Applied Welfare Economics\"*, Journal of Economic Literature 9: 785–797 · Ch.7 §7.1."
+        },
+        {
+          "id": 5,
+          "title": "③ Giá kinh tế = bình quân gia quyền Ps & Pd",
+          "en": "Economic Price = Weighted Avg of Ps, Pd",
+          "detail": "**Trục xương sống của toàn bộ phương pháp:**\n\n`P_e = Ws·Ps + Wd·Pd`   (Ws + Wd = 1)\n\n- **Ps** = giá cung = chi phí nguồn lực biên để cung thêm 1 đơn vị.\n- **Pd** = giá cầu = mức sẵn lòng chi trả (WTP).\n- **Ws** = tỷ lệ sản lượng dự án lấy từ *sản xuất tăng thêm* của người khác; **Wd** = tỷ lệ lấy từ *lượng cầu bị chiếm chỗ*.\n\nĐúng cho **cả đầu ra** (dịch đường cung) **lẫn nhập lượng** (dịch đường cầu). Giá kinh tế luôn **nằm giữa** Ps và Pd.\n\n**Nguồn:** Ch.8 (eq 8-6, 8-7) · Ch.9 (eq 9-3).",
+          "children": [
+            {
+              "id": 6,
+              "title": "Thị trường KHÔNG biến dạng",
+              "en": "Undistorted Market",
+              "kind": "leaf",
+              "detail": "Không thuế/trợ giá/ngoại tác → ở đơn vị cuối cùng **Ps = Pd = Pm**, nên **giá kinh tế = giá thị trường**.\n\nKhái niệm đi kèm: **thặng dư tiêu dùng** (WTP − thực trả) và **thặng dư sản xuất / lợi tức kinh tế** (doanh thu − chi phí tài nguyên).\n\n**Nguồn:** Ch.8 §8.2–8.3."
+            },
+            {
+              "id": 7,
+              "title": "Thị trường BIẾN DẠNG — Bảng 9-1",
+              "en": "Distorted Market — Table 9-1",
+              "kind": "leaf",
+              "detail": "Thuế/trợ giá tạo **khoảng cách (wedge)** giữa Ps và Pd. Quy tắc gắn giá thị trường Pm với Ps, Pd:\n\n- Thuế doanh thu/bán lẻ ts: `Pd = Pm·(1+ts)`, `Ps = Pm`\n- Thuế sản xuất tp: `Ps = Pm/(1+tp)`, `Pd = Pm`\n- Trợ giá sản xuất K: `Ps = Pm/(1−K)`, `Pd = Pm`\n- Trợ giá tiêu thụ Kc: `Pd = Pm·(1−Kc)`\n- Độc quyền: `Ps = Pm·(1−tm)`\n\nGiá kinh tế = bình quân gia quyền Ps, Pd → **nằm giữa** hai giá.\n\n**Nguồn:** Ch.9 §9.2–9.7, Bảng 9-1."
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "title": "④ Loại bỏ các khoản CHUYỂN GIAO",
+          "en": "Exclude Transfers",
+          "kind": "leaf",
+          "detail": "Chuyển giao thu nhập giữa các nhóm **không làm đổi tổng nguồn lực thực** của quốc gia → **không phải chi phí/lợi ích kinh tế**, phải loại khỏi ngân lưu kinh tế:\n\n- **Thuế** (VAT, thuế NK, thuế TNDN) — nhà nước thu, dân trả: chuyển giao.\n- **Trợ giá** — nhà nước chi, dân nhận: chuyển giao.\n- **Lãi vay & nợ gốc** — chuyển giao tài trợ giữa chủ nợ và dự án.\n- **Lợi nhuận độc quyền / lợi tức kinh tế** dôi ra do giá tăng.\n\n*Nghịch lý hữu ích:* chính những khoản này làm giá tài chính lệch giá kinh tế, và là **trọng tâm của phân tích phân phối** (ai được – ai mất).\n\n**Nguồn:** Ch.7 §7.2 · Ch.8 §8.2–8.3 · Ch.9 §9.2."
+        },
+        {
+          "id": 9,
+          "title": "⑤ Chiết khấu ở EOCK, không phải WACC",
+          "en": "Discount at EOCK, not WACC",
+          "kind": "leaf",
+          "detail": "Ngân lưu **kinh tế** chiết khấu bằng **EOCK** — chi phí cơ hội kinh tế của vốn (một tham số áp dụng thống nhất mọi dự án công/tư), *không* dùng WACC/hurdle tài chính.\n\nLý do: lãi suất thị trường bị biến dạng (thuế doanh nghiệp, thuế cá nhân, bù rủi ro, lạm phát) nên không phản ánh đúng chi phí cơ hội xã hội của vốn.\n\nChi tiết ở nhánh **🔧 Bộ công cụ → ⑤ EOCK**.\n\n**Nguồn:** Ch.12 §12.1–12.2."
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "🔧 Bộ công cụ chuyển giá TC→KT",
+      "en": "Conversion Toolkit",
+      "detail": "Mỗi hạng mục trong bảng tài chính được **nhân với một hệ số** (hoặc thay bằng giá mờ) để ra giá trị kinh tế. Năm nhóm công cụ dưới đây.",
+      "children": [
+        {
+          "id": 11,
+          "title": "① Hệ số chuyển đổi CF",
+          "en": "Conversion Factor",
+          "detail": "`CF = Giá kinh tế / Giá tài chính`   (công thức chuẩn: `CFi = Pe / [Pm·(1+ti)]`, mẫu số = giá cầu đã gồm thuế).\n\nNhân **từng dòng** ngân lưu tài chính (quan điểm tổng đầu tư) với CF tương ứng → ra ngân lưu kinh tế. CF **không bị lạm phát ảnh hưởng** (khi suất thuế/trợ giá % không đổi) và **tái sử dụng** được cho nhiều dự án.\n\nCF có thể **>1** (giá kinh tế cao hơn giá tài chính).\n\n**Nguồn:** Ch.10 §10.4 (định nghĩa) · Ch.11 eq 11.15 (công thức & cách áp).",
+          "children": [
+            {
+              "id": 12,
+              "title": "CF hàng NGOẠI THƯƠNG — giá biên giới",
+              "en": "Tradables — Border Prices",
+              "kind": "leaf",
+              "detail": "Hàng ngoại thương (giá xác định trên **thị trường thế giới**) định giá theo **giá biên giới**:\n\n- **Nhập khẩu** → giá **CIF** (+ dịch vụ, vận tải kinh tế); **loại thuế nhập khẩu**.\n- **Xuất khẩu** → giá **FOB** (− cước & bốc xếp kinh tế).\n\nTrọng số Ws≈1, Wd≈0 (thay đổi chỉ tác động lượng xuất/nhập).\n\nVí dụ CF: **xe hơi = 11.896/18.810 = 0,63**; **gỗ = 542,85/450 = 1,21**.\n\n**Nguồn:** Ch.10 §10.2–10.4, Bảng 10-1, 10-2."
+            },
+            {
+              "id": 13,
+              "title": "CF hàng PHI NGOẠI THƯƠNG",
+              "en": "Non-tradables",
+              "kind": "leaf",
+              "detail": "Hàng phi ngoại thương (giá xác định bởi **cung–cầu nội địa**): điện, nước, dịch vụ công, xây dựng, **vận tải nội địa**, xi măng…\n\nGiá kinh tế = `Ws·Ps + Wd·Pd` với `Ws = εs/(εs−ηd)`; hệ số: `Pe/Pm = 1 + Ws·kx + Wd·tx`.\n\nTrước tiên **phân rã** chi tiêu thành phần ngoại thương (T) và phi ngoại thương (NT) — Bảng 11.1–11.2.\n\nVí dụ CF: **viên gạch (Nam Phi) = 1,27**.\n\n**Nguồn:** Ch.11 §11.1–11.5, eq 11.3–11.15."
+            },
+            {
+              "id": 14,
+              "title": "Khi KHÔNG dùng được CF",
+              "en": "When CF Doesn't Apply",
+              "kind": "leaf",
+              "detail": "Với **đầu ra đo bằng thặng dư tiêu dùng / không có giá thị trường** — CF (nhân từ dòng tài chính) không dùng được:\n\n- Lợi ích cải tạo đường (khi không thu phí)\n- Cấp nước sạch, độ tin cậy điện\n- Tiết kiệm thời gian (VOT), tiết kiệm chi phí vận hành xe (VOC) — case BOT\n\n→ phải để **kỹ sư/chuyên gia ngành đo trực tiếp WTP** và giá trị nguồn lực tiết kiệm.\n\n**Nguồn:** Ch.11 §11.4, 11.6."
+            }
+          ]
+        },
+        {
+          "id": 15,
+          "title": "② Ngoại tệ: FEP & Tỷ giá kinh tế SER",
+          "en": "Foreign Exchange Premium & SER",
+          "detail": "Tỷ giá thị trường **OER (Em)** thường *thấp hơn* chi phí kinh tế thực của ngoại tệ **SER (Ee)** vì thuế nhập khẩu + trợ giá xuất khẩu → sinh **phí ngoại hối FEP > 0**.\n\nÁp cho phần **ngoại tệ** trong các hạng mục của bảng ngân lưu kinh tế.\n\n**Nguồn:** Ch.10 §10.5, eq 10-2 → 10-5.",
+          "children": [
+            {
+              "id": 16,
+              "title": "SER = OER·(1+FEP)",
+              "en": "Shadow Exchange Rate",
+              "kind": "leaf",
+              "detail": "- **FEP** (phí ngoại hối) `= (Ee − Em)/Em = Ee/Em − 1`\n- **SERF** (hệ số tỷ giá mờ) `= Ee/Em = 1 + FEP`\n- **`SER = OER × (1 + FEP)`**  tức  `Ee = Em·(1+FEP)`\n\nEe là **bình quân gia quyền** của (1+K) phía cung ngoại tệ (xuất khẩu) và (1+T) phía cầu ngoại tệ (nhập khẩu), trọng số theo co dãn.\n\n**Nguồn:** Ch.10 §10.5 (eq 10-4)."
+            },
+            {
+              "id": 17,
+              "title": "Áp FEP vào bảng ngân lưu",
+              "en": "Applying FEP to the Cash Flow",
+              "kind": "leaf",
+              "detail": "Hai cách tương đương:\n\n- **Tách:** `CF_tổng = CFi + (tỷ trọng ngoại tệ)·FEP`\n- **Nhân trực tiếp:** `Giá trị kinh tế = Giá trị tài chính × CFi × (Ee/Em)`\n\n*Ví dụ:* chi phí tài chính $150; CFi=0,80 (thuế NK 25%); Ee/Em=1,10 (FEP 10%); 80% ngoại tệ →\n`150×(0,80 + 0,80×0,10) = 150×0,88 = $132`.\n\n*Lưu ý case Tate & Lyle:* mô hình chạy bằng **USD thực** nên **không dùng SER/FEP tường minh** — nhưng đây là công cụ chuẩn khi bảng tính bằng nội tệ.\n\n**Nguồn:** Ch.10 §10.5 (eq 10-5)."
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "title": "③ Lao động: EOCL & lương mờ (SWRF)",
+          "en": "Labor: EOCL & Shadow Wage",
+          "detail": "Lao động **không phải nhập lượng đồng nhất** — chi phí kinh tế đo bằng **giá cung** (chi phí cơ hội), thường *thấp hơn* lương dự án trả.\n\n**Nguồn:** Ch.13 (Chi phí cơ hội kinh tế của lao động).",
+          "children": [
+            {
+              "id": 19,
+              "title": "EOCL & ngoại tác lao động",
+              "en": "EOCL & Labor Externality",
+              "kind": "leaf",
+              "detail": "**EOCL** = giá trị nhóm hoạt động (thị trường + phi thị trường) mà người lao động **phải bỏ qua** khi vào dự án — đo bằng **giá cung lao động Ws** (đã điều chỉnh thuế, BHTN, khu vực bảo hộ, di cư).\n\n**Ngoại tác lao động (thặng dư):**\n\n`LE = Wp − EOCL`   (eq 13-1)\n\n- Wp = lương dự án trả = **chi phí tài chính** (giá cầu).\n- EOCL = **chi phí kinh tế** (giá cung).\n- LE > 0 khi dự án tạo việc cho lao động vốn có chi phí cơ hội thấp.\n\nCách tiếp cận **giá cung** (Harberger) được ưa dùng hơn *năng suất biên bị bỏ qua* (Little–Mirrlees) vì trực tiếp & chính xác hơn.\n\n**Nguồn:** Ch.13 §13.1–13.2, eq 13-1."
+            },
+            {
+              "id": 20,
+              "title": "SWRF — hệ số lương mờ [Excel: 0,5]",
+              "en": "Shadow Wage Rate Factor",
+              "kind": "leaf",
+              "detail": "Trình bày dạng **tỷ số** (phái sinh trực tiếp từ `LE = Wp − EOCL`):\n\n`SWRF = EOCL / lương tài chính`  →  **Chi phí lương kinh tế = lương tài chính × SWRF**\n\n- **SWRF < 1** khi lương dự án cao hơn giá cung (do thuế, khu vực bảo hộ, thất nghiệp) → có thặng dư lao động dương.\n- Có thể **> 1** với lao động nước ngoài / việc tạm thời.\n\n**[Excel Tate & Lyle]** dùng **SWRF = 0,5** (ô C4, dòng \"Hệ số lương kinh tế\").\n\n*Lưu ý trích dẫn:* giáo trình Ch.13 diễn đạt quan hệ này ở **dạng hiệu** `LE = Wp − EOCL`; thuật ngữ \"SWRF/hệ số lương mờ\" là cách trình bày chuẩn trong thực hành thẩm định (Fulbright), phái sinh từ khung Ch.13.\n\n**Nguồn:** Ch.13 §13.1 (khung LE) · thông số thực hành môn học."
+            }
+          ]
+        },
+        {
+          "id": 21,
+          "title": "④ Chi phí cơ hội của đất",
+          "en": "Opportunity Cost of Land",
+          "kind": "leaf",
+          "detail": "Đất chuyển sang dự án có **giá cung = thu nhập ròng của phương án sử dụng tốt nhất bị bỏ qua** (cây trồng thay thế).\n\n`Chi phí cơ hội đất = thu nhập ròng cây thay thế`\n\n**[Excel Tate & Lyle]** đất trồng mía được định giá qua thu nhập ròng của **dứa / cà phê / cao su / xen canh** (sheet \"Cay trong\") — xem nhánh 📊 Phần 2.\n\n**Nguồn:** Ch.9 (giá cung = chi phí cơ hội nguồn lực)."
+        },
+        {
+          "id": 22,
+          "title": "⑤ EOCK — suất chiết khấu kinh tế",
+          "en": "Economic Opportunity Cost of Capital",
+          "detail": "Suất chiết khấu cho ngân lưu **kinh tế** — chi phí cơ hội xã hội của việc rút vốn biên từ thị trường vốn.\n\n**Nguồn:** Ch.12 (Chi phí cơ hội kinh tế của công quỹ).",
+          "children": [
+            {
+              "id": 23,
+              "title": "EOCK = bình quân gia quyền 3 nguồn vốn",
+              "en": "Weighted Average of 3 Capital Sources",
+              "kind": "leaf",
+              "detail": "`ie = Wc·r + (1 − Wc)·p`   (eq 12-2)\n\nBình quân gia quyền của ba nguồn vốn biên mà chi tiêu công rút ra:\n\n- **Đầu tư tư nhân bị chèn ép** → suất sinh lợi **trước thuế** `p`\n- **Tiết kiệm nội địa tăng thêm** → suất sinh lợi **sau thuế** của người tiết kiệm `r`\n- **Vốn nước ngoài** → chi phí kinh tế biên vay nước ngoài `MEC`\n\nVì tiết kiệm kém co dãn còn đầu tư co dãn mạnh → **EOCK nằm gần p** (suất trước thuế) hơn là r.\n\n**Nguồn:** Ch.12 §12.2, eq 12-2, 12-4, 12-7."
+            },
+            {
+              "id": 24,
+              "title": "Con số EOCK điển hình",
+              "en": "Typical EOCK Values",
+              "kind": "leaf",
+              "detail": "- **13,3%** — ví dụ minh họa (giả định) của giáo trình.\n- **≈ 12% thực** — nghiên cứu quốc gia Papua New Guinea.\n- **≈ 8% thực** — mức Việt Nam thường dùng trong **thực hành môn học** (thông số Fulbright).\n\n*Lưu ý trích dẫn:* con số ~8% cho Việt Nam **không** nằm trong Ch.12 HIID (chương chỉ nêu 13,3% giả định và ~12% PNG); nếu dùng ~8% phải chú nguồn là thông số thẩm định của chương trình.\n\n**[Excel Tate & Lyle]** chiết khấu bằng chi phí vốn kinh tế **thực USD** (dòng \"WACC sau thuế và chi phí vốn kinh tế thực USD\", sheet Tài chính).\n\n**Nguồn:** Ch.12 §12.3–12.4 · thông số thực hành môn học."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "title": "📊 Cách lập bảng ngân lưu kinh tế",
+      "en": "Building the Economic Cash-Flow Table",
+      "group": "[Excel] sheet \"Kinh te\"",
+      "detail": "**Phần lõi — ánh xạ trực tiếp tới sheet \"Kinh te\" của file Tate & Lyle.** Tính **lợi ích kinh tế ròng cho từng nhóm** đối tượng, rồi tổng hợp thành ngân lưu kinh tế và chỉ tiêu.\n\nBa nhóm được bóc tách riêng vì mỗi nhóm có một *ngoại tác/thặng dư* mà phân tích tài chính bỏ sót: **lao động, nông dân (đất), chủ xe tải (vận chuyển)**.",
+      "children": [
+        {
+          "id": 26,
+          "title": "Bước 0 · Khung & thông số kinh tế",
+          "en": "Setup & Economic Parameters",
+          "kind": "leaf",
+          "detail": "Cài đặt trước khi lập bảng:\n\n- **Khung năm** (dòng thời gian; Tate & Lyle: 1996–…, năm 0 = 1998).\n- **Giá thế giới** của đường (giá biên giới cho đầu ra ngoại thương).\n- **Thuế nhập khẩu đường = 30%** (biến dạng làm giá tài chính > giá kinh tế).\n- **SWRF = 0,5** (hệ số lương kinh tế).\n- **EOCK** (chi phí vốn kinh tế thực USD) làm suất chiết khấu.\n\n**[Excel]** các thông số nằm ở sheet \"Tai chinh\" (Bảng thông số) và đầu sheet \"Kinh te\"."
+        },
+        {
+          "id": 27,
+          "title": "Phần 1 · Lao động trong nước",
+          "en": "Domestic Labor  [rows 3–8]",
+          "detail": "Chuyển chi phí lương tài chính → chi phí lương kinh tế bằng SWRF, và tính thặng dư lao động.",
+          "children": [
+            {
+              "id": 28,
+              "title": "Lương kinh tế = lương TC × SWRF",
+              "en": "Economic Wage",
+              "kind": "leaf",
+              "detail": "`Chi phí lương kinh tế = Chi phí lương tài chính × SWRF`\n\n**[Excel]** `C6 = C5 × $C$4`  (C5 = lương tài chính danh nghĩa; C4 = SWRF = 0,5).\n\n**Nguồn:** Ch.13 (EOCL = giá cung lao động)."
+            },
+            {
+              "id": 29,
+              "title": "Lợi ích KT ròng của lao động",
+              "en": "Net Economic Benefit to Labor",
+              "kind": "leaf",
+              "detail": "Thặng dư lao động + giá trị đào tạo nghề:\n\n`Lợi ích KT ròng LĐ = Lương tài chính − Lương kinh tế + Giá trị đào tạo`\n\n**[Excel]** `C8 = C5 − C6 + C7`  (C7 = giá trị đào tạo nghề — một ngoại tác dương).\n\nĐây chính là `LE = Wp − EOCL` (cộng ngoại tác đào tạo).\n\n**Nguồn:** Ch.13 eq 13-1."
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "title": "Phần 2 · Nông dân — chi phí cơ hội đất",
+          "en": "Farmers — Land Opportunity Cost  [rows 10–23]",
+          "detail": "Lợi ích kinh tế của nông dân trồng mía = chênh lệch thu nhập giữa trồng mía và phương án cây trồng thay thế tốt nhất.",
+          "children": [
+            {
+              "id": 31,
+              "title": "Thu nhập ròng cây thay thế",
+              "en": "Net Income of Alternative Crops",
+              "kind": "leaf",
+              "detail": "Chi phí cơ hội của đất = thu nhập ròng phương án bị bỏ qua. Danh mục cây thay thế (sheet \"Cay trong\"):\n\n- Dứa, Cà phê, Cao su\n- Xen canh A (lạc & ngô), B (lạc & lạc), C (lạc & lúa)\n\n**[Excel]** ô \"Chọn loại cây thay thế\" (B20) dùng hàm `INDEX` để chọn phương án → dòng \"Thu nhập ròng trồng cây thay thế\" (E22).\n\n**Nguồn:** Ch.9 (giá cung đất = chi phí cơ hội)."
+            },
+            {
+              "id": 32,
+              "title": "Lợi ích KT ròng của nông dân",
+              "en": "Net Economic Benefit to Farmers",
+              "kind": "leaf",
+              "detail": "`Lợi ích KT ròng nông dân = Thu nhập ròng trồng mía − Thu nhập ròng cây thay thế`\n\n**[Excel]** `E23 = E21 − E22`.\n\nNếu dương → trồng mía cho dự án đem lại thu nhập cao hơn phương án thay thế (thặng dư cho nông dân); phần này phân tích tài chính của nhà máy **không thấy**.\n\n**Nguồn:** Ch.7–9 (ngoại tác/thặng dư nhóm liên quan)."
+            }
+          ]
+        },
+        {
+          "id": 33,
+          "title": "Phần 3 · Vận chuyển — thặng dư chủ xe tải",
+          "en": "Transport — Trucker Surplus  [rows 25–29]",
+          "kind": "leaf",
+          "detail": "Lợi ích kinh tế ròng của chủ xe tải chở mía = phần **lợi nhuận ròng** trên tiền cước:\n\n`Lợi ích KT ròng chủ xe = Tỷ suất lợi nhuận ròng × Tiền trả cho chủ xe tải`\n\n**[Excel]** `F29 = F28 × F27` (sheet \"Kinh te\" & sheet \"Van chuyen\"; tỷ suất ≈ 0,209).\n\nThêm một nhóm hưởng lợi mà phân tích tài chính của nhà máy bỏ sót.\n\n**Nguồn:** Ch.7 §7.2 (gộp lợi ích mọi cư dân)."
+        },
+        {
+          "id": 34,
+          "title": "Phần 4 · Doanh thu kinh tế — giá biên giới",
+          "en": "Economic Revenue — Border Price",
+          "kind": "leaf",
+          "detail": "Đầu ra (đường) là **hàng ngoại thương** → định giá theo **giá biên giới (giá thế giới)**, *không* dùng giá nội địa.\n\n- Giá **tài chính**: giá nội địa = giá thế giới **× (1 + 30% thuế NK)** — được bảo hộ.\n- Giá **kinh tế**: giá biên giới (bỏ bảo hộ) → **NPV doanh thu kinh tế 243.706** so với **tài chính 316.818** (tỷ lệ ≈ 1/1,3).\n\nChênh lệch = phần bảo hộ thuế nhập khẩu, một **chuyển giao** từ người tiêu dùng đường sang nhà máy — bị loại khỏi giá trị kinh tế.\n\n**Nguồn:** Ch.10 §10.3 (giá biên giới, loại thuế NK)."
+        },
+        {
+          "id": 35,
+          "title": "Phần 5 · Ngân lưu kinh tế",
+          "en": "Economic Cash Flow  [rows 31–45]",
+          "detail": "Tổng hợp vào/ra ở **giá danh nghĩa kinh tế**; KHÔNG có thuế, nợ vay, khấu hao.",
+          "children": [
+            {
+              "id": 36,
+              "title": "Ngân lưu VÀO",
+              "en": "Cash Inflows",
+              "kind": "leaf",
+              "detail": "**[Excel rows 33–38]** Cộng:\n\n- Doanh thu ròng (giá kinh tế/biên giới)\n- Lợi ích ròng của lao động dự án (= C8)\n- Lợi ích ròng của nông dân trồng mía\n- Lợi ích ròng của chủ xe tải (= C29)\n- Giá trị kết thúc (thanh lý)\n\n`Cộng = SUM(các dòng vào)`"
+            },
+            {
+              "id": 37,
+              "title": "Ngân lưu RA (không thuế/nợ/khấu hao)",
+              "en": "Cash Outflows",
+              "kind": "leaf",
+              "detail": "**[Excel rows 40–43]** Cộng:\n\n- Chi phí hoạt động (giá kinh tế)\n- Thay đổi vốn lưu động (ΔVLĐ)\n- Chi phí đầu tư (giá kinh tế)\n\n**KHÔNG bao gồm:** thuế TNDN, VAT, lãi vay, trả nợ gốc, khấu hao — đều là chuyển giao hoặc bút toán phi tiền mặt, đã loại ở phân tích kinh tế.\n\n`Cộng = SUM(các dòng ra)`"
+            },
+            {
+              "id": 38,
+              "title": "Ngân lưu ròng kinh tế",
+              "en": "Net Economic Cash Flow",
+              "kind": "leaf",
+              "detail": "`Ngân lưu ròng (danh nghĩa) = Cộng VÀO − Cộng RA`\n\n**[Excel]** `C45 = C38 − C43`.\n\nĐây là dòng đưa vào tính NPV/IRR kinh tế."
+            }
+          ]
+        },
+        {
+          "id": 39,
+          "title": "Phần 6 · Chỉ tiêu kinh tế",
+          "en": "Economic Metrics  [rows 46–47, cột NPV]",
+          "kind": "leaf",
+          "detail": "- **NPV kinh tế** — chiết khấu ngân lưu ròng ở **EOCK** (cột \"NPV\" của bảng; NPV dự án kinh tế ≈ 39.324 '000 USD danh nghĩa).\n- **IRR danh nghĩa** — `= IRR(C45:V45, 10%)`.\n- **IRR thực ≈ 16,4%** (quy đổi Fisher từ IRR danh nghĩa).\n\n**Quy tắc:** NPV kinh tế > 0 → dự án cải thiện phúc lợi quốc gia.\n\n**Nguồn:** Ch.12 (chiết khấu ở EOCK) · Ch.3 (NPV/IRR)."
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "title": "⚖️ Phân tích phân phối",
+      "en": "Distributive Analysis",
+      "group": "[Excel] sheet \"Phan phoi\"",
+      "detail": "Bóc tách **chênh lệch giữa giá trị kinh tế và giá trị tài chính** của từng khoản = **ngoại tác / thặng dư xã hội**, rồi phân cho từng nhóm hưởng lợi/chịu thiệt.",
+      "children": [
+        {
+          "id": 41,
+          "title": "So NPV tài chính vs NPV kinh tế",
+          "en": "Financial vs Economic NPV, item by item",
+          "kind": "leaf",
+          "detail": "Lập bảng song song NPV tài chính (cột B) và NPV kinh tế (cột C) cho từng khoản vào/ra:\n\n`Chênh lệch = NPV kinh tế − NPV tài chính`  (**[Excel]** `E3 = C3 − B3`)\n\nVí dụ: Doanh thu ròng — NPV tài chính 316.818, NPV kinh tế 243.706 → chênh lệch −73.112 (phần bảo hộ thuế NK mà người tiêu dùng đường gánh).\n\n**Nguồn:** Ch.7 §7.2 (kiểm toán chéo 3 lớp)."
+        },
+        {
+          "id": 42,
+          "title": "Phân bổ thặng dư cho các nhóm",
+          "en": "Allocating Surplus to Stakeholders",
+          "kind": "leaf",
+          "detail": "Mỗi khoản chênh lệch được gán cho nhóm nhận:\n\n- **Ngân sách Nhà nước** — thuế NK, VAT, thuế TNDN (**[Excel]** cột \"NS Nhà nước\").\n- **Lao động** — thặng dư lương (cột \"Lao động DN\").\n- **Nông dân** — chênh lệch thu nhập đất.\n- **Chủ xe tải** — thặng dư vận chuyển.\n- **Người tiêu dùng đường** — chịu giá cao do bảo hộ.\n\n**[Excel]** `NPV dự án = SUM(vào) − SUM(ra)` cho từng cột nhóm (dòng 14)."
+        },
+        {
+          "id": 43,
+          "title": "Kiểm toán chéo 3 lớp",
+          "en": "Three-Layer Cross-Audit",
+          "kind": "leaf",
+          "detail": "Tổng phân phối cho mọi nhóm **phải khớp** với chênh lệch (NPV kinh tế − NPV tài chính) của cả dự án — đảm bảo không bỏ sót/đếm trùng.\n\n`Σ (được − mất của mọi nhóm) = NPV kinh tế − NPV tài chính`\n\n**Nguồn:** Ch.7 §7.2 · Ch.12 (ngoại tác)."
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "title": "🔄 Đối chiếu khoản mục TC ↔ KT",
+      "en": "Financial ↔ Economic: Keep / Adjust / Drop / Add",
+      "detail": "Bảng tra nhanh: khi chuyển bảng tài chính sang kinh tế, mỗi khoản mục được xử lý theo 1 trong 4 cách.",
+      "children": [
+        {
+          "id": 45,
+          "title": "GIỮ (nhân CF)",
+          "en": "Keep (× CF)",
+          "kind": "leaf",
+          "detail": "Giữ hạng mục nhưng **nhân hệ số chuyển đổi CF** để về giá kinh tế:\n\n- Chi phí hoạt động\n- Thay đổi vốn lưu động\n- Chi phí đầu tư\n\n(Trong Tate & Lyle, các khoản này gần như giữ nguyên vì mô hình đã tính bằng USD/giá biên giới.)"
+        },
+        {
+          "id": 46,
+          "title": "ĐIỀU CHỈNH giá",
+          "en": "Adjust Price",
+          "kind": "leaf",
+          "detail": "Thay giá tài chính bằng **giá kinh tế** (giá mờ):\n\n- **Doanh thu** → giá biên giới (bỏ bảo hộ 30%)\n- **Lao động** → × SWRF (0,5)\n- **Ngoại tệ** (nếu bảng bằng nội tệ) → × SERF (1+FEP)"
+        },
+        {
+          "id": 47,
+          "title": "LOẠI BỎ (chuyển giao)",
+          "en": "Drop (Transfers)",
+          "kind": "leaf",
+          "detail": "Xóa hoàn toàn khỏi ngân lưu kinh tế:\n\n- VAT (đầu ra & đầu vào)\n- Thuế nhập khẩu đường\n- Thuế thu nhập doanh nghiệp\n- Lãi vay & trả nợ gốc (IFC-A, IFC-B, tín dụng XK…)\n- Khấu hao (bút toán phi tiền mặt)"
+        },
+        {
+          "id": 48,
+          "title": "THÊM MỚI (ngoại tác/thặng dư)",
+          "en": "Add (Externalities)",
+          "kind": "leaf",
+          "detail": "Bổ sung các dòng mà bảng tài chính **không có**:\n\n- Thặng dư lao động (đào tạo nghề)\n- Thặng dư nông dân (chi phí cơ hội đất)\n- Thặng dư chủ xe tải (vận chuyển)\n\nĐây là nơi phân tích kinh tế \"nhìn thấy\" giá trị cho toàn nền kinh tế mà chủ đầu tư không hạch toán."
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "title": "✅ Quy trình lập bảng (9 bước)",
+      "en": "Build Sequence (9 Steps)",
+      "kind": "leaf",
+      "detail": "1. **Hoàn tất bảng tài chính** (quan điểm tổng đầu tư) — làm điểm khởi đầu.\n2. **Phân loại** từng hạng mục: ngoại thương / phi ngoại thương / lao động / đất / chuyển giao.\n3. **Ước tính hệ số**: CF cho hàng hóa, SWRF cho lao động, FEP/SER nếu bảng bằng nội tệ, EOCK làm suất chiết khấu.\n4. **Điều chỉnh doanh thu** về giá biên giới (bỏ thuế NK/bảo hộ).\n5. **Tính lợi ích kinh tế ròng từng nhóm**: lao động (×SWRF), nông dân (chi phí cơ hội đất), chủ xe tải (thặng dư).\n6. **Loại bỏ chuyển giao**: thuế, trợ giá, lãi vay, nợ gốc, khấu hao.\n7. **Lập ngân lưu kinh tế**: Vào − Ra = Ngân lưu ròng.\n8. **Chiết khấu ở EOCK** → NPV kinh tế, IRR kinh tế.\n9. **Phân tích phân phối**: chênh lệch kinh tế − tài chính, phân cho từng nhóm, kiểm toán chéo.\n\n*(Có thể thêm bước 10: phân tích độ nhạy các thông số kinh tế — SWRF, EOCK, giá thế giới.)*"
+    },
+    {
+      "id": 50,
+      "title": "📌 Mapping case & nguồn",
+      "en": "Case Mapping & Sources",
+      "detail": "Đối chiếu template với các case đã học và giáo trình nền tảng.",
+      "children": [
+        {
+          "id": 51,
+          "title": "Nghệ An Tate & Lyle (case chính)",
+          "en": "Bài 8, 13–14",
+          "kind": "leaf",
+          "detail": "- **Loại:** nhà máy đường (sản xuất, đầu ra ngoại thương được bảo hộ 30%).\n- **Điều chỉnh kinh tế:** doanh thu về giá biên giới; SWRF 0,5 cho lao động; chi phí cơ hội đất (cây thay thế); thặng dư chủ xe tải.\n- **Không dùng SER/FEP** (mô hình bằng USD thực).\n- **Sheet:** Kinh te · Tong hop NL · Phan phoi · Cay trong · Van chuyen.\n- IRR kinh tế thực ≈ 16,4%."
+        },
+        {
+          "id": 52,
+          "title": "BOT Cai Lậy — Kinh tế",
+          "en": "Bài 15",
+          "kind": "leaf",
+          "detail": "- **Loại:** hạ tầng BOT đường bộ.\n- **Lợi ích kinh tế đặc thù:** tiết kiệm thời gian **VOT** + chi phí vận hành xe **VOC** (đo trực tiếp, không dùng CF).\n- Phân biệt lưu lượng **thay thế** vs **tăng thêm**.\n- KHÔNG có thuế/nợ/khấu hao; chiết khấu @ EOCK.\n\n*(Đối chiếu với template thẩm định TÀI CHÍNH — QĐ4 Kinh tế, QĐ5 Phân phối.)*"
+        },
+        {
+          "id": 53,
+          "title": "Nguồn giáo trình (Ch.7–13 HIID)",
+          "en": "Textbook Sources",
+          "kind": "leaf",
+          "detail": "Jenkins G.P., Kuo C.-Y. & Harberger A.C., *Cost–Benefit Analysis for Investment Decisions* (HIID) — bản dịch Fulbright:\n\n- **Ch.7** — Mục đích & khuôn khổ thẩm định kinh tế\n- **Ch.8** — Lợi ích/chi phí trong thị trường KHÔNG biến dạng\n- **Ch.9** — Lợi ích/chi phí trong thị trường BIẾN DẠNG (Bảng 9-1)\n- **Ch.10** — Giá kinh tế hàng ngoại thương & ngoại tệ (CIF/FOB, FEP, SER)\n- **Ch.11** — Giá kinh tế hàng phi ngoại thương (CF, NTP)\n- **Ch.12** — Chi phí cơ hội kinh tế của công quỹ (EOCK)\n- **Ch.13** — Chi phí cơ hội kinh tế của lao động (EOCL, lương mờ)\n\nNền lý thuyết: Harberger (1971) *Three Basic Postulates*, JEL 9:785–797."
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "title": "🎯 Sai lầm thường gặp",
+      "en": "Common Pitfalls",
+      "kind": "leaf",
+      "detail": "- **Quên loại chuyển giao** — để nguyên thuế/VAT/lãi vay trong ngân lưu kinh tế (tính trùng, sai bản chất).\n- **Dùng giá nội địa cho hàng ngoại thương** — quên quy về giá biên giới (CIF/FOB) → giữ luôn phần bảo hộ.\n- **Bỏ sót chi phí cơ hội đất / lao động** — không cộng thặng dư nông dân, không dùng SWRF.\n- **Dùng WACC/hurdle tài chính thay EOCK** để chiết khấu ngân lưu kinh tế.\n- **Quên phí ngoại hối** (khi bảng bằng nội tệ) — bỏ SER/FEP làm định giá thấp ngoại tệ.\n- **Đếm trùng thặng dư** — vừa điều chỉnh giá vừa cộng ngoại tác cho cùng một khoản.\n- **Gán sai nguồn** — ví dụ gán con số EOCK ~8% cho Ch.12 (thực ra là thông số thực hành, không có trong giáo trình).\n\n**Kiểm tra cuối:** tổng phân phối các nhóm = NPV kinh tế − NPV tài chính (kiểm toán chéo)."
+    }
+  ]
+};
+
+/* ================= ENGINE (khong can sua) ================= */
+const canvas = document.getElementById("diagramCanvas");
+const viewport = document.getElementById("diagramViewport");
+const detailPanel = document.getElementById("detailPanel");
+const scrim = document.getElementById("scrim");
+
+const nodeById = new Map();
+const parentById = new Map();
+const displayNumberById = new Map();
+(function index(node,parent){ nodeById.set(node.id,node);
+  if(parent) parentById.set(node.id,parent);
+  (node.children||[]).forEach(c=>index(c,node)); })(diagramData,null);
+(function bfs(root){ const q=[root]; let n=1; while(q.length){ const x=q.shift();
+  displayNumberById.set(x.id,n++); (x.children||[]).forEach(c=>q.push(c)); }})(diagramData);
+
+const state = { expanded:new Set([diagramData.id]), focusedChildByParent:new Map(), zoom:0.9 };
+
+const hasChildren = n => (n.children||[]).length>0;
+function pathToRoot(id){ const p=[]; let c=nodeById.get(id); while(c){ p.unshift(c.id); c=parentById.get(c.id)||null; } return p; }
+function topBranch(id){ return pathToRoot(id)[1]; }
+function setFocus(path){ state.focusedChildByParent.clear();
+  for(let i=0;i<path.length-1;i++) state.focusedChildByParent.set(path[i],path[i+1]); }
+function visibleChildren(node){ const ch=node.children||[]; const f=state.focusedChildByParent.get(node.id);
+  if(!f) return ch; const a=ch.find(c=>c.id===f); return a?[a]:ch; }
+
+function toggleNode(id){
+  if(state.expanded.has(id)){
+    const parent=parentById.get(id);
+    const p=parent?pathToRoot(parent.id):[]; state.expanded=new Set(p); setFocus(p);
+    render(); centerNode(parent?parent.id:diagramData.id); return;
+  }
+  const p=pathToRoot(id); state.expanded=new Set(p); setFocus(p);
+  render(); centerNode(id);
+}
+
+function makeNode(node){
+  const wrap=document.createElement("div");
+  const b=topBranch(node.id);
+  wrap.className="node "+(node.kind||"")+(b?" branch-"+(((b%6)||6)):"")
+    +(hasChildren(node)?" has-children":"")+(state.expanded.has(node.id)?" is-expanded":"");
+  wrap.dataset.id=node.id;
+  const num=document.createElement("div"); num.className="node-num";
+  num.textContent=displayNumberById.get(node.id); wrap.appendChild(num);
+  const main=document.createElement("button"); main.type="button"; main.className="node-main";
+  main.textContent=node.title;
+  if(node.en){const en=document.createElement("span");en.className="node-en";en.textContent=node.en;main.appendChild(en);}
+  main.addEventListener("click",e=>{e.stopPropagation();openDetail(node.id);});
+  wrap.appendChild(main);
+  if(hasChildren(node)){
+    const bar=document.createElement("button"); bar.type="button"; bar.className="node-expand-bar";
+    bar.textContent=state.expanded.has(node.id)?"▲ thu":"▼ mo "+(node.children.length);
+    bar.addEventListener("click",e=>{e.stopPropagation();toggleNode(node.id);});
+    wrap.appendChild(bar);
+  }
+  return wrap;
+}
+function renderTree(node){
+  const li=document.createElement("li"); li.appendChild(makeNode(node));
+  if(hasChildren(node)&&state.expanded.has(node.id)){
+    const ul=document.createElement("ul");
+    visibleChildren(node).forEach(c=>ul.appendChild(renderTree(c)));
+    li.appendChild(ul);
+  }
+  return li;
+}
+function render(){
+  canvas.innerHTML="";
+  const tree=document.createElement("ul"); tree.className="tree";
+  tree.appendChild(renderTree(diagramData)); canvas.appendChild(tree);
+  applyZoom(); requestAnimationFrame(drawConnectors);
+}
+function drawConnectors(){
+  const old=canvas.querySelector("svg.links"); if(old) old.remove();
+  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("class","links");
+  svg.setAttribute("width",canvas.scrollWidth); svg.setAttribute("height",canvas.scrollHeight);
+  const cRect=canvas.getBoundingClientRect(); const s=state.zoom||1;
+  const pt=(el,edge)=>{ const r=el.getBoundingClientRect();
+    return { x:(r.left-cRect.left)/s + (r.width/s)/2,
+             y:edge==="bottom"?(r.bottom-cRect.top)/s:(r.top-cRect.top)/s }; };
+  canvas.querySelectorAll(".node.has-children.is-expanded").forEach(pEl=>{
+    const li=pEl.closest("li"); const ul=li&&li.querySelector(":scope>ul"); if(!ul) return;
+    const pP=pt(pEl,"bottom");
+    ul.querySelectorAll(":scope>li>.node").forEach(cEl=>{
+      const cP=pt(cEl,"top"); const midY=pP.y+Math.max(16,(cP.y-pP.y)/2);
+      const path=document.createElementNS("http://www.w3.org/2000/svg","path");
+      path.setAttribute("d","M "+pP.x+" "+pP.y+" V "+midY+" H "+cP.x+" V "+cP.y);
+      svg.appendChild(path);
+    });
+  });
+  canvas.insertBefore(svg,canvas.firstChild);
+}
+function applyZoom(){ canvas.style.transform="scale("+state.zoom+")";
+  document.getElementById("zoomValue").textContent=state.zoom.toFixed(2)+"×"; }
+function centerNode(id){ requestAnimationFrame(()=>{
+  const el=canvas.querySelector('.node[data-id="'+id+'"]'); if(!el) return;
+  const vR=viewport.getBoundingClientRect(), nR=el.getBoundingClientRect();
+  const cx=nR.left-vR.left+viewport.scrollLeft+nR.width/2;
+  viewport.scrollLeft=Math.max(0,cx-viewport.clientWidth/2);
+  viewport.scrollTop=Math.max(0,nR.top-vR.top+viewport.scrollTop-70);
+});}
+
+/* -------- mini Markdown -------- */
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function inline(s){ return esc(s)
+  .replace(/`([^`]+)`/g,"<code>$1</code>")
+  .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+  .replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>")
+  .replace(/\*([^*]+)\*/g,"<em>$1</em>"); }
+function renderMarkdown(src){
+  const lines=(src||"").split("\n"); let html="",list=false;
+  const closeList=()=>{ if(list){html+="</ul>";list=false;} };
+  for(const raw of lines){ const l=raw.trim();
+    if(!l){ closeList(); continue; }
+    let m;
+    if(m=l.match(/^#{1,4}\s+(.*)/)){ closeList(); html+="<h3>"+inline(m[1])+"</h3>"; }
+    else if(m=l.match(/^[-*]\s+(.*)/)){ if(!list){html+="<ul>";list=true;} html+="<li>"+inline(m[1])+"</li>"; }
+    else { closeList(); html+="<p>"+inline(l)+"</p>"; }
+  }
+  closeList(); return html;
+}
+
+/* -------- detail panel -------- */
+let detailHistory=[], currentDetailId=null;
+function updateBackBtn(){ document.getElementById("backPanel").hidden = detailHistory.length===0; }
+function goBackDetail(){ if(detailHistory.length) openDetail(detailHistory.pop(), true); }
+function openDetail(id, fromBack){
+  const node=nodeById.get(id); if(!node) return;
+  if(!fromBack && currentDetailId!==null && currentDetailId!==id) detailHistory.push(currentDetailId);
+  currentDetailId=id; updateBackBtn();
+  document.getElementById("panelId").textContent="Node "+displayNumberById.get(id);
+  document.getElementById("panelTitle").textContent=node.title;
+  if(node.en){const pe=document.createElement("div");pe.className="panel-en";pe.textContent=node.en;document.getElementById("panelTitle").appendChild(pe);}
+  const g=document.getElementById("panelGroup"); g.textContent=node.group||""; g.hidden=!node.group;
+  document.getElementById("panelDescription").innerHTML=renderMarkdown(node.detail||"_Chua co mo ta._");
+  const pills=document.getElementById("panelChildren"); pills.innerHTML="";
+  const label=document.getElementById("childrenLabel");
+  const ch=node.children||[]; label.hidden=ch.length===0;
+  ch.forEach(c=>{ const b=document.createElement("button");
+    b.textContent=displayNumberById.get(c.id)+". "+c.title;
+    b.addEventListener("click",()=>openDetail(c.id)); pills.appendChild(b); });
+  detailPanel.classList.add("open"); scrim.hidden=false;
+}
+function closeDetail(){ detailPanel.classList.remove("open"); scrim.hidden=true;
+  detailHistory=[]; currentDetailId=null; updateBackBtn(); }
+
+/* -------- controls -------- */
+document.getElementById("backPanel").addEventListener("click",goBackDetail);
+document.getElementById("closePanel").addEventListener("click",closeDetail);
+scrim.addEventListener("click",closeDetail);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDetail(); });
+document.getElementById("expandAll").addEventListener("click",()=>{
+  state.focusedChildByParent.clear(); state.expanded=new Set([...nodeById.values()].filter(hasChildren).map(n=>n.id));
+  render(); });
+document.getElementById("collapseAll").addEventListener("click",()=>{
+  state.expanded=new Set([diagramData.id]); state.focusedChildByParent.clear();
+  render(); centerNode(diagramData.id); });
+const zoomRange=document.getElementById("zoomRange");
+zoomRange.addEventListener("input",e=>{ state.zoom=Number(e.target.value); applyZoom();
+  requestAnimationFrame(drawConnectors); });
+/* pan */
+let drag=false,sx,sy,ssx,ssy;
+viewport.addEventListener("pointerdown",e=>{ if(e.target.closest("button"))return;
+  drag=true; viewport.classList.add("dragging"); sx=e.clientX;sy=e.clientY;
+  ssx=viewport.scrollLeft;ssy=viewport.scrollTop; viewport.setPointerCapture(e.pointerId); });
+viewport.addEventListener("pointermove",e=>{ if(!drag)return;
+  viewport.scrollLeft=ssx-(e.clientX-sx); viewport.scrollTop=ssy-(e.clientY-sy); });
+viewport.addEventListener("pointerup",()=>{drag=false;viewport.classList.remove("dragging");});
+window.addEventListener("resize",()=>requestAnimationFrame(drawConnectors));
+
+state.zoom=Number(zoomRange.value);
+render(); centerNode(diagramData.id);
+</script>
+</body>
+</html>
