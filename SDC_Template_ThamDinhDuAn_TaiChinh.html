@@ -65,15 +65,15 @@
        padding:5px 10px;font-size:12px;cursor:pointer}
   .child-pills button:hover{border-color:var(--accent)}
   h3.section{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:18px 0 6px}
-  .panel-figure{background:#f8f9fb;border:1px solid var(--line);border-radius:10px;padding:8px;margin:14px 0 6px;cursor:zoom-in}
-  .panel-figure svg{width:100%;height:auto;display:block}
-  .fig-zoom{background:#16233f;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:6px}
-  .fig-zoom:hover{border-color:var(--accent)}
-  .fig-overlay{position:fixed;inset:0;background:rgba(2,6,20,.86);display:flex;align-items:center;justify-content:center;z-index:200;padding:24px}
-  .fig-overlay[hidden]{display:none}
-  .fig-stage{background:#fff;border-radius:14px;padding:18px;max-width:96vw;max-height:92vh;overflow:auto}
-  .fig-stage svg{width:min(1120px,92vw);height:auto;display:block}
-  .fig-close{position:absolute;top:18px;right:24px;background:#fff;border:none;border-radius:8px;width:38px;height:38px;font-size:22px;cursor:pointer;line-height:1}
+  .vba-embed{margin:20px 0 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 18px 16px}
+  .vba-embed summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:14px;padding:10px 0;list-style:none}
+  .vba-embed summary::-webkit-details-marker{display:none}
+  .vba-embed summary::before{content:"\25B8 ";color:var(--muted)}
+  .vba-embed[open] summary::before{content:"\25BE "}
+  .vba-embed .vba-note{color:var(--muted);font-size:13px;line-height:1.55;margin:2px 0 10px}
+  .vba-embed .vba-note code{background:#0c1830;padding:1px 5px;border-radius:4px;color:#cfe0ff;font-size:12px}
+  .vba-embed pre{background:#0b1526;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;max-height:440px;margin:0}
+  .vba-embed pre code{color:#cfe0ff;font-family:"SF Mono",ui-monospace,Consolas,monospace;font-size:11.5px;line-height:1.5;white-space:pre}
 </style>
 </head>
 <body>
@@ -97,6 +97,219 @@
       </div>
     </section>
   </main>
+  <section class="vba-embed">
+    <details>
+      <summary>🧩 Mã VBA hàm thuế — nhúng NGUYÊN VĂN khi xuất .xlsm (không sửa, không thêm)</summary>
+      <p class="vba-note">Khi tạo file thẩm định từ template này: đầu ra là <b>.xlsm</b>. Nhúng bộ hàm bằng cách nạp file nguồn
+      <code>Tài liệu khác/HamThue_ThamDinh_TNCT_ThueTN.xlsm</code> với <code>keep_vba=True</code> rồi dựng mô hình lên đó
+      (giữ nguyên <code>vbaProject.bin</code>). Mã dưới đây <b>chỉ để đối chiếu</b> — không gõ lại, không chỉnh sửa.</p>
+      <pre id="vba-tax-module"><code>Attribute VB_Name = &quot;Module1&quot;
+&#x27;Bat dau Code:
+
+&#x27;Hien thi cong thuc trong 1 o nao do, dung lam chu thich
+
+Function FD(mycell)
+    Dim a, b, F
+    If mycell = &quot;&quot; Then
+        FD = &quot;&quot;
+    Else
+        If Left(mycell.Formula, 1) &lt;&gt; &quot;=&quot; Then
+            a = mycell.Address(0, 0)
+            FD = a + &quot;=Value&quot;
+        Else
+            a = mycell.Address(0, 0)
+            F = mycell.Formula
+            FD = a + F
+        End If
+    End If
+End Function
+
+
+&#x27;Tinh thu nhap chiu thue vao mot nam xac dinh
+&#x27; rg        : Dong tien can tinh Thu nhap chiu thue
+&#x27; nn        : Nam tinh thue thu nhap chiu thue
+&#x27; sntllk    : So nam tich luy luy ke
+
+Public Function TNCT(rg As Range, nn As Long, sntllk As Long) As Double
+
+Application.Volatile
+Dim i As Long, j As Long, k As Long, n As Long, nho As Double, crg As Long
+Dim tn() As Double, tam() As Double
+
+On Error Resume Next
+
+crg = rg.Count
+
+ReDim tn(1 To crg)
+ReDim tam(1 To crg)
+
+For i = 1 To crg
+    tam(i) = rg.Cells(1, i).Value &#x27; Nap dong thu nhap vao
+Next i
+
+For n = 1 To crg
+If tam(n) &gt; 0 Then
+    tn(n) = tam(n)      &#x27;Gan cac thu nhap duong vao mang tn
+Else
+   tn(n) = 0
+   k = n + sntllk
+   nho = tam(n)         &#x27;Gan TN vao bien nho
+   If k &lt;= crg Then
+        For j = n + 1 To k
+            If tam(j) &gt; 0 Then
+                nho = nho + tam(j)
+                If nho &lt; 0 Then
+                    tam(j) = 0
+                Else
+                    tam(j) = nho
+                    Exit For
+                End If
+            End If
+        Next j
+   Else
+        For j = n + 1 To crg
+            If tam(j) &gt; 0 Then
+                nho = nho + tam(j)
+                If nho &lt; 0 Then
+                    tam(j) = 0
+                Else
+                    tam(j) = nho
+                    Exit For
+                End If
+            End If
+        Next j
+   End If
+   
+End If
+Next n
+
+TNCT = tn(nn)
+
+End Function
+
+
+
+&#x27;Tinh thue thu nhap voi thue suat thay doi theo 3 thoi doan
+&#x27;Tinh thue thu nhap ke tu khi Thu nhap chiu thue &gt; 0
+&#x27;n: nam dau co thue suat a%
+&#x27;m: nam tiep theo co thue sua b%
+&#x27;sau do co thue suat c%
+
+Public Function ThueTN(Cashflow As Range, nTax As Long, nYear0 As Long, rYear0 As Double, nYear1 As Long, rYear1 As Double, rYearElse As Double) As Double
+
+    Application.Volatile
+    Dim in0 As Long, in1 As Long, in2 As Long
+    Dim i As Long, n As Long, crg As Long
+    Dim nTN As Long
+    Dim TNCT() As Double
+    
+    On Error Resume Next
+    
+    crg = Cashflow.Count
+
+    ReDim TNCT(1 To crg)
+
+    For i = 1 To crg
+        TNCT(i) = Cashflow.Cells(1, i).Value
+    Next i
+
+    For n = 1 To crg
+        If TNCT(n) &gt; 0 Then
+            nTN = n
+            in0 = nTN + nYear0
+            in1 = in0 + nYear1
+            in2 = crg
+            Exit For
+        End If
+    Next n
+
+    Select Case nTax
+    Case 1 To nTN - 1
+        ThueTN = 0
+    Case nTN To in0 - 1
+        ThueTN = TNCT(nTax) * rYear0
+    Case in0 To in1 - 1
+        ThueTN = TNCT(nTax) * rYear1
+    Case in1 To in2
+        ThueTN = TNCT(nTax) * rYearElse
+    End Select
+    
+End Function
+
+
+&#x27;Tinh thoi gian hoan von du an
+Public Function TGHV(rng As Range) As Double
+Dim i As Long, spt As Long
+Dim vdl As Range
+Dim tln As Double
+stt = 0
+tln = 0
+TGHV = 0
+On Error Resume Next
+
+spt = rng.Count
+
+For i = 1 To spt
+    tln = tln + rng.Cells(1, i).Value
+    If tln &gt; 0 Then
+        tam = Abs(tln - rng.Cells(1, i).Value)
+        TGHV = i - 2 + tam / rng.Cells(1, i).Value
+    Exit For
+    End If
+Next i
+End Function
+
+
+&#x27;Tinh Thue Thu Nhap cho truong hop co 4 thoi doan
+Public Function ThueTN4(Cashflow As Range, nTax As Long, nYear0 As Long, rYear0 As Double, nYear1 As Long, rYear1 As Double, nYear2 As Long, rYear2 As Double, rYearElse As Double) As Double
+
+    Application.Volatile
+       
+    Dim in0 As Long, in1 As Long, in2 As Long, in3 As Long
+    Dim i As Long, n As Long, crg As Long
+    Dim nTN As Long
+    Dim TNCT() As Double
+    
+    On Error Resume Next
+    
+    crg = Cashflow.Count
+    ReDim TNCT(1 To crg)
+
+    For i = 1 To crg
+        TNCT(i) = Cashflow.Cells(1, i).Value
+    Next i
+
+    For n = 1 To crg
+        If TNCT(n) &gt; 0 Then
+            nTN = n
+            in0 = nTN + nYear0
+            in1 = in0 + nYear1
+            in2 = in1 + nYear2
+            in3 = crg
+            Exit For
+        End If
+    Next n
+
+    Select Case nTax
+    Case 1 To nTN - 1
+        ThueTN4 = 0
+    Case nTN To in0 - 1
+        ThueTN4 = TNCT(nTax) * rYear0
+    Case in0 To in1 - 1
+        ThueTN4 = TNCT(nTax) * rYear1
+    Case in1 To in2 - 1
+        ThueTN4 = TNCT(nTax) * rYear2
+    Case in2 To in3
+        ThueTN4 = TNCT(nTax) * rYearElse
+    End Select
+    
+End Function
+
+&#x27;Ket thuc Code
+
+</code></pre>
+    </details>
+  </section>
 </div>
 
 <div id="scrim" class="scrim" hidden></div>
@@ -114,11 +327,6 @@
   <div id="panelChildren" class="child-pills"></div>
 </aside>
 
-<div id="figOverlay" class="fig-overlay" hidden>
-  <button id="figClose" class="fig-close" type="button" aria-label="Dong">&times;</button>
-  <div class="fig-stage" id="figStage"></div>
-</div>
-
 <script>
 /* ============================================================
    DU LIEU - chi can thay object diagramData nay cho topic moi.
@@ -131,7 +339,7 @@ const diagramData =
   "title": "Template Thẩm định Tài chính Dự án",
   "en": "Project Financial Appraisal Template",
   "group": "MPP27 — Thẩm định Đầu tư công",
-  "detail": "**Phiên bản tổng hợp từ 5 case:** Tate & Lyle · Kho Sơn Cement · Chợ Lớn–Gò Vấp Bus · BOT Cai Lậy (Tài chính / Kinh tế / Phân phối).\n\n**Chú giải:**\n- Khối **★** áp dụng cho *mọi dự án*.\n- Khối **[V]** là *variant tùy loại dự án* — bật/tắt qua nhánh \"7 cờ điều khiển\".",
+  "detail": "**⚠️ ĐẦU RA LÀ .xlsm** — khi tạo file thẩm định tài chính từ template này, xuất **.xlsm** có **nhúng sẵn bộ hàm thuế** của môn (TNCT, ThueTN, ThueTN4, TGHV, FD), lấy **NGUYÊN VĂN** từ file hướng dẫn, **không sửa/không thêm**. Chi tiết ở ⑦ Báo cáo KQHĐKD → *Hàm thuế nhúng*.\n\n**Phiên bản tổng hợp từ 5 case:** Tate & Lyle · Kho Sơn Cement · Chợ Lớn–Gò Vấp Bus · BOT Cai Lậy (Tài chính / Kinh tế / Phân phối).\n\n**Chú giải:**\n- Khối **★** áp dụng cho *mọi dự án*.\n- Khối **[V]** là *variant tùy loại dự án* — bật/tắt qua nhánh \"7 cờ điều khiển\".",
   "children": [
     {
       "id": 2,
@@ -209,6 +417,13 @@ const diagramData =
           "en": "Debt Service Coverage Ratio",
           "kind": "leaf",
           "detail": "Góc nhìn **ngân hàng**.\n\n- `DSCR_t = CFADS_t / Debt Service_t`\n- `CFADS = FCFF + Interest·(1−t)`\n- `Debt Service = Interest + Principal`\n\n**Ngưỡng:** ≥ 1.2 (ngân hàng thương mại) · ≥ 1.4 (project finance).\n\n**Nguồn:** Yescombe *Principles of Project Finance* Ch.13 · Esty (2004)"
+        },
+        {
+          "id": 70,
+          "title": "⑧ B/C — Tỷ số Lợi ích/Chi phí",
+          "en": "Benefit–Cost Ratio",
+          "kind": "leaf",
+          "detail": "**Bắt buộc báo cáo CÙNG NPV/IRR cho MỌI quan điểm** (Tổng đầu tư, Chủ sở hữu, FCFP) — thiếu B/C là lỗi phổ biến khiến bài thiếu chỉ tiêu.\n\n`B/C = PV(ngân lưu vào) / PV(ngân lưu ra)`\n\nCách lập theo bài (tách đầu tư vs vận hành):\n\n`B/C = Σ PV(ngân lưu ròng các năm vận hành, >0) / −Σ PV(các năm đầu tư, <0)`\n\n**Quy tắc:** B/C > 1 ⇔ NPV > 0 → chấp nhận. B/C cho biết **mỗi đồng chi phí đầu tư tạo ra bao nhiêu đồng lợi ích ròng** — bổ sung cho NPV (số tuyệt đối) và IRR (suất %).\n\n*Ví dụ BOO Thủ Đức (đáp án):* B/C Tổng đầu tư = 1,66 · Chủ sở hữu = 1,42 · FCFP = 1,90.\n\n**Nguồn:** Jenkins–Kuo–Harberger Ch.3–4 (tiêu chí quyết định) · Brealey–Myers Ch.5."
         }
       ]
     },
@@ -257,91 +472,15 @@ const diagramData =
     },
     {
       "id": 18,
-      "title": "B1–B6 · Cấu trúc mô hình",
-      "en": "Model Structure",
-      "detail": "6 khối bảng tính từ input đến output: Thông số → Chỉ số giá & Ngân lưu đầu tư → Lịch nợ → Doanh thu & Chi phí → Khấu hao & KQHĐKD & VLĐ → FCF & chỉ tiêu thẩm định.\n\n**Sơ đồ dòng ngân lưu tổng thể** — mọi khối B2–B6 hội tụ về dòng ngân lưu ròng (bấm sơ đồ để phóng to):",
-      "figure": `<svg viewBox="0 0 1000 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sơ đồ cấu trúc mô hình tài chính - trục ngân lưu">
-<defs>
-<marker id="ab" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6" fill="none" stroke="#4f8cff" stroke-width="1.3"/></marker>
-<marker id="ag" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6" fill="none" stroke="#16a34a" stroke-width="1.3"/></marker>
-<marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6" fill="none" stroke="#f43f5e" stroke-width="1.3"/></marker>
-</defs>
-<text x="20" y="24" font-size="11.5" fill="#64748b">Chú giải:</text>
-<line x1="78" y1="20" x2="102" y2="20" stroke="#16a34a" stroke-width="2" marker-end="url(#ag)"/><text x="108" y="24" font-size="11.5" fill="#334155">dòng vào (↑)</text>
-<line x1="212" y1="20" x2="236" y2="20" stroke="#f43f5e" stroke-width="2" marker-end="url(#ar)"/><text x="242" y="24" font-size="11.5" fill="#334155">dòng ra (↓)</text>
-<line x1="350" y1="20" x2="374" y2="20" stroke="#4f8cff" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#ab)"/><text x="380" y="24" font-size="11.5" fill="#334155">tài trợ (vốn/nợ)</text>
-<line x1="171" y1="278" x2="905" y2="278" stroke="#475569" stroke-width="1.8"/>
-<text x="700" y="272" font-size="10.5" font-style="italic" fill="#64748b">trục ngân lưu ròng theo thời gian →</text>
-<circle cx="300" cy="278" r="3" fill="#475569"/><circle cx="345" cy="278" r="3" fill="#475569"/><circle cx="470" cy="278" r="3" fill="#475569"/><circle cx="610" cy="278" r="3" fill="#475569"/><circle cx="640" cy="278" r="3" fill="#475569"/><circle cx="800" cy="278" r="3" fill="#475569"/><circle cx="835" cy="278" r="3" fill="#475569"/>
-<rect x="92" y="224" width="76" height="110" rx="8" fill="#fdeef2" stroke="#f43f5e" stroke-width="1.6"/>
-<text x="130" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2421">Chỉ</text>
-<text x="130" y="290" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2421">số giá</text>
-<text x="130" y="312" text-anchor="middle" font-size="9.5" fill="#f43f5e">B2</text>
-<rect x="230" y="54" width="96" height="46" rx="8" fill="#eef4ff" stroke="#4f8cff" stroke-width="1.6"/>
-<text x="278" y="75" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2421">Vốn CSH</text>
-<text x="278" y="90" text-anchor="middle" font-size="9.5" fill="#4f8cff">B1</text>
-<rect x="356" y="50" width="120" height="30" rx="7" fill="#eef4ff" stroke="#4f8cff" stroke-width="1.6"/>
-<text x="416" y="69" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2421">Ngân lưu nợ · B3</text>
-<rect x="398" y="92" width="90" height="36" rx="6" fill="#eef4ff" stroke="#8bb4ff"/><text x="443" y="114" text-anchor="middle" font-size="11" fill="#1f2421">Trả nợ gốc</text>
-<rect x="352" y="150" width="88" height="36" rx="6" fill="#eef4ff" stroke="#8bb4ff"/><text x="396" y="172" text-anchor="middle" font-size="11" fill="#1f2421">Giải ngân nợ</text>
-<rect x="446" y="150" width="106" height="36" rx="6" fill="#fdeef2" stroke="#f4a3b4"/><text x="499" y="172" text-anchor="middle" font-size="11" fill="#1f2421">Lãi vay thực trả</text>
-<rect x="446" y="206" width="106" height="34" rx="6" fill="#fdeef2" stroke="#f4a3b4"/><text x="499" y="227" text-anchor="middle" font-size="11" fill="#1f2421">Lãi vay TGXD</text>
-<rect x="576" y="50" width="116" height="48" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
-<text x="634" y="72" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2421">(+) Doanh thu</text>
-<text x="634" y="88" text-anchor="middle" font-size="9.5" fill="#16a34a">B4</text>
-<rect x="724" y="44" width="186" height="56" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
-<text x="817" y="66" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2421">(+) Thanh lý TS / Giá trị</text>
-<text x="817" y="81" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2421">kết thúc (TV)</text>
-<text x="817" y="95" text-anchor="middle" font-size="9.5" fill="#16a34a">B4 · B6</text>
-<rect x="712" y="150" width="184" height="46" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="6 3"/>
-<text x="804" y="170" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1f2421">(−) Khoản phải thu / Tiền mặt</text>
-<text x="804" y="186" text-anchor="middle" font-size="9.5" fill="#16a34a">B5 · VLĐ</text>
-<rect x="742" y="204" width="154" height="34" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="6 3"/>
-<text x="819" y="225" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1f2421">(+) Khoản phải trả</text>
-<rect x="230" y="400" width="94" height="50" rx="8" fill="#fdeef2" stroke="#f43f5e" stroke-width="1.6"/>
-<text x="277" y="422" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2421">(−) CPĐT</text>
-<text x="277" y="438" text-anchor="middle" font-size="9.5" fill="#f43f5e">B2</text>
-<rect x="392" y="400" width="90" height="50" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
-<text x="437" y="422" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2421">Khấu hao</text>
-<text x="437" y="438" text-anchor="middle" font-size="9.5" fill="#16a34a">B5</text>
-<rect x="500" y="400" width="108" height="50" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
-<text x="554" y="422" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1f2421">(−) Chi phí vận hành</text>
-<text x="554" y="438" text-anchor="middle" font-size="9.5" fill="#16a34a">B4</text>
-<rect x="626" y="400" width="92" height="50" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
-<text x="672" y="422" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2421">(−) Thuế TNDN</text>
-<text x="672" y="438" text-anchor="middle" font-size="9.5" fill="#16a34a">B5</text>
-<rect x="746" y="400" width="140" height="50" rx="8" fill="#eafaf1" stroke="#16a34a" stroke-width="1.6"/>
-<text x="816" y="422" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2421">Báo cáo KQHĐKD</text>
-<text x="816" y="438" text-anchor="middle" font-size="9.5" fill="#16a34a">B5</text>
-<path d="M278,100 L278,276" stroke="#4f8cff" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ab)" fill="none"/>
-<path d="M416,80 L416,90" stroke="#4f8cff" stroke-width="1.5" fill="none"/>
-<path d="M443,128 L443,276" stroke="#4f8cff" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ab)" fill="none"/>
-<path d="M396,186 L396,276" stroke="#4f8cff" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ab)" fill="none"/>
-<path d="M499,186 L499,206" stroke="#f43f5e" stroke-width="1.4" fill="none"/>
-<path d="M610,276 L610,102" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ag)" fill="none"/>
-<path d="M640,276 L640,102" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ag)" fill="none"/>
-<path d="M800,276 L800,104" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ag)" fill="none"/>
-<path d="M835,276 L835,104" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ag)" fill="none"/>
-<path d="M804,196 L804,204" stroke="#16a34a" stroke-width="1.4" fill="none"/>
-<path d="M804,238 L804,276" stroke="#16a34a" stroke-width="1.5" marker-end="url(#ag)" fill="none"/>
-<path d="M300,280 L300,398" stroke="#f43f5e" stroke-width="1.6" marker-end="url(#ar)" fill="none"/>
-<path d="M470,280 L470,398" stroke="#f43f5e" stroke-width="1.6" marker-end="url(#ar)" fill="none"/>
-<path d="M168,300 L392,410" stroke="#f43f5e" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ar)" fill="none"/>
-<path d="M324,412 L392,428" stroke="#64748b" stroke-width="1.3" marker-end="url(#ag)" fill="none"/>
-<path d="M168,318 L500,420" stroke="#f43f5e" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ar)" fill="none"/>
-<path d="M482,428 L500,428" stroke="#64748b" stroke-width="1.3" marker-end="url(#ag)" fill="none"/>
-<path d="M608,428 L626,428" stroke="#64748b" stroke-width="1.3" marker-end="url(#ag)" fill="none"/>
-<path d="M718,428 L746,428" stroke="#64748b" stroke-width="1.3" marker-end="url(#ag)" fill="none"/>
-<path d="M816,398 L816,290" stroke="#16a34a" stroke-width="1.5" marker-end="url(#ag)" fill="none"/>
-<text x="150" y="360" font-size="9.5" fill="#f43f5e">Chỉ số giá → quy đổi danh nghĩa</text>
-<text x="524" y="474" font-size="9.5" fill="#64748b">KQHĐKD: DT − CP vận hành − Khấu hao − Lãi vay − Thuế</text>
-</svg>`,
+      "title": "📐 Cấu trúc mô hình — 10 bảng",
+      "en": "Model Structure — 10 Tables",
+      "detail": "**10 bảng bắt buộc** của mô hình thẩm định tài chính (theo tài liệu *Hoàng Văn Thắng — Lập mô hình thẩm định tài chính*). Lập lần lượt ①→⑩; **dòng nào chưa tính được thì để trống hoặc giả định hợp lý rồi tính tiếp**. Tối thiểu phải ra được **⑨ Bảng ngân lưu** rồi **⑩ tiêu chí thẩm định**. Mỗi bảng kèm **bước kiểm tra** để không sót dòng và tránh sai sót.\n\n*(Trước đây gộp thành B1–B6; nay tách rõ 10 bảng cho đầy đủ.)*",
       "children": [
         {
-          "id": 19,
-          "title": "B1 · Bảng thông số",
-          "en": "Input Parameters",
-          "detail": "**Input layer** — mọi giả định tập trung một chỗ, các bảng sau chỉ tham chiếu.",
+          "id": 72,
+          "title": "1 · Bảng thông số (+ quy đổi lãi suất thả nổi)",
+          "en": "Parameters",
+          "detail": "Thường **không có công thức**, để riêng một khối. Vài trường hợp cần công thức — ví dụ **lãi suất thả nổi**:\n\n- Lãi suất **thực** năm gốc = `(1 + lãi danh nghĩa gốc)/(1 + lạm phát gốc) − 1` — *nhập thẳng giá trị lãi danh nghĩa, không tham chiếu*; giả định lãi thực **không đổi** các năm sau.\n- Lãi **danh nghĩa** năm sau = `(1 + lãi thực) × (1 + lạm phát năm đó) − 1` — *tham chiếu ô lãi thực & lạm phát*.\n\n*Lưu ý:* định dạng dấu `,` / `.` trên máy có thể khác đề (file Word).",
           "children": [
             {
               "id": 20,
@@ -388,10 +527,10 @@ const diagramData =
           ]
         },
         {
-          "id": 26,
-          "title": "B2 · Chỉ số giá + Ngân lưu đầu tư [★]",
-          "en": "Price Indices & Investment Cash Flow",
-          "detail": "Dựng chỉ số giá **trước mọi quy đổi**, sau đó tính ngân lưu chi phí đầu tư danh nghĩa.",
+          "id": 73,
+          "title": "2 · Bảng chỉ số giá & tỷ giá",
+          "en": "Price Index & FX",
+          "detail": "- Chỉ số giá **năm gốc (năm 0) = 1**.\n- **Chỉ số giá năm t = chỉ số năm (t−1) × (1 + lạm phát năm t)** — *Công thức 1, khuyến khích* (luôn đúng dù lạm phát đổi hay không).\n- **Tỷ giá năm t = tỷ giá (t−1) × (1 + lạm phát VND)/(1 + lạm phát USD)**.\n- Nếu lạm phát cố định cả vòng đời: chỉ số = `(1+π)^n` (Công thức 2) — nhưng vẫn nên dùng Công thức 1.",
           "children": [
             {
               "id": 27,
@@ -399,7 +538,15 @@ const diagramData =
               "en": "Price Indices & PPP Exchange Rate",
               "kind": "leaf",
               "detail": "- `P_t = P_(t−1) · (1 + π)`\n- `E_t = E_0 · (P_dom,t / P_for,t)` — *Purchasing Power Parity*\n\n**Nguồn:** Cassel (1918) · Krugman–Obstfeld Ch.16 · Jenkins–Kuo–Harberger Ch.9"
-            },
+            }
+          ]
+        },
+        {
+          "id": 74,
+          "title": "3 · Bảng chi phí đầu tư",
+          "en": "Investment Cost",
+          "detail": "- Chọn **đồng tiền & đơn vị** dựa trên các hạng mục CPĐT / Doanh thu / Chi phí.\n- Lập **theo giá THỰC trước**, rồi mới quy sang **danh nghĩa** (× chỉ số giá năm tương ứng, cùng loại tiền).\n- Quy đổi nội↔ngoại tệ: dòng **thực** dùng tỷ giá **cố định năm gốc**; dòng **danh nghĩa** dùng tỷ giá **năm quy đổi**.\n- **Bắt buộc có 1 dòng ngân lưu CPĐT TỔNG** đã quy về đồng tiền mong muốn, theo **cả giá thực và danh nghĩa** → tránh bỏ sót ở bảng ngân lưu.\n- Dòng tổng **gồm cả dự phòng tăng chi phí thực**, nhưng **KHÔNG gồm lãi vay trong TGXD** (lãi TGXD nằm ở ngân lưu nợ; chỉ dùng khi tính tổng tài sản ở bảng khấu hao).",
+          "children": [
             {
               "id": 28,
               "title": "Ngân lưu CP đầu tư danh nghĩa",
@@ -417,10 +564,10 @@ const diagramData =
           ]
         },
         {
-          "id": 30,
-          "title": "B3 · Lịch nợ vay [V]",
-          "en": "Debt Schedule",
-          "detail": "Khung **5 dòng × M nguồn vay**. Bỏ qua nếu chỉ phân tích kinh tế.",
+          "id": 75,
+          "title": "4 · Bảng nợ vay (+ kiểm tra)",
+          "en": "Debt Schedule + Checks",
+          "detail": "Mọi dòng tiền rơi vào **31/12**; **năm đầu có giải ngân nhưng không có lãi**.\n\n**5 dòng + 2 dòng lãi riêng:**\n- Dư nợ đầu kỳ (năm đầu = 0); năm sau = dư nợ cuối kỳ năm trước.\n- Giải ngân (thường < nhu cầu CPĐT → phần còn lại là vốn CSH).\n- **Lãi nhập gốc** = dư nợ đầu kỳ × lãi suất (dòng riêng, trong TGXD).\n- **Lãi phải trả** = dư nợ đầu kỳ × lãi suất (dòng riêng). *Năm có lãi nhập gốc thì để trống lãi phải trả, và ngược lại.*\n- Trả nợ gốc (năm đầu = 0; bắt đầu khi vận hành, lùi lại nếu có **ân hạn**).\n- Dư nợ cuối kỳ = đầu kỳ + giải ngân + lãi nhập gốc − trả gốc.\n- **Ngân lưu nợ = Giải ngân − Lãi phải trả − Trả gốc.**\n\n**✔ KIỂM TRA (bắt buộc):**\n- Dư nợ cuối kỳ **năm cuối lịch nợ = 0**.\n- **IRR(ngân lưu nợ) = lãi suất** (nếu cố định); nếu **thả nổi** → IRR = **chi phí nợ bình quân** dùng để tính WACC.\n\n**Trả nợ đều (niên kim):** Tổng gốc+lãi = `−PMT(lãi danh nghĩa, số năm trả gốc, dư nợ đầu kỳ)`; Lãi phải trả = dư nợ đầu kỳ × lãi; Trả gốc = Tổng − Lãi phải trả.",
           "children": [
             {
               "id": 31,
@@ -439,10 +586,32 @@ const diagramData =
           ]
         },
         {
-          "id": 33,
-          "title": "B4 · Doanh thu + Chi phí hoạt động",
-          "en": "Revenue & Operating Costs",
-          "detail": "Doanh thu là khối **variant theo loại dự án**; chi phí chia biến đổi / cố định; xử lý VAT nếu có.",
+          "id": 76,
+          "title": "5 · Bảng khấu hao (+ giá trị thanh lý)",
+          "en": "Depreciation + Salvage",
+          "detail": "Theo nguyên tắc thuế; giá trị khấu hao là **giá danh nghĩa** (giá trị thực chi hình thành tài sản).\n\n- **Cơ sở khấu hao đầu kỳ (năm đầu vận hành) = Tổng CPĐT danh nghĩa + Tổng lãi vay trong TGXD** (lãi TGXD dù trả hay nhập gốc vẫn tính vào nguyên giá).\n- Mỗi loại tài sản có **thời gian khấu hao riêng** → khấu hao năm = **cộng đơn giản** các thành phần.\n- Khấu hao trong kỳ = tài sản đầu kỳ / thời gian khấu hao; Tài sản cuối kỳ = đầu kỳ − khấu hao.\n- Dự phòng tăng chi phí → khấu hao cùng tài sản liên quan.\n\n**Giá trị thanh lý:** thường = **giá trị còn lại trên sổ** (tài sản cuối kỳ). Nếu đề yêu cầu: × `(1 + lạm phát năm thanh lý)` hoặc × `chỉ số giá năm thanh lý`.",
+          "children": [
+            {
+              "id": 39,
+              "title": "Khấu hao theo nhóm tài sản",
+              "en": "Depreciation by Asset Class",
+              "kind": "leaf",
+              "detail": "- `D_asset,t = CapEx_asset / N_asset` (đường thẳng — phổ biến nhất)\n- Có thể đổi sang số dư giảm dần / SOYD theo TT 45/2013/TT-BTC\n- *Ma trận N nhóm × T năm; cộng theo cột để có khấu hao tổng*\n\n**Nguồn:** IAS 16 · TT 45/2013/TT-BTC (Việt Nam)"
+            },
+            {
+              "id": 77,
+              "title": "5b · Cơ cấu vốn D/E → WACC",
+              "en": "Capital Structure",
+              "kind": "leaf",
+              "detail": "**Cách 1 — theo giá trị đầu kỳ:**\n- Tổng tài sản = Tổng CPĐT danh nghĩa + Tổng lãi vay TGXD.\n- **D** = dư nợ cuối kỳ **năm cuối xây dựng**.\n- **E** = Tổng tài sản − D.\n\n**Cách 2 — cơ cấu vốn trung bình** (dùng khi cơ cấu đầu kỳ làm **NPV Dự án lệch nhiều so với NPV Chủ sở hữu**):\n- Tính D/E **từng năm** (Tổng TS năm = CPĐT danh nghĩa + lãi TGXD; D = dư nợ cuối kỳ; E = TS − D).\n- Bình quân theo 1 trong 3 mốc: (i) năm 0 → hết đời dự án; (ii) năm vận hành → hết đời; (iii) năm vận hành → hết lịch nợ.\n- Rồi hoặc **WACC trung bình** (từ D/V bình quân) hoặc **WACC từng năm**.\n\n*(Đây là gốc của việc chọn WACC — cơ cấu vốn quyết định NPV Dự án có tiến gần NPV CSH hay không.)*"
+            }
+          ]
+        },
+        {
+          "id": 78,
+          "title": "6 · Doanh thu & chi phí hoạt động",
+          "en": "Revenue & Operating Cost",
+          "detail": "**Không làm quá tắt** (khó kiểm tra tính hợp lý, dễ nhầm đơn vị, khó phân tích rủi ro/độ nhạy).\n\n- Luôn có **2 dòng: Đơn giá và Sản lượng** trước khi tính (trừ khi tính theo % của hạng mục đã có).\n- **Sản lượng**: tính cho **cả năm và cả dự án** (đừng bỏ sót khi quy đổi từ số liệu trực quan).\n- **Đơn giá** — 2 dạng:\n  - Cho ở **năm gốc, điều chỉnh theo lạm phát**: `Giá danh nghĩa = Giá năm gốc × chỉ số giá đồng tiền năm tương ứng`.\n  - **Cố định theo hợp đồng**: đã là giá danh nghĩa → **không** điều chỉnh lạm phát, chỉ theo hợp đồng.",
           "children": [
             {
               "id": 34,
@@ -475,18 +644,11 @@ const diagramData =
           ]
         },
         {
-          "id": 38,
-          "title": "B5 · Khấu hao + KQHĐKD + VLĐ [V]",
-          "en": "Depreciation, Income Statement & Working Capital",
-          "detail": "*Bỏ qua khi phân tích kinh tế* (không có thuế, nợ, khấu hao).",
+          "id": 79,
+          "title": "7 · Báo cáo KQHĐKD (+ hàm thuế)",
+          "en": "Income Statement",
+          "detail": "Chuỗi bắt buộc:\n\n`Doanh thu (không VAT) − Chi phí HĐ = EBITDA`\n`EBITDA − Khấu hao = EBIT`\n`EBIT − Lãi vay (thực trả, không gồm gốc) = EBT`\n`EBT − Thuế TNDN = Lợi nhuận ròng`\n\n- **Thu nhập chịu thuế** = `tnct(vùng lợi nhuận trước thuế, năm thứ 1, số năm chuyển lỗ tối đa)`.\n- **Thuế TNDN** = `thueTN(vùng TNCT, năm 1, số năm miễn thuế, thuế suất miễn, số năm giảm thuế, thuế suất giảm, thuế suất hiệu dụng)`.\n- Nếu đề không nói VAT → dùng doanh thu thường.\n\n**⚠️ Xuất .xlsm nhúng sẵn 2 hàm này (nguyên văn, không sửa)** — xem node con *Hàm thuế nhúng — XUẤT .xlsm*.",
           "children": [
-            {
-              "id": 39,
-              "title": "Khấu hao theo nhóm tài sản",
-              "en": "Depreciation by Asset Class",
-              "kind": "leaf",
-              "detail": "- `D_asset,t = CapEx_asset / N_asset` (đường thẳng — phổ biến nhất)\n- Có thể đổi sang số dư giảm dần / SOYD theo TT 45/2013/TT-BTC\n- *Ma trận N nhóm × T năm; cộng theo cột để có khấu hao tổng*\n\n**Nguồn:** IAS 16 · TT 45/2013/TT-BTC (Việt Nam)"
-            },
             {
               "id": 40,
               "title": "Báo cáo KQHĐKD",
@@ -494,6 +656,21 @@ const diagramData =
               "kind": "leaf",
               "detail": "Chuỗi: `Rev_net → EBITDA → EBIT → EBT → NI`\n\n- `EBITDA = Rev − Operating Costs`\n- `EBIT = EBITDA − D&A`\n- `EBT = EBIT − Interest`\n\n**R178 thuế suất hiệu dụng (điểm dễ sai nhất):**\n\n`t_eff = t · 1{Σ EBT_s > 0 ∧ EBT_t > 0 ∧ qua năm miễn thuế}`\n\nXử lý đồng thời *loss carry-forward* và *tax holiday*.\n\n`NI = EBT · (1 − t_eff)`"
             },
+            {
+              "id": 83,
+              "title": "🧩 Hàm thuế nhúng — XUẤT .xlsm (bắt buộc, KHÔNG sửa hàm)",
+              "en": "Embedded Tax UDFs — .xlsm Output (verbatim)",
+              "kind": "leaf",
+              "detail": "**Khi tạo file thẩm định tài chính từ template này, ĐẦU RA PHẢI LÀ `.xlsm`** và **nhúng sẵn** bộ hàm thuế của môn học.\n\n**Nguồn hàm — lấy TRỰC TIẾP, KHÔNG sửa, KHÔNG thêm:** file `HamThue_ThamDinh_TNCT_ThueTN.xlsm` (hoặc `Huong dan tinh thue...Long Thanh-Dau Giay.xlsm`) trong thư mục **`Tài liệu khác`** của môn.\n\n**Cách nhúng đúng (giữ nguyên `vbaProject.bin`):**\n- Nạp file nguồn bằng `openpyxl.load_workbook(nguồn, keep_vba=True)`; **xoá nội dung sheet cũ** rồi **dựng mô hình** (các bảng ①→⑩) lên chính workbook đó; `wb.save('...xlsm')`. Cách này **giữ nguyên khối VBA (Module1)** → hàm KHÔNG đổi.\n- **TUYỆT ĐỐI KHÔNG** tự gõ lại / chỉnh sửa / bổ sung các hàm này. (Không có cách biên dịch VBA từ văn bản trong Python — bắt buộc tái sử dụng `vbaProject.bin` có sẵn.)\n\n**5 hàm có sẵn (Module1):**\n- `TNCT(vùng_LNTT; năm; số_năm_chuyển_lỗ)` → Thu nhập chịu thuế (tự bù lỗ chuyển sang tối đa N năm).\n- `ThueTN(vùng_TNCT; năm; nMiễn; tsMiễn; nGiảm; tsGiảm; tsThường)` → Thuế TNDN 3 thời đoạn ưu đãi (tính từ năm đầu tiên có TNCT>0).\n- `ThueTN4(...; nGiảm2; tsGiảm2; ...)` → 4 thời đoạn.\n- `TGHV(vùng_ngân_lưu_ròng)` → thời gian hoàn vốn.\n- `FD(ô)` → hiển thị công thức làm chú thích.\n\n**Dùng ở ⑦ KQHĐKD:** Thu nhập chịu thuế = `=TNCT(vùng_EBT; cột_năm; số_năm_chuyển_lỗ)`; Thuế TNDN = `=ThueTN(vùng_TNCT; cột_năm; ...)`. **FCFP:** lập lại KQHĐKD với lãi vay = 0 rồi cũng dùng các hàm này.\n\n**Lưu ý mở file:** phải lưu `.xlsm` và **Bật Macro** khi mở thì hàm mới chạy.\n\n*(Mã VBA nguyên văn để đối chiếu: khối “🧩 Mã VBA hàm thuế” ở cuối trang.)*"
+            }
+          ]
+        },
+        {
+          "id": 80,
+          "title": "8 · Bảng vốn lưu động (ΔVLĐ mới là ngân lưu)",
+          "en": "Working Capital",
+          "detail": "3 thành phần (thường theo %):\n- **Khoản phải trả** (% chi phí HĐ) → tăng = **ngân lưu vào**.\n- **Khoản phải thu** (% doanh thu) → tăng = **ngân lưu ra**.\n- **Cân đối tiền mặt** (% doanh thu/chi phí) → tăng = **ngân lưu ra**.\n\n`Vốn lưu động = Phải trả − (Tiền mặt + Phải thu)` *(hoặc ngược lại; chọn 1 cách)* — **chưa phải ngân lưu**.\n\n**Thay đổi VLĐ = VLĐ năm sau − VLĐ năm trước → ĐÂY mới là ngân lưu.**\n\n**✔ Bẫy hay sót:** năm đầu ΔVLĐ = chính VLĐ năm đó; **năm cuối phải tính THÊM 1 năm** VLĐ để dự án tất toán mọi nghĩa vụ trước khi kết thúc. Đưa vào ngân lưu là **ΔVLĐ**, không phải VLĐ.",
+          "children": [
             {
               "id": 41,
               "title": "Vốn lưu động [V]",
@@ -504,31 +681,31 @@ const diagramData =
           ]
         },
         {
-          "id": 42,
-          "title": "B6 · FCF + NPV/IRR/DSCR + Độ nhạy",
-          "en": "Free Cash Flow, Appraisal Metrics & Sensitivity",
-          "detail": "Khối output: 5 quan điểm phân tích + phân tích độ nhạy.",
+          "id": 81,
+          "title": "9 · Bảng ngân lưu (3 quan điểm)",
+          "en": "Cash Flow — 3 Perspectives",
+          "detail": "**Tách Ngân lưu VÀO / RA, và tách riêng từng khoản** (để phân tích về sau).\n\n- **Ngân lưu Tổng đầu tư (Dự án)** = Tổng vào − Tổng ra. *Đừng quên **giá trị thanh lý** (vào, năm cuối) và **ΔVLĐ**.* Ra: CPĐT (xây dựng) + chi phí HĐ (vận hành).\n- **Ngân lưu nợ** = tham chiếu lịch nợ (TGXD dương, vận hành âm).\n- **Ngân lưu Chủ sở hữu = Ngân lưu Tổng đầu tư + Ngân lưu nợ.**\n- **Ngân lưu tự do (FCFP)** = chỉ khác Ngân lưu Dự án ở **dòng thuế TNDN**: **tính lại thuế với giả định KHÔNG vay nợ** (lập lại KQHĐKD với lãi vay = 0) → thuế cao hơn → FCFP thấp hơn.\n\n**Suất chiết khấu:** `WACC trước thuế = E/V·rE + D/V·rD` cho **Dự án/Tổng đầu tư**; `WACC sau thuế = E/V·rE + D/V·rD·(1−t)` cho **FCFP**. Dòng tiền danh nghĩa → rE, rD danh nghĩa (và ngược lại).",
           "children": [
             {
               "id": 43,
               "title": "QĐ1 — Tổng đầu tư (TIPV) [★]",
               "en": "Total Investment Point of View",
               "kind": "leaf",
-              "detail": "*Luôn có.*\n\n- FCFF danh nghĩa = `EBIAT + D − ΔWC − CapEx + TV`\n- FCFF thực = `FCFF danh nghĩa / (1 + π)^t` — *Fisher*\n- `DCF = FCFF / (1 + WACC)^t`\n- NPV @ WACC · IRR · PB · DPB\n- *Hai mặt bằng giá tính song song → cross-check Fisher*"
+              "detail": "*Luôn có.*\n\n- FCFF danh nghĩa = `EBIAT + D − ΔWC − CapEx + TV`\n- FCFF thực = `FCFF danh nghĩa / (1 + π)^t` — *Fisher*\n- `DCF = FCFF / (1 + WACC)^t`\n- NPV @ WACC · IRR · **B/C** · PB · DPB\n- **B/C bắt buộc** = PV(vào)/PV(ra) (ví dụ BOO Thủ Đức: 1,66)\n- *Hai mặt bằng giá tính song song → cross-check Fisher*"
             },
             {
               "id": 44,
               "title": "QĐ2 — Chủ sở hữu (Equity) [V]",
               "en": "Owner's Perspective",
               "kind": "leaf",
-              "detail": "- `FCFE = FCFF − Interest·(1−t) − Principal + Net Borrowing`\n- NPV @ Re · IRR Equity\n- *Cho thấy lợi ích của chủ đầu tư sau khi trả nợ*"
+              "detail": "- `FCFE = FCFF − Interest·(1−t) − Principal + Net Borrowing`\n- NPV @ Re · IRR Equity · **B/C** (ví dụ BOO Thủ Đức: 1,42)\n- *Cho thấy lợi ích của chủ đầu tư sau khi trả nợ*"
             },
             {
               "id": 45,
               "title": "QĐ3 — Ngân hàng (Banker) [V]",
               "en": "Banker's Perspective",
               "kind": "leaf",
-              "detail": "- `DSCR_t = (FCFF + Interest·(1−t)) / (Interest + Principal)`\n- Báo cáo DSCR min, DSCR trung bình\n- *Ngưỡng phê duyệt: 1.2 – 1.4*"
+              "detail": "- `DSCR_t = (FCFF + Interest·(1−t)) / (Interest + Principal)`\n- **Báo cáo CẢ HAI: DSCR nhỏ nhất `=MIN(...)` VÀ DSCR trung bình `=AVERAGE(...)`** — thiếu một trong hai là lỗi phổ biến (ví dụ BOO Thủ Đức: min 1,37 · trung bình 2,63)\n- *Ngưỡng phê duyệt: 1.2 – 1.4*"
             },
             {
               "id": 46,
@@ -543,7 +720,15 @@ const diagramData =
               "en": "Distributive Analysis",
               "kind": "leaf",
               "detail": "- 3 NPV song song: FA @ WACC · FA @ EOCK · EA @ EOCK\n- Chênh lệch (kinh tế − tài chính) = **thặng dư xã hội**\n- Phân bổ thặng dư cho: Nhà nước (thuế), người tiêu dùng (giá thấp hơn), lao động (lương cao hơn), người bị GPMB (đền bù), chủ đầu tư\n\n**Nguồn:** Jenkins–Kuo–Harberger Ch.12 *Externalities and Distributive Effects*"
-            },
+            }
+          ]
+        },
+        {
+          "id": 82,
+          "title": "10 · Thẩm định khả thi & khả năng trả nợ",
+          "en": "Feasibility & Debt Service",
+          "detail": "- **Khả thi nếu NPV ≥ 0** (kết luận ngắn nhưng trọng số điểm cao — phải nhất quán với kết quả).\n  - `=NPV(WACC, dòng tiền năm 1→cuối)` nếu năm gốc là năm trước năm bắt đầu xây dựng.\n  - `=NPV(WACC, dòng tiền năm 2→cuối) + giá trị năm 1` nếu năm gốc trùng năm đầu xây dựng.\n- Với **mỗi quan điểm** (Tổng đầu tư, Chủ sở hữu, FCFP): báo cáo đủ **NPV · IRR · B/C** (xem ⑧ B/C ở *Công thức trọng tâm*).\n- **IRR > WACC** → khả thi; nhưng IRR không đáng tin nếu **dòng tiền đổi dấu nhiều lần** — chỉ cần NPV nếu đề không yêu cầu IRR.\n- **DSCR:** chỉ tính **từ năm vận hành**; phải **≥ 1,2 mọi năm**; báo cáo **DSCR trung bình + nhỏ nhất**.\n  - Nếu **trung bình > 1,2 nhưng vài năm < 1,2 / 1,0** → dự án vẫn trả được nợ nhưng cần **cơ cấu lại**: (i) các năm sau thấp → lập **Quỹ dự phòng trả nợ** (giữ tiền sau trả nợ cho năm sau, không chia CSH); (ii) các năm đầu thấp → **ân hạn** (gốc/lãi/cả hai) hoặc đàm phán lại lịch trả nợ theo kiểu hình ngân lưu.",
+          "children": [
             {
               "id": 48,
               "title": "Phân tích độ nhạy [★]",
@@ -615,9 +800,9 @@ const diagramData =
     {
       "id": 57,
       "title": "✅ Quy trình xây dựng",
-      "en": "Build Sequence (14 Steps)",
+      "en": "Build Sequence (10 Tables)",
       "kind": "leaf",
-      "detail": "1. Trả lời **5 câu hỏi** ở ⓪ (Khung quyết định)\n2. Khung năm + cài **7 cờ điều khiển**\n3. Nhập Bảng thông số **B1** (vĩ mô + đầu tư + thuế)\n4. Dựng Bảng chỉ số giá **B2.1** (xong trước mọi quy đổi)\n5. Ngân lưu CP đầu tư **B2.2** (+ IDC nếu áp dụng)\n6. Lịch nợ vay **B3** (nếu áp dụng TIPV/Equity/Banker)\n7. Doanh thu **B4.1** (công thức theo loại dự án)\n8. Chi phí **B4.2** (biến đổi + cố định + VAT)\n9. Khấu hao **B5.1** (ma trận N nhóm × T năm)\n10. KQHĐKD **B5.2** (chú ý R178 thuế hiệu dụng)\n11. Vốn lưu động **B5.3** (bỏ qua nếu thu tiền mặt)\n12. FCFF + NPV/IRR (**TIPV** — danh nghĩa + thực)\n13. Mở rộng các quan điểm: Equity, Banker, Economic, Distributive\n14. Phân tích độ nhạy (1D + 2D)"
+      "detail": "1. Trả lời **5 câu hỏi** ở ⓪ + cài **7 cờ điều khiển**, dựng khung năm.\n2. **① Bảng thông số** (+ quy đổi lãi suất thả nổi nếu có).\n3. **② Bảng chỉ số giá & tỷ giá** (năm 0 = 1; xong trước mọi quy đổi).\n4. **③ Bảng chi phí đầu tư** (giá thực → danh nghĩa; 1 dòng tổng cả 2 giá; loại lãi TGXD).\n5. **④ Bảng nợ vay** (+ kiểm tra: dư nợ cuối = 0 · IRR = lãi suất).\n6. **⑤ Bảng khấu hao** (cơ sở = CPĐT danh nghĩa + lãi TGXD) + **cơ cấu vốn D/E → WACC**.\n7. **⑥ Doanh thu & chi phí hoạt động** (luôn có Đơn giá × Sản lượng).\n8. **⑦ Báo cáo KQHĐKD** (EBITDA→EBIT→EBT→thuế; hàm tnct/thueTN).\n9. **⑧ Bảng vốn lưu động** (ΔVLĐ mới là ngân lưu; năm cuối tính thêm 1 năm).\n10. **⑨ Bảng ngân lưu** (tách vào/ra; 3 quan điểm: Tổng đầu tư · Chủ sở hữu = TĐT + nợ · FCFP = tính lại thuế lãi = 0).\n11. **⑩ Thẩm định**: NPV/IRR/**B/C** mỗi quan điểm + **DSCR (nhỏ nhất + trung bình)** + kết luận nhất quán.\n12. (Mở rộng) quan điểm **Kinh tế & Phân phối**; **phân tích độ nhạy** (1D + 2D)."
     },
     {
       "id": 58,
@@ -694,7 +879,7 @@ const diagramData =
           "title": "Sai lầm thường gặp",
           "en": "Common Pitfalls",
           "kind": "leaf",
-          "detail": "- Trộn FCFF với WACC thực (NPV phồng giả)\n- Quên cộng ngược lãi sau thuế khi tính DSCR\n- Tính thuế TNDN không có loss carry-forward → over-tax năm 1–2\n- Quên IDC nhập gốc cho BOT → underestimate khấu hao\n- Dùng tỷ giá danh nghĩa cho phân tích thực"
+          "detail": "- **Quên tính B/C** cho mỗi quan điểm — chỉ báo NPV/IRR là thiếu chỉ tiêu bắt buộc\n- **Chỉ báo DSCR nhỏ nhất mà quên DSCR trung bình** (hoặc ngược lại)\n- Trộn FCFF với WACC thực (NPV phồng giả)\n- Quên cộng ngược lãi sau thuế khi tính DSCR\n- Tính thuế TNDN không có loss carry-forward → over-tax năm 1–2\n- Quên IDC nhập gốc cho BOT → underestimate khấu hao\n- Dùng tỷ giá danh nghĩa cho phân tích thực"
         }
       ]
     }
@@ -823,14 +1008,6 @@ function renderMarkdown(src){
   closeList(); return html;
 }
 
-/* -------- figure lightbox -------- */
-function openFigure(svg){ const s=document.getElementById("figStage"); s.innerHTML=svg; document.getElementById("figOverlay").hidden=false; }
-function closeFigure(){ document.getElementById("figOverlay").hidden=true; document.getElementById("figStage").innerHTML=""; }
-(function(){ const ov=document.getElementById("figOverlay"), cb=document.getElementById("figClose");
-  if(cb) cb.onclick=closeFigure;
-  if(ov) ov.addEventListener("click",e=>{ if(e.target===ov) closeFigure(); });
-  document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeFigure(); }); })();
-
 /* -------- detail panel -------- */
 let detailHistory=[], currentDetailId=null;
 function updateBackBtn(){ document.getElementById("backPanel").hidden = detailHistory.length===0; }
@@ -843,15 +1020,7 @@ function openDetail(id, fromBack){
   document.getElementById("panelTitle").textContent=node.title;
   if(node.en){const pe=document.createElement("div");pe.className="panel-en";pe.textContent=node.en;document.getElementById("panelTitle").appendChild(pe);}
   const g=document.getElementById("panelGroup"); g.textContent=node.group||""; g.hidden=!node.group;
-  const _desc=document.getElementById("panelDescription");
-  _desc.innerHTML=renderMarkdown(node.detail||"_Chua co mo ta._");
-  if(node.figure){
-    const fw=document.createElement("div"); fw.className="panel-figure"; fw.innerHTML=node.figure;
-    fw.addEventListener("click",()=>openFigure(node.figure));
-    const zb=document.createElement("button"); zb.className="fig-zoom"; zb.type="button"; zb.textContent="⤢ Xem sơ đồ cỡ lớn";
-    zb.addEventListener("click",()=>openFigure(node.figure));
-    _desc.appendChild(fw); _desc.appendChild(zb);
-  }
+  document.getElementById("panelDescription").innerHTML=renderMarkdown(node.detail||"_Chua co mo ta._");
   const pills=document.getElementById("panelChildren"); pills.innerHTML="";
   const label=document.getElementById("childrenLabel");
   const ch=node.children||[]; label.hidden=ch.length===0;
