@@ -117,7 +117,7 @@ const diagramData =
   "title": "Template Thẩm định Kinh tế Dự án",
   "en": "Project Economic Appraisal Template",
   "group": "MPP27 — Thẩm định Đầu tư công",
-  "detail": "**Cách lập bảng thẩm định KINH TẾ** — minh họa bằng case **Nghệ An Tate & Lyle** (nhà máy đường), nền tảng lý thuyết Chương 7–13 (Jenkins–Kuo–Harberger, HIID).\n\n**Ý tưởng cốt lõi:** phân tích kinh tế dùng *cùng một mô hình ngân lưu* với phân tích tài chính, nhưng:\n- (1) thay **giá tài chính** bằng **giá kinh tế** (giá mờ),\n- (2) **loại bỏ các khoản chuyển giao** (thuế, trợ giá, lãi vay),\n- (3) **cộng thêm ngoại tác / thặng dư** cho các nhóm bị ảnh hưởng,\n- rồi chiết khấu ở **EOCK** (chi phí cơ hội kinh tế của vốn).\n\n**Chú giải:** khối **★** = nguyên lý *mọi dự án*; khối **[Excel]** = ánh xạ trực tiếp tới sheet/dòng trong file thực hành Tate & Lyle.",
+  "detail": "**Đầu ra: `.xlsx` (giá THỰC; bỏ thuế & nợ vay nên KHÔNG cần macro/hàm thuế).** Quy trình thực hành: xem *📋 Checklist HVT — Lập mô hình kinh tế (Phần B)*.\n\n**Cách lập bảng thẩm định KINH TẾ** — minh họa bằng case **Nghệ An Tate & Lyle** (nhà máy đường), nền tảng lý thuyết Chương 7–13 (Jenkins–Kuo–Harberger, HIID).\n\n**Ý tưởng cốt lõi:** phân tích kinh tế dùng *cùng một mô hình ngân lưu* với phân tích tài chính, nhưng:\n- (1) thay **giá tài chính** bằng **giá kinh tế** (giá mờ),\n- (2) **loại bỏ các khoản chuyển giao** (thuế, trợ giá, lãi vay),\n- (3) **cộng thêm ngoại tác / thặng dư** cho các nhóm bị ảnh hưởng,\n- rồi chiết khấu ở **EOCK** (chi phí cơ hội kinh tế của vốn).\n\n**Chú giải:** khối **★** = nguyên lý *mọi dự án*; khối **[Excel]** = ánh xạ trực tiếp tới sheet/dòng trong file thực hành Tate & Lyle.",
   "children": [
     {
       "id": 2,
@@ -393,7 +393,65 @@ const diagramData =
           "title": "Phần 6 · Chỉ tiêu kinh tế",
           "en": "Economic Metrics  [rows 46–47, cột NPV]",
           "kind": "leaf",
-          "detail": "- **NPV kinh tế** — chiết khấu ngân lưu ròng ở **EOCK** (cột \"NPV\" của bảng; NPV dự án kinh tế ≈ 39.324 '000 USD danh nghĩa).\n- **IRR danh nghĩa** — `= IRR(C45:V45, 10%)`.\n- **IRR thực ≈ 16,4%** (quy đổi Fisher từ IRR danh nghĩa).\n\n**Quy tắc:** NPV kinh tế > 0 → dự án cải thiện phúc lợi quốc gia.\n\n**Nguồn:** Ch.12 (chiết khấu ở EOCK) · Ch.3 (NPV/IRR)."
+          "detail": "- **NPV kinh tế** — chiết khấu ngân lưu ròng ở **EOCK** (cột \"NPV\" của bảng; NPV dự án kinh tế ≈ 39.324 '000 USD danh nghĩa).\n- **IRR danh nghĩa** — `= IRR(C45:V45, 10%)`.\n- **IRR thực ≈ 16,4%** (quy đổi Fisher từ IRR danh nghĩa).\n- **B/C kinh tế** = PV(lợi ích ròng vận hành)/−PV(đầu tư) — báo cáo cùng NPV/IRR.\n\n**Quy tắc:** NPV kinh tế > 0 → dự án cải thiện phúc lợi quốc gia.\n\n**Nguồn:** Ch.12 (chiết khấu ở EOCK) · Ch.3 (NPV/IRR)."
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "title": "💧 Biến thể: Định giá đầu ra bằng WTP (dự án cấp nước)",
+      "en": "WTP-based Output Pricing (Water Projects)",
+      "group": "[Case] BOO Thủ Đức",
+      "detail": "Khi đầu ra **không phải hàng ngoại thương và không có giá thị trường cạnh tranh** (nước sạch, đường sá, y tế), giá kinh tế đo trực tiếp bằng **mức sẵn lòng chi trả (WTP)** trên đường cầu — KHÔNG dùng giá biên giới hay CF. Minh họa bằng case **Nhà máy nước BOO Thủ Đức**.\n\n**4 bước:** (1) dựng đường cầu; (2) giá KT từng nhóm = thặng dư thay thế + tăng thêm; (3) bình quân gia quyền theo sản lượng → giá đến người dùng; (4) trừ chi phí phân phối → giá tại cổng nhà máy. Sau đó lập ngân lưu và tính NPV/IRR/**B/C**.\n\n**Nguồn:** Ch.8 §8.2–8.3 (thặng dư tiêu dùng) · Ch.11 §11.4, 11.6 (đầu ra đo bằng WTP).",
+      "children": [
+        {
+          "id": 56,
+          "title": "① Đường cầu tuyến tính P = a + b·Q",
+          "en": "Linear Demand Curve",
+          "kind": "leaf",
+          "detail": "Từ 2 điểm (giá, lượng) quan sát → giải hệ tìm a, b.\n\n*Ví dụ BOO Thủ Đức:* hai điểm (25.000; 60) và (4.000; 200) → `b = (4.000 − 25.000)/(200 − 60) = −150`; `a = 34.000`. Đường cầu `P = 34.000 − 150·Q` (Q: lít/người/ngày).\n\nDùng đường cầu này để đo **thặng dư tiêu dùng** cho từng nhóm.\n\n**Nguồn:** Ch.8 (đường cầu đo WTP)."
+        },
+        {
+          "id": 57,
+          "title": "② Giá KT từng nhóm = thặng dư thay thế + tăng thêm",
+          "en": "Economic Price per Consumer Group",
+          "kind": "leaf",
+          "detail": "Mỗi nhóm người dùng có hành vi khác nhau → giá kinh tế riêng, gồm 2 phần:\n\n- **Lợi ích thay thế nguồn lực** = giá nguồn cũ × lượng cũ (tiết kiệm chi phí nguồn đắt trước đây).\n- **Lợi ích tiêu dùng tăng thêm** = diện tích hình thang dưới đường cầu = `0,5·(P_cũ + P_mới)·(Q_mới − Q_cũ)`.\n- **Giá kinh tế nhóm** = tổng lợi ích / lượng tiêu dùng mới.\n\n*Ví dụ 4 nhóm BOO Thủ Đức (đ/m³):* mua nước tư nhân **17.650** · nước giếng **7.384** · bị hạn chế **7.750** · thất thoát phi kỹ thuật **15.809**.\n\n**Nguồn:** Ch.8 §8.3 (thặng dư tiêu dùng theo nhóm)."
+        },
+        {
+          "id": 58,
+          "title": "③ Giá bình quân gia quyền → giá đến người dùng",
+          "en": "Weighted-Average Delivered Price",
+          "kind": "leaf",
+          "detail": "`Giá bình quân = Σ(giá KT nhóm × sản lượng nhóm) / Σ(sản lượng nhóm)`\n\nTrọng số = **sản lượng đến tay từng nhóm** (m³/ngày), không phải số người.\n\n*Ví dụ BOO Thủ Đức:* bình quân = **11.687 đ/m³** (trên 198.000 m³/ngày đến người dùng).\n\n**Nguồn:** Ch.8 (gộp thặng dư mọi người dùng)."
+        },
+        {
+          "id": 59,
+          "title": "④ Giá tại cổng = bình quân − chi phí phân phối",
+          "en": "Gate Price = Delivered − Distribution Cost",
+          "kind": "leaf",
+          "detail": "**⚠️ Điểm dễ sai nhất của dự án cấp nước:**\n\n`Giá KT tại cổng nhà máy = Giá bình quân đến người dùng − Chi phí phân phối (đ/m³)`\n\n*Ví dụ BOO Thủ Đức:* `11.687 − 1.300 = 10.387 đ/m³`.\n\n**KHÔNG** lấy `(tổng giá trị − chi phí phân phối) / công suất` — vì tổng giá trị ứng với sản lượng *đến người dùng* (198.000), không phải công suất (300.000); chia sai mẫu số → giá cổng sai (ví dụ ra 6.413 thay vì 10.387).\n\n**Nguồn:** Ch.8 · thông số phân phối của dự án."
+        },
+        {
+          "id": 60,
+          "title": "⑤ Loại thất thoát kỹ thuật khỏi lợi ích",
+          "en": "Exclude Technical Loss from Benefit Volume",
+          "kind": "leaf",
+          "detail": "**Sản lượng hưởng lợi = Công suất × (1 − tỷ lệ thất thoát kỹ thuật).**\n\n*Ví dụ:* 300.000 × (1 − 34%) = **198.000 m³/ngày** đến tay người dùng (gồm cả nước thất thoát *phi* kỹ thuật — vẫn có người dùng, vẫn tạo lợi ích).\n\nNước thất thoát **kỹ thuật** (rò rỉ đường ống) là **mất vô ích** → không tạo lợi ích kinh tế, loại khỏi sản lượng tính lợi ích.\n\n**Nguồn:** Ch.7 §7.1 (chỉ tính lợi ích thực)."
+        },
+        {
+          "id": 61,
+          "title": "⑥ Chi phí phân phối = đơn giá × CÔNG SUẤT (dòng riêng)",
+          "en": "Distribution Cost on Full Output — Separate Line",
+          "kind": "leaf",
+          "detail": "Trình bày **hai dòng riêng** trong ngân lưu (như đáp án), KHÔNG gộp vào giá:\n\n- **Lợi ích** = giá KT bình quân × sản lượng **đến người dùng** (198.000).\n- **(−) Chi phí phân phối** = đơn giá phân phối × **công suất** (300.000) — vì phải bơm/phân phối cả phần rò rỉ.\n\n*Ví dụ (triệu đồng/năm):* lợi ích `11.687×198.000×365/10⁶ = 844.608`; chi phí phân phối `1.300×300.000×365/10⁶ = 142.350`.\n\nGộp vào một dòng \"giá cổng × công suất\" tuy ra cùng NPV nhưng **che mất giá cổng đúng** và cách tính chi phí phân phối.\n\n**Nguồn:** đáp án BOO Thủ Đức (dòng lợi ích 47 & chi phí phân phối 57)."
+        },
+        {
+          "id": 62,
+          "title": "⑦ Chỉ tiêu: NPV · IRR · B/C kinh tế",
+          "en": "Economic Metrics incl. B/C",
+          "kind": "leaf",
+          "detail": "Báo cáo **đủ ba chỉ tiêu** (đừng quên B/C):\n\n- **NPV kinh tế** = chiết khấu ngân lưu ròng ở **EOCK** (nước: 10% thực).\n- **IRR kinh tế**.\n- **B/C** = `Σ PV(ngân lưu ròng vận hành) / −Σ PV(các năm đầu tư)`.\n\n*Ví dụ BOO Thủ Đức:* NPV ≈ 3.326.544 · IRR = 30,71% · **B/C = 3,589** (lợi ích ròng gấp 3,59 lần chi phí đầu tư).\n\n**Quy tắc:** NPV > 0 ⇔ B/C > 1 → dự án cải thiện phúc lợi quốc gia.\n\n**Nguồn:** Ch.12 (EOCK) · Ch.3–4 (NPV/IRR/B-C)."
         }
       ]
     },
@@ -464,11 +522,62 @@ const diagramData =
       ]
     },
     {
+      "id": 63,
+      "title": "📋 Checklist đầy đủ mô hình kinh tế (không sót dòng)",
+      "en": "Economic Model Completeness Checklist",
+      "kind": "leaf",
+      "detail": "Bảo đảm file kinh tế **đầy đủ như file tài chính** — vì phân tích kinh tế **dùng lại cấu trúc bảng ngân lưu tài chính** rồi điều chỉnh.\n\n**Bước nền:** hoàn tất **mô hình tài chính ĐẦY ĐỦ** trước — xem *📐 Cấu trúc mô hình — 10 bảng* ở template Tài chính.\n\n**Với MỖI dòng của bảng ngân lưu tài chính, xử lý theo 1 trong 4 cách (đừng bỏ sót dòng nào):**\n- **GIỮ × CF** — chi phí HĐ, ΔVLĐ, chi phí đầu tư (× hệ số chuyển đổi).\n- **ĐIỀU CHỈNH GIÁ** — doanh thu → giá kinh tế/biên giới (hoặc **WTP** với dự án cấp nước); lao động × SWRF; ngoại tệ × SERF.\n- **LOẠI (chuyển giao)** — thuế (VAT, NK, TNDN), trợ giá, lãi vay & nợ gốc, khấu hao.\n- **THÊM (ngoại tác/thặng dư)** — lao động, đất (nông dân), vận chuyển, hoặc **thặng dư tiêu dùng** (cấp nước).\n\n**✔ Đừng quên:** giá trị **thanh lý** (theo giá kinh tế), **ΔVLĐ**, và **mọi khoản doanh thu/chi phí** đã có ở bảng tài chính.\n\n**Chỉ tiêu:** chiết khấu ở **EOCK**; báo cáo **NPV · IRR · B/C** kinh tế; rồi **phân tích phân phối** (kiểm toán chéo: Σ thặng dư nhóm = NPV kinh tế − NPV tài chính)."
+    },
+    {
+      "id": 64,
+      "title": "📋 Checklist HVT — Lập mô hình kinh tế (Phần B)",
+      "en": "HVT Economic Model Build Checklist (Part B)",
+      "group": "Tài liệu HVT — Phần B (Phân tích kinh tế)",
+      "detail": "Hướng dẫn thực hành **chuyển mô hình tài chính → mô hình kinh tế** và **lập bảng ngân lưu kinh tế trên Excel**, theo tài liệu *Hoàng Văn Thắng — Phần B: Lưu ý khi lập mô hình thẩm định phân tích kinh tế*.\n\n**Đầu ra:** thường là **`.xlsx`** — mô hình kinh tế **bỏ thuế & nợ vay** nên KHÔNG cần hàm thuế/macro, toàn công thức sống. (Nếu tái sử dụng workbook tài chính `.xlsm` làm nền thì giữ nguyên cũng được.)\n\n**Mặt bằng giá:** mô hình kinh tế lập theo **giá THỰC** là phổ biến nhất.",
+      "children": [
+        {
+          "id": 65,
+          "title": "1 · Chuyển đổi MH tài chính → kinh tế",
+          "en": "Convert Financial → Economic",
+          "kind": "leaf",
+          "detail": "Xuất phát từ **bảng ngân lưu quan điểm Tổng đầu tư (ngân lưu dự án)** của mô hình tài chính.\n\n**LOẠI BỎ (chuyển giao / không phân biệt nguồn vốn):**\n- **Thuế TNDN** → chuyển giao → bỏ.\n- **Nợ vay** (giải ngân, lãi, gốc) → chỉ xét tổng nguồn lực nền kinh tế → bỏ.\n- ⟹ **KHÔNG cần** Bảng khấu hao, Báo cáo KQHĐKD, Lịch nợ vay (các bảng này chủ yếu để tính thuế TNDN).\n\n**GIỮ NGUYÊN:** dòng có **hệ số chuyển đổi = 1** (không khác biệt kinh tế vs tài chính).\n\n**ĐIỀU CHỈNH:** các dòng còn lại theo hệ số/giá kinh tế (xem node 2 & 3).\n\n**Nguồn:** HVT Phần B, Mục 1."
+        },
+        {
+          "id": 66,
+          "title": "2 · Các khác biệt cần điều chỉnh (TC→KT)",
+          "en": "Adjustment Drivers",
+          "kind": "leaf",
+          "detail": "**Chi phí đầu tư — điều chỉnh theo:**\n- **Tỷ giá (SERF)** → thường KT **cao hơn** TC (SERF > 1).\n- **Lương lao động phổ thông (SWRF)** → thường KT **thấp hơn** TC (SWRF < 1).\n- **Chi phí GPMB (đất)** → KT thường **cao hơn** TC nếu dự án được ưu đãi đền bù thấp.\n- **Giá NVL đầu vào** → nếu dự án tiêu thụ đủ lớn làm đổi cung–cầu thị trường → KT thường **thấp hơn** (giá đầu vào bị đẩy tăng là chi phí xã hội).\n\n**Chi phí hoạt động — điều chỉnh theo:** SERF (nếu có nhập khẩu), SWRF (nếu dùng lao động phổ thông), và giá một đầu vào quan trọng bị dự án làm thay đổi.\n\n**Doanh thu →** Doanh thu kinh tế **hoặc** Lợi ích kinh tế (tùy đầu ra là hàng hóa/dịch vụ): giá kinh tế ≠ giá tài chính; với sản phẩm đặc thù, doanh thu TC là *chuyển giao* → thay bằng **lợi ích kinh tế** (tăng thêm + thay thế). Chênh lệch **Lợi ích KT − Doanh thu TC = thay đổi phúc lợi ròng xã hội**.\n\n**Ngoại tác:** tích cực = ngân lưu **vào**; tiêu cực = ngân lưu **ra**.\n\n**Nguồn:** HVT Phần B, Mục 1."
+        },
+        {
+          "id": 67,
+          "title": "3 · Tính giá kinh tế (đầu ra & đầu vào)",
+          "en": "Economic Price — Output & Input",
+          "kind": "leaf",
+          "detail": "**5 bước:** (1) xác định tính cho **đầu ra** hay **đầu vào**; (2) xác định điểm cân bằng **trước & sau** dự án; (3) tìm tọa độ (P,Q) các điểm (có thể phải lập **phương trình đường cầu/cung**); (4) tính **diện tích** các hình; (5) **Tổng lợi ích/chi phí KT**; (6) **Giá kinh tế = Tổng lợi ích (hoặc chi phí) ÷ Sản lượng dự án**.\n\n**ĐẦU RA của dự án** (dự án bán ra): tăng cung → **giá giảm** → cầu tăng thêm từ khách mới (**tăng thêm**) + một số nhà cung ứng rút lui (**thay thế**).\n- *Cách 1:* Lợi ích KT = **lợi ích tăng thêm của người tiêu dùng** + **chi phí nguồn lực xã hội tiết kiệm được**.\n- *Cách 2:* Lợi ích KT = **doanh thu tài chính** + **thay đổi phúc lợi ròng xã hội**.\n\n**ĐẦU VÀO của dự án** (dự án mua vào): tăng cầu → **giá tăng** → một số người dùng cũ rút (**thay thế**) + nhà cung ứng mới tham gia (**tăng thêm**).\n- *Cách 1:* Chi phí KT = **chi phí nguồn lực xã hội tăng thêm** + **lợi ích người tiêu dùng cũ bị giảm**.\n- *Cách 2:* Chi phí KT = **chi phí tài chính** − **thay đổi phúc lợi ròng xã hội**.\n\n*Hai cách cho cùng kết quả* (ví dụ HVT: đầu ra = 190; đầu vào = 3.240).\n\n**Nguồn:** HVT Phần B, Mục 2 · Jenkins–Kuo–Harberger Ch.8–9."
+        },
+        {
+          "id": 68,
+          "title": "4 · 6 bước lập MH kinh tế trên Excel (giá thực)",
+          "en": "6-Step Excel Build (Real Prices)",
+          "kind": "leaf",
+          "detail": "**B1 · Bảng thông số kinh tế** — đọc đề, ghi nhận mọi thông tin (SWRF, SERF, CF, thuế NK, chi phí vốn KT/EOCK…).\n\n**B2 · Chi phí đầu tư kinh tế (giá thực)** — từ CPĐT tài chính *danh nghĩa* hằng năm **chia Chỉ số giá** về giá thực; **bóc riêng** hạng mục liên quan ngoại thương / lao động / đất đai; quy đổi TC→KT theo các khác biệt (SERF/SWRF/GPMB/giá NVL).\n\n**B3 · Lợi ích kinh tế = Sản lượng × Giá kinh tế** — sản lượng thường = sản lượng dự án tạo ra; **KHÔNG bỏ sót** thanh lý tài sản, đất đai, giá trị kết thúc, ngoại tác tích cực (đều là ngân lưu **vào**). *(Lợi ích KT cũng có thể là chi phí cơ hội nguồn lực xã hội tiết kiệm.)*\n\n**B4 · Chi phí kinh tế giai đoạn vận hành** — chuyển đổi hạng mục như B2; ngoại tác tiêu cực = ngân lưu **ra**.\n\n**B5 · Bảng ngân lưu kinh tế** — Vào = Lợi ích/Doanh thu KT; Ra = CP đầu tư + CP vận hành KT; **loại thuế TNDN**; **VLĐ giữ hoặc loại** tùy dự án; chú ý chi phí vốn KT là giá **thực** hay danh nghĩa cho khớp ngân lưu.\n\n**B6 · Thẩm định** — chỉ **NPV, IRR** trên **một quan điểm duy nhất: toàn nền kinh tế** (không tách quan điểm dự án / nợ vay / chủ đầu tư).\n\n**Nguồn:** HVT Phần B, Mục 3."
+        },
+        {
+          "id": 69,
+          "title": "5 · Khác biệt cốt lõi so với MH tài chính",
+          "en": "Key Differences vs Financial Model",
+          "kind": "leaf",
+          "detail": "- **Chỉ MỘT quan điểm** — toàn nền kinh tế (bỏ Tổng đầu tư / Chủ sở hữu / Ngân hàng). Tiêu chí: **NPV, IRR** (@ EOCK); nên bổ sung **B/C**.\n- **Bỏ** thuế TNDN, nợ vay, khấu hao, KQHĐKD, lịch nợ vay.\n- **Mặt bằng giá:** thường **giá thực** (chia chỉ số giá từ mô hình tài chính danh nghĩa).\n- **Vốn lưu động:** giữ hay bỏ tùy đặc điểm dự án.\n- **Giá kinh tế:** đo bằng cung–cầu (thay thế + tăng thêm), giá biên giới (hàng ngoại thương), hoặc WTP/thặng dư (dịch vụ công như cấp nước — xem nhánh 💧).\n- **Đừng quên** ngoại tác, thanh lý, giá trị kết thúc.\n\n**Nguồn:** HVT Phần B."
+        }
+      ]
+    },
+    {
       "id": 49,
       "title": "✅ Quy trình lập bảng (9 bước)",
       "en": "Build Sequence (9 Steps)",
       "kind": "leaf",
-      "detail": "1. **Hoàn tất bảng tài chính** (quan điểm tổng đầu tư) — làm điểm khởi đầu.\n2. **Phân loại** từng hạng mục: ngoại thương / phi ngoại thương / lao động / đất / chuyển giao.\n3. **Ước tính hệ số**: CF cho hàng hóa, SWRF cho lao động, FEP/SER nếu bảng bằng nội tệ, EOCK làm suất chiết khấu.\n4. **Điều chỉnh doanh thu** về giá biên giới (bỏ thuế NK/bảo hộ).\n5. **Tính lợi ích kinh tế ròng từng nhóm**: lao động (×SWRF), nông dân (chi phí cơ hội đất), chủ xe tải (thặng dư).\n6. **Loại bỏ chuyển giao**: thuế, trợ giá, lãi vay, nợ gốc, khấu hao.\n7. **Lập ngân lưu kinh tế**: Vào − Ra = Ngân lưu ròng.\n8. **Chiết khấu ở EOCK** → NPV kinh tế, IRR kinh tế.\n9. **Phân tích phân phối**: chênh lệch kinh tế − tài chính, phân cho từng nhóm, kiểm toán chéo.\n\n*(Có thể thêm bước 10: phân tích độ nhạy các thông số kinh tế — SWRF, EOCK, giá thế giới.)*"
+      "detail": "1. **Hoàn tất bảng tài chính ĐẦY ĐỦ** (quan điểm tổng đầu tư; theo *📐 Cấu trúc mô hình — 10 bảng* ở template Tài chính) — làm điểm khởi đầu.\n2. **Phân loại** từng hạng mục: ngoại thương / phi ngoại thương / lao động / đất / chuyển giao.\n3. **Ước tính hệ số**: CF cho hàng hóa, SWRF cho lao động, FEP/SER nếu bảng bằng nội tệ, EOCK làm suất chiết khấu.\n4. **Điều chỉnh doanh thu** về giá biên giới (bỏ thuế NK/bảo hộ).\n5. **Tính lợi ích kinh tế ròng từng nhóm**: lao động (×SWRF), nông dân (chi phí cơ hội đất), chủ xe tải (thặng dư).\n6. **Loại bỏ chuyển giao**: thuế, trợ giá, lãi vay, nợ gốc, khấu hao.\n7. **Lập ngân lưu kinh tế**: Vào − Ra = Ngân lưu ròng.\n8. **Chiết khấu ở EOCK** → NPV, IRR **và B/C** kinh tế (dự án đo đầu ra bằng WTP: xem nhánh 💧 Biến thể cấp nước).\n9. **Phân tích phân phối**: chênh lệch kinh tế − tài chính, phân cho từng nhóm, kiểm toán chéo.\n\n*(Có thể thêm bước 10: phân tích độ nhạy các thông số kinh tế — SWRF, EOCK, giá thế giới.)*"
     },
     {
       "id": 50,
@@ -504,7 +613,7 @@ const diagramData =
       "title": "🎯 Sai lầm thường gặp",
       "en": "Common Pitfalls",
       "kind": "leaf",
-      "detail": "- **Quên loại chuyển giao** — để nguyên thuế/VAT/lãi vay trong ngân lưu kinh tế (tính trùng, sai bản chất).\n- **Dùng giá nội địa cho hàng ngoại thương** — quên quy về giá biên giới (CIF/FOB) → giữ luôn phần bảo hộ.\n- **Bỏ sót chi phí cơ hội đất / lao động** — không cộng thặng dư nông dân, không dùng SWRF.\n- **Dùng WACC/hurdle tài chính thay EOCK** để chiết khấu ngân lưu kinh tế.\n- **Quên phí ngoại hối** (khi bảng bằng nội tệ) — bỏ SER/FEP làm định giá thấp ngoại tệ.\n- **Đếm trùng thặng dư** — vừa điều chỉnh giá vừa cộng ngoại tác cho cùng một khoản.\n- **Gán sai nguồn** — ví dụ gán con số EOCK ~8% cho Ch.12 (thực ra là thông số thực hành, không có trong giáo trình).\n\n**Kiểm tra cuối:** tổng phân phối các nhóm = NPV kinh tế − NPV tài chính (kiểm toán chéo)."
+      "detail": "- **Quên loại chuyển giao** — để nguyên thuế/VAT/lãi vay trong ngân lưu kinh tế (tính trùng, sai bản chất).\n- **Dùng giá nội địa cho hàng ngoại thương** — quên quy về giá biên giới (CIF/FOB) → giữ luôn phần bảo hộ.\n- **Bỏ sót chi phí cơ hội đất / lao động** — không cộng thặng dư nông dân, không dùng SWRF.\n- **Dùng WACC/hurdle tài chính thay EOCK** để chiết khấu ngân lưu kinh tế.\n- **Quên phí ngoại hối** (khi bảng bằng nội tệ) — bỏ SER/FEP làm định giá thấp ngoại tệ.\n- **Đếm trùng thặng dư** — vừa điều chỉnh giá vừa cộng ngoại tác cho cùng một khoản.\n- **Gán sai nguồn** — ví dụ gán con số EOCK ~8% cho Ch.12 (thực ra là thông số thực hành, không có trong giáo trình).\n\n- **[Cấp nước] Tính sai giá tại cổng nhà máy** — chia tổng giá trị cho *công suất* thay vì lấy *giá bình quân − chi phí phân phối* (giá cổng = bình quân − CP phân phối).\n- **[Cấp nước] Gộp chi phí phân phối vào giá** thay vì để một dòng riêng — che mất giá cổng đúng và cách tính chi phí phân phối trên toàn công suất.\n- **[Cấp nước] Không loại thất thoát kỹ thuật** khỏi sản lượng hưởng lợi (lợi ích tính trên phần *đến người dùng*, không phải công suất).\n- **Quên tính B/C** kinh tế cùng NPV/IRR.\n\n**Kiểm tra cuối:** tổng phân phối các nhóm = NPV kinh tế − NPV tài chính (kiểm toán chéo)."
     }
   ]
 };
