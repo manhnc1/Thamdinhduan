@@ -78,6 +78,30 @@
        padding:5px 10px;font-size:12px;cursor:pointer}
   .child-pills button:hover{border-color:var(--accent)}
   h3.section{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:18px 0 6px}
+
+/* ===== v2 layout: toàn màn hình + chế độ Danh sách (outline nhiều cột) ===== */
+.site-shell{max-width:1600px}
+.diagram-viewport{height:76vh}
+.diagram-card:fullscreen{border-radius:0;height:100vh}
+.diagram-card:fullscreen .diagram-viewport{height:calc(100vh - 4px)}
+.toolbar .seg{margin-left:2px}
+.diagram-canvas.mode-list{width:100%;min-width:0;padding:16px 26px}
+.diagram-canvas.mode-list svg.links{display:none}
+.diagram-canvas.mode-list ul.tree{flex-direction:column;align-items:stretch;gap:6px;width:100%}
+.diagram-canvas.mode-list ul.tree ul{flex-direction:column;align-items:stretch;gap:6px;margin-top:6px;padding-left:20px;border-left:2px solid var(--line);width:100%}
+.diagram-canvas.mode-list ul.tree li{flex-direction:column;align-items:stretch;width:100%}
+.diagram-canvas.mode-list ul.tree li>ul{margin-top:6px}
+.diagram-canvas.mode-list .node{max-width:none;min-width:0;width:100%;flex-direction:row;align-items:center;gap:10px}
+.diagram-canvas.mode-list .node .node-num{margin:0;min-width:20px;text-align:left}
+.diagram-canvas.mode-list .node .node-main{text-align:left;flex:1;padding:7px 12px}
+.diagram-canvas.mode-list .node .node-expand-bar{margin:0;height:26px;width:auto;padding:0 12px;flex:none}
+/* các nhánh cấp 1 chảy thành nhiều CỘT để lấp đầy màn hình rộng */
+.diagram-canvas.mode-list>ul.tree>li>ul{display:block;column-width:360px;column-gap:30px;border-left:none;padding-left:0}
+.diagram-canvas.mode-list>ul.tree>li>ul>li{display:block;break-inside:avoid;-webkit-column-break-inside:avoid;margin:0 0 14px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#0d1830}
+.diagram-canvas.mode-list>ul.tree>li>ul>li>ul{padding-left:16px}
+.detail-panel{padding-left:24px}
+.panel-resizer{position:absolute;left:0;top:0;height:100%;width:10px;cursor:ew-resize;z-index:3;background:transparent;border-left:2px solid transparent}
+.panel-resizer:hover,.panel-resizer.active{border-left-color:var(--accent);background:linear-gradient(90deg,rgba(79,140,255,.20),transparent)}
 </style>
 </head>
 <body>
@@ -89,6 +113,8 @@
   <nav class="toolbar">
     <button id="expandAll" type="button">Mở toàn bộ</button>
     <button id="collapseAll" type="button">Thu gọn</button>
+    <button id="layoutBtn" type="button" class="seg">☰ Bố cục: Sơ đồ</button>
+    <button id="fullscreenBtn" type="button" class="seg">⛶ Toàn màn hình</button>
     <label class="zoom-control">Zoom
       <input id="zoomRange" type="range" min="0.5" max="1.4" value="0.9" step="0.05" />
       <span id="zoomValue">0.90×</span>
@@ -105,6 +131,7 @@
 
 <div id="scrim" class="scrim" hidden></div>
 <aside id="detailPanel" class="detail-panel" aria-hidden="true">
+  <div class="panel-resizer" id="panelResizer" title="Kéo để đổi độ rộng · nhấp đúp để đặt lại"></div>
   <div class="panel-header">
     <div style="display:flex;align-items:flex-start;gap:10px">
       <button id="backPanel" class="icon-button" type="button" aria-label="Quay lai" title="Quay lại node trước" hidden>&#8592;</button>
@@ -744,6 +771,7 @@ function render(){
   applyZoom(); requestAnimationFrame(drawConnectors);
 }
 function drawConnectors(){
+  if(canvas.classList.contains("mode-list")) return;
   const old=canvas.querySelector("svg.links"); if(old) old.remove();
   const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
   svg.setAttribute("class","links");
@@ -851,9 +879,49 @@ document.getElementById("expandAll").addEventListener("click",()=>{
 document.getElementById("collapseAll").addEventListener("click",()=>{
   state.expanded=new Set([diagramData.id]); state.focusedChildByParent.clear();
   render(); centerNode(diagramData.id); });
+const layoutBtn=document.getElementById("layoutBtn");
+layoutBtn.addEventListener("click",()=>{
+  state.listMode=!state.listMode;
+  canvas.classList.toggle("mode-list",state.listMode);
+  layoutBtn.textContent=state.listMode?"⬒ Bố cục: Danh sách":"☰ Bố cục: Sơ đồ";
+  if(state.listMode && state.expanded.size<=2){
+    state.expanded=new Set([...nodeById.values()].filter(hasChildren).map(n=>n.id));
+  }
+  render();
+});
+const fsBtn=document.getElementById("fullscreenBtn");
+const dcard=document.querySelector(".diagram-card");
+fsBtn.addEventListener("click",()=>{
+  if(!document.fullscreenElement){ if(dcard.requestFullscreen) dcard.requestFullscreen().catch(()=>{}); }
+  else if(document.exitFullscreen){ document.exitFullscreen(); }
+});
+document.addEventListener("fullscreenchange",()=>{
+  const fe=document.fullscreenElement;
+  fsBtn.textContent=fe?"⛶ Thoát toàn màn hình":"⛶ Toàn màn hình";
+  // panel mô tả + scrim phải nằm TRONG lớp fullscreen mới hiển thị được khi bấm node
+  const host=fe||document.body;
+  const sc=document.getElementById("scrim"), pn=document.getElementById("detailPanel");
+  if(sc) host.appendChild(sc);
+  if(pn) host.appendChild(pn);
+  requestAnimationFrame(drawConnectors);
+});
 const zoomRange=document.getElementById("zoomRange");
 zoomRange.addEventListener("input",e=>{ state.zoom=Number(e.target.value); applyZoom();
   requestAnimationFrame(drawConnectors); });
+/* resize detail panel — kéo mép trái để nới rộng */
+(function(){
+  const panel=document.getElementById("detailPanel");
+  const grip=document.getElementById("panelResizer");
+  if(panel&&grip){
+    let rz=false;
+    const clamp=w=>Math.max(340,Math.min(window.innerWidth*0.96,w));
+    grip.addEventListener("pointerdown",e=>{rz=true;grip.classList.add("active");try{grip.setPointerCapture(e.pointerId);}catch(_){}e.preventDefault();});
+    grip.addEventListener("pointermove",e=>{ if(rz) panel.style.width=clamp(window.innerWidth-e.clientX)+"px"; });
+    const stop=e=>{rz=false;grip.classList.remove("active");try{grip.releasePointerCapture(e.pointerId);}catch(_){}};
+    grip.addEventListener("pointerup",stop); grip.addEventListener("pointercancel",stop);
+    grip.addEventListener("dblclick",()=>{panel.style.width="";});
+  }
+})();
 /* pan */
 let drag=false,sx,sy,ssx,ssy;
 viewport.addEventListener("pointerdown",e=>{ if(e.target.closest("button"))return;
